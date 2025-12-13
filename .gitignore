@@ -1,0 +1,58 @@
+# =============================
+# NODE / NESTJS / NEXTJS MONOREPO IGNORE
+# =============================
+
+# === DEPENDÊNCIAS ===
+/node_modules
+/server/node_modules
+/frontend/node_modules
+
+# === BUILDS / DIST ===
+/server/dist
+/frontend/.next
+/frontend/out
+/frontend/build
+/build
+/dist
+
+# === LOGS ===
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-debug.log*
+
+# === ENV FILES ===
+.env
+.env.*
+/frontend/.env
+/server/.env
+!.env.example
+
+# === MISC ===
+.DS_Store
+Thumbs.db
+*.pem
+*.tsbuildinfo
+next-env.d.ts
+.vscode/
+.idea/
+.vercel/
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+.pnp
+.pnp.*
+
+# === TESTES ===
+/coverage
+
+# === OS FILES ===
+*.swp
+*.swo
+
+# === LOCAL BUILD TOOLS ===
+/tmp
+.cache

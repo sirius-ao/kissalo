@@ -1,0 +1,40 @@
+version: '3.9'
+
+services:
+  kissalo-api:
+    build: .
+    container_name: kissalo-api
+    restart: always
+    ports:
+      - '8080:8080'
+    env_file:
+      - .env
+    depends_on:
+      - kissalo-db
+      - kissalo-redis
+
+  kissalo-db:
+    image: postgres:16
+    container_name: kissalo-db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: kissalo
+    ports:
+      - '5434:5434'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  kissalo-redis:
+    image: redis:7
+    container_name: kissalo-redis
+    restart: always
+    ports:
+      - '6379:6379'
+    volumes:
+      - redisdata:/data
+
+volumes:
+  pgdata:
+  redisdata:
