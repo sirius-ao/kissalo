@@ -4,18 +4,19 @@ import CacheModule from '@infra/cache/cahe.module';
 import { JwtModule } from '@nestjs/jwt';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { ScheduleModule } from '@nestjs/schedule';
-import { ConfigModule } from '@nestjs/config';
-import { EnvSchema } from '@core/shared/schemas/env.schema';
 import { AuthModule } from './domains/auth/auth.module';
 import { ServicesModule } from './domains/services/services.module';
 import { CategoriesModule } from './domains/categories/categories.module';
 import { ReviewsModule } from './domains/reviews/reviews.module';
 import { PaymentsModule } from './domains/payments/payments.module';
-import { CostumersModule } from './domains/costumers/costumers.module';
 import { ProfissionalsModule } from './domains/profissionals/profissionals.module';
 import { BookingsModule } from './domains/bookings/bookings.module';
 import { WalletsModule } from './domains/wallets/wallets.module';
 import { ExecutionModule } from './domains/execution/execution.module';
+import { ConfigurationModule } from '@infra/config/config.module';
+import { ClientsModule } from './domains/clients/clients.module';
+import { ConciliationModule } from './domains/conciliation/conciliation.module';
+import { UtilModule } from '@core/shared/utils/util.module';
 @Module({
   imports: [
     JwtModule.register({
@@ -31,15 +32,6 @@ import { ExecutionModule } from './domains/execution/execution.module';
       ],
     }),
     ScheduleModule.forRoot({}),
-    ConfigModule.forRoot({
-      isGlobal: true,
-      validate(config) {
-        try {
-          EnvSchema.parse(config);
-        } catch (error) {}
-        return config;
-      },
-    }),
     PrismaModule,
     CacheModule,
     AuthModule,
@@ -47,11 +39,14 @@ import { ExecutionModule } from './domains/execution/execution.module';
     CategoriesModule,
     ReviewsModule,
     PaymentsModule,
-    CostumersModule,
     ProfissionalsModule,
     BookingsModule,
     WalletsModule,
     ExecutionModule,
+    ConfigurationModule,
+    ClientsModule,
+    ConciliationModule,
+    UtilModule,
   ],
 })
 export class AppModule {}
