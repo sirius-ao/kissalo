@@ -73,6 +73,12 @@ enum BookingPriority {
   MIDIUM
   LOW
 }
+
+enum VerificationsType {
+  ACCOUNT_VRIFICATION
+  RESET_PASSWORD_REQUEST
+}
+
 model User {
   id             Int            @id @default(autoincrement())
   firstName String
@@ -96,16 +102,17 @@ model User {
   notifications Notification[]
   reviews Review[]
   Payments Payments[]
-  recoveryAccountRequest RecoveryAccountRequest[]
+  verifications Verifications[]
   booking Booking[]
   executionsRequests BookingExecution[]
 }
 
-model RecoveryAccountRequest{
+model Verifications{
   id             Int            @id @default(autoincrement())
-  userId Int
-  token String
+  userId Int @unique
+  token String  @unique
   createdAt      DateTime       @default(now())
+  type VerificationsType
   updatedAt      DateTime       @updatedAt
   isUsed Boolean @default(false)
   expiresAt DateTime
