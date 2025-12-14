@@ -1,7 +1,6 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import Keyv from 'keyv';
 import KeyvRedis from '@keyv/redis';
-import constants from '@core/constants';
 
 @Injectable()
 export default class CacheService implements OnModuleInit {
@@ -29,12 +28,8 @@ export default class CacheService implements OnModuleInit {
     }
   }
 
-  async set(key: string, value: any, ttl: number = constants.CACHE.default) {
-    if (key.startsWith('UserRefreshTokn')) {
-      ttl *= 1000;
-    }
+  async set(key: string, value: any, ttl: number) {
     await this.redis.set(key, value, ttl);
-    console.log(ttl);
     this.logger.debug(`Cache SET: ${key}`);
   }
 
