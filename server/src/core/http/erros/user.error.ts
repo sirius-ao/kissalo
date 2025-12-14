@@ -22,7 +22,7 @@ export class UserNotVerifiedExecption extends HttpException {
         cause: 'Conta não verificada',
         name: 'Conta não verificada',
       },
-      HttpStatus.NOT_FOUND,
+      HttpStatus.UNAUTHORIZED,
     );
   }
 }

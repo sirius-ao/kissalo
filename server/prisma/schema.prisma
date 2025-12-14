@@ -89,6 +89,7 @@ model User {
   password  String
   isVerified Boolean @default(false)
   isEmailVerified Boolean @default(false)
+  tokenToActivate String @unique
   role UserRole @default(COSTUMER)
   status UserStatus @default(ACTIVE)
   stats          Json
