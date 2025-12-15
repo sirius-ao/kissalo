@@ -95,9 +95,11 @@ model User {
   stats          Json
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
+
   @@index([email])
-  @@index([role])
-  @@index([id])
+  @@index([phone])
+  @@index([role, status])
+  @@index([createdAt])
 
   profisionalData Profisional[]
   notifications Notification[]
@@ -119,6 +121,10 @@ model Verifications{
   expiresAt DateTime
   metaData Json?
   user User @relation(fields: [userId] , references: [id] ,onDelete: Cascade)
+
+  @@index([token])
+  @@index([type, isUsed])
+  @@index([expiresAt])
 }
 
 
@@ -144,8 +150,11 @@ model Profisional {
   stats Json
   contacts Json
   socialMidea Json
-  @@index([status])
+  @@index([userId])
+  @@index([status, isVerified])
   @@index([type])
+  @@index([averageRating])
+  @@index([yearsExperience])
   user User @relation(fields: [userId] , references: [id] ,onDelete: Cascade)
   reviews Review[]
   Payments Payments[]
@@ -173,6 +182,9 @@ model Category {
   updatedAt      DateTime       @updatedAt
   subCategories SubCategory[]
   services Services[]
+  @@index([slug])
+  @@index([isActive, featured])
+  @@index([order])
 }
 
 
@@ -190,6 +202,9 @@ model SubCategory {
   updatedAt      DateTime       @updatedAt
   Category Category @relation(fields: [categoryId] , references: [id] ,onDelete: Cascade)
   services Services[]
+  @@index([categoryId])
+  @@index([slug])
+  @@index([isActive])
 }
 
 
@@ -214,8 +229,10 @@ model Services {
   updatedAt      DateTime       @updatedAt
 
   @@index([profissionalId])
-  @@index([categoryId])
+  @@index([categoryId, isActive])
   @@index([subCategoryId])
+  @@index([priceType])
+  @@index([createdAt])
   category Category @relation(fields: [categoryId] , references: [id] ,onDelete: Cascade)
   subCategory SubCategory? @relation(fields: [subCategoryId] , references: [id] ,onDelete: Cascade)
   reviews Review[]
@@ -252,9 +269,13 @@ model Booking {
   profissional Profisional @relation(fields: [profissionalId] , references: [id], onDelete: Cascade)
   service Services @relation(fields: [serviceId] , references: [id], onDelete: Cascade)
   executionsRequests BookingExecution[]
+  @@index([bookingCode])
+  @@index([clientId])
   @@index([profissionalId])
   @@index([serviceId])
-  @@index([clientId])
+  @@index([status, paymentStatus])
+  @@index([scheduleDate])
+  @@index([createdAt])
 }
 
 model BookingExecution {
@@ -272,6 +293,10 @@ model BookingExecution {
   client User @relation(fields: [clientId] , references: [id], onDelete: Cascade)
   profissional Profisional @relation(fields: [profissionalId] , references: [id], onDelete: Cascade)
   booking Booking @relation(fields: [bookingId] , references: [id], onDelete: Cascade)
+  @@index([bookingId])
+  @@index([profissionalId, isOpen])
+  @@index([clientId])
+  @@index([expiredAt])
 
 }
 
@@ -296,9 +321,11 @@ model Payments {
   client User @relation(fields: [clientId] , references: [id], onDelete: Cascade)
   profissional Profisional @relation(fields: [profissionalId] , references: [id], onDelete: Cascade)
   consolidations Consolidation[]
-  @@index([profissionalId])
   @@index([bookingId])
   @@index([clientId])
+  @@index([profissionalId])
+  @@index([status])
+  @@index([createdAt])
 }
 
 
@@ -325,6 +352,9 @@ model Review {
   @@index([clientId])
   @@index([profissionalId])
   @@index([serviceId])
+  @@index([rating])
+  @@index([isFeatured])
+  @@index([createdAt])
 }
 
 model Notification {
@@ -346,6 +376,9 @@ model Notification {
   booking Booking? @relation(fields: [bookingId] , references: [id], onDelete: SetNull)
   payment Payments? @relation(fields: [paymentId] , references: [id], onDelete: SetNull)
   user User @relation(fields: [userId] , references: [id], onDelete: Cascade)
+  @@index([userId, isRead])
+  @@index([type])
+  @@index([createdAt])
 }
 
 model Wallet {
@@ -360,6 +393,8 @@ model Wallet {
   updatedAt      DateTime       @updatedAt
   profissional Profisional @relation(fields: [profissionalId] , references: [id], onDelete: Cascade)
   consolidations Consolidation[]
+  @@index([profissionalId])
+  @@index([isActive])
 }
 
 
@@ -378,4 +413,8 @@ model Consolidation {
   profissional Profisional @relation(fields: [profissionalId] , references: [id], onDelete: Cascade)
   payment Payments @relation(fields: [paymentId] , references: [id], onDelete: Cascade)
   Wallet Wallet @relation(fields: [walletId] , references: [id], onDelete: Cascade)
+  @@index([profissionalId])
+  @@index([paymentId])
+  @@index([walletId])
+  @@index([sheduledAt])
 }
