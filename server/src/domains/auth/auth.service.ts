@@ -10,19 +10,18 @@ import CacheService from '@infra/cache/cahe.service';
 
 @Injectable()
 export class AuthService {
+  private readonly jwt: JwtService = new JwtService({
+    secret: process.env.JWT_SECRET,
+  });
   constructor(
     private readonly database: PrismaService,
     private readonly encript: BcryptService,
     private readonly emailService: EmailService,
     private readonly logger: KissaloLogger,
-    private readonly jwt: JwtService = new JwtService({
-      secret: process.env.JWT_SECRET,
-    }),
     private readonly cache: CacheService,
   ) {}
 
   public async login(data: CreateAuthDto) {
-    
     const useCase = new LoginUseCase(
       this.database,
       this.encript,
@@ -31,6 +30,7 @@ export class AuthService {
     );
     const useCaseResponse = await useCase.handle(data);
     const { user } = useCaseResponse;
+    const ONE_WEEK = 60 * 60 * 24 * 7;
     const [acessToken, refreshToken] = [
       this.jwt.sign(
         {
@@ -51,12 +51,8 @@ export class AuthService {
       ),
     ];
     await Promise.all([
-      this.cache.set(`userProfile-${user.id}`, user, 36000 * 5),
-      this.cache.set(
-        `userRefreshToken-${user.id}`,
-        refreshToken,
-        36000 * 24 * 30,
-      ),
+      this.cache.set(`userProfile-${user.id}`, user, 60 * 60 * 1),
+      this.cache.set(`userRefreshToken-${user.id}`, refreshToken, ONE_WEEK),
     ]);
     return {
       user: {
@@ -67,16 +63,14 @@ export class AuthService {
     };
   }
 
-  public async verify(token: string) {
+  public async verify(token: string) {}
 
-  }
-  
-  public async refresh(token: string) { }
-  
-  public async recoveryRequest(unique: string) { }
-  
-  public async resetPassword() { }
-  
+  public async refresh(token: string) {}
+
+  public async recoveryRequest(unique: string) {}
+
+  public async resetPassword() {}
+
   public async logout(userid: number) {
     await Promise.all([
       this.cache.delete(`userProfile-${userid}`),
