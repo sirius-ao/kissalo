@@ -1,9 +1,14 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  OnModuleDestroy,
+  OnModuleInit,
+} from '@nestjs/common';
 import Keyv from 'keyv';
 import KeyvRedis from '@keyv/redis';
 
 @Injectable()
-export default class CacheService implements OnModuleInit {
+export default class CacheService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger('CacheService');
   private redis: Keyv<any>;
   private readonly redisUrl = process.env.REDIS_URL;
@@ -26,6 +31,10 @@ export default class CacheService implements OnModuleInit {
     } catch (error) {
       this.logger.error('Falha ao inicializar Redis', error);
     }
+  }
+  async onModuleDestroy() {
+    await this.redis.disconnect();
+    this.logger.debug('Redis descontectado com sucesso');
   }
 
   async set(key: string, value: any, ttl: number) {
