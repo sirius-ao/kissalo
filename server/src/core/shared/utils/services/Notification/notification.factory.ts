@@ -11,11 +11,10 @@ export class NotificationFactory {
   constructor(
     private readonly emailService: EmailService,
     private readonly database: PrismaService,
-    private readonly notificationChanel: NotificationChanel,
   ) {}
 
-  public send(): INotificationFactory {
-    switch (this.notificationChanel) {
+  public send(notificationChanel: NotificationChanel): INotificationFactory {
+    switch (notificationChanel) {
       case 'EMAIl':
         return new EmailNotificationFactory(this.emailService, this.database);
         break;

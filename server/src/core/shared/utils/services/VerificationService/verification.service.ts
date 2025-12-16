@@ -1,11 +1,9 @@
-import { Injectable } from '@nestjs/common';
 import { IVerificationService } from './verification.interface';
 import { User, VerificationsType } from '@prisma/client';
 import { EmailServiceInterface } from '../EmailService/emailService.interface';
 import { JwtService } from '@nestjs/jwt';
 import PrismaService from '@infra/database/prisma.service';
 
-@Injectable()
 export class VerificationService implements IVerificationService {
   private readonly jwtService = new JwtService({
     secret: process.env.JWT_SECRET,
@@ -13,8 +11,8 @@ export class VerificationService implements IVerificationService {
   constructor(
     private readonly emailService: EmailServiceInterface,
     private readonly database: PrismaService,
-  ) { }
-  
+  ) {}
+
   public async verify(token: string): Promise<void> {}
 
   public async create(user: User, type: VerificationsType): Promise<void> {
