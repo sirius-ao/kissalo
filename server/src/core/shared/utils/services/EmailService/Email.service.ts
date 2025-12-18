@@ -45,6 +45,12 @@ export class EmailService implements EmailServiceInterface {
         subject: params.subject,
         html: params.html,
         text: params.text,
+        replyTo: params.replyTo,
+        headers: {
+          'X-Application': 'Kissalo',
+          'X-Email-Type': params.metadata?.type || 'transactional',
+          ...params.metadata?.headers,
+        },
       };
 
       const info = await this.transporter.sendMail(mailOptions);

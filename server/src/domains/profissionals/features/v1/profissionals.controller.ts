@@ -33,6 +33,6 @@ export class ProfissionalsController {
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.profissionalsService.remove(+id);
+    return this.profissionalsService.tooleStatus(+id);
   }
 }
