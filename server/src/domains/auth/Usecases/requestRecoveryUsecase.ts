@@ -36,24 +36,12 @@ export class RequestRecoveryUsecase {
     now.setMinutes(now.getMinutes() + 5);
     const activationUrl = `https://kissalo.com/reset?token=${token}`;
     await Promise.all([
-      this.database.verifications.upsert({
-        create: {
+      this.database.verification.create({
+        data: {
           token,
-          type: 'RESET_PASSWORD_REQUEST',
-          expiresAt: now,
+          type: 'PASSWORD_RESET',
           isUsed: false,
           userId: user.id,
-        },
-        update: {
-          token,
-          type: 'RESET_PASSWORD_REQUEST',
-          expiresAt: now,
-          isUsed: false,
-          userId: user.id,
-        },
-        where: {
-          userId: user.id,
-          type: 'RESET_PASSWORD_REQUEST',
         },
       }),
       this.emailService.send({

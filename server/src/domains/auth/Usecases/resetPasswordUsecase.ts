@@ -33,7 +33,7 @@ export class ResetPasswordUsecase {
             id: userId,
           },
         }),
-        this.database.verifications.update({
+        this.database.verification.update({
           data: {
             isUsed: true,
           },
