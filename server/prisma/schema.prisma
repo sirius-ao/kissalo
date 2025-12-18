@@ -141,7 +141,7 @@ model Professional {
   portfolioUrl       String?
   coverUrl           String?
   cvUrl              String?
-  contacts           Json?
+  contacts           String[]
   socialMedia        Json?
   stats              Json?
   createdAt          DateTime          @default(now())

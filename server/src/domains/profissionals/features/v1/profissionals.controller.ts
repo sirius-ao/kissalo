@@ -8,8 +8,8 @@ import {
   Delete,
 } from '@nestjs/common';
 import { ProfissionalsService } from './profissionals.service';
-import { CreateProfissionalDto } from '../../dto/create-profissional.dto';
-import { UpdateProfissionalDto } from '../../dto/update-profissional.dto';
+import { CreateProfissionalDto } from './dto/create-profissional.dto';
+import { UpdateProfissionalDto } from './dto/update-profissional.dto';
 import { ApiTags } from '@nestjs/swagger';
 
 @ApiTags('Profissionals v1')
