@@ -32,13 +32,9 @@ export class CategoriesService {
             title: dto.title,
             slug: slug,
             description: dto.description,
-            tags: dto.tags ?? [],
             color: dto.color,
             order: dto.order,
-            featured: dto.featured ?? true,
-            coverUrl: dto.coverUrl,
             isActive: dto.isActive ?? true,
-            stats: dto.stats ?? {},
           },
         });
 

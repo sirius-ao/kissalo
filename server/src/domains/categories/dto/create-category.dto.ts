@@ -5,10 +5,8 @@ import {
     IsOptional,
     IsPositive,
     IsBoolean,
-    IsArray,
     IsString,
-    IsObject,
-    Matches,
+
 } from "class-validator";
 import { Type } from "class-transformer";
 
@@ -35,16 +33,6 @@ export class CreateCategoryDto {
     @IsString()
     description?: string;
 
-    @ApiProperty({
-        description: 'Category tags',
-        example: ['energia', 'reparos'],
-        required: false,
-        type: [String],
-    })
-    @IsOptional()
-    @IsArray()
-    @IsString({ each: true })
-    tags?: string[];
 
     @ApiProperty({
         description: 'Category color (hex)',
@@ -61,25 +49,8 @@ export class CreateCategoryDto {
     @Type(() => Number)
     @IsNumber()
     @IsPositive()
-    order: number;
+    order: number; // Ordem de exibição da categoria ainda se repete entre categorias
 
-    @ApiProperty({
-        description: 'Is category featured?',
-        example: true,
-        required: false,
-    })
-    @IsOptional()
-    @IsBoolean()
-    featured?: boolean;
-
-    @ApiProperty({
-        description: 'Category cover URL',
-        example: 'https://example.com/cover.jpg',
-        required: false,
-    })
-    @IsOptional()
-    @IsString()
-    coverUrl?: string;
 
     @ApiProperty({
         description: 'Is category active?',
@@ -89,14 +60,4 @@ export class CreateCategoryDto {
     @IsOptional()
     @IsBoolean()
     isActive?: boolean;
-
-    @ApiProperty({
-        description: 'Category statistics',
-        example: { totalServices: 100, totalProviders: 25 },
-        required: false,
-    })
-    @IsOptional()
-    @IsObject()
-    stats?: object;
-
 }
