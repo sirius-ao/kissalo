@@ -4,9 +4,8 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-
+  url      = env("DATABASE_URL")
 }
-
 
 enum UserRole {
   PROFISIONAL
@@ -20,8 +19,7 @@ enum UserStatus {
   SUSPENDED
 }
 
-
-enum ProfisionalType{
+enum ProfisionalType {
   ENTERPRISE
   INDIVIDUAL
 }
@@ -31,13 +29,11 @@ enum ServicePriceType {
   HOURLY
 }
 
-
-enum ServiceLocation{
+enum ServiceLocation {
   CLIENT_HOME
   PROFISIONAL_HOME
   PROFISIONAL_SPACE
 }
-
 
 enum BookinStatus {
   PENDING
@@ -51,7 +47,6 @@ enum PaymentStatus {
   PAID
   PENDING
   REFUNDED
-
 }
 
 enum NotificationType {
@@ -80,195 +75,192 @@ enum VerificationsType {
 }
 
 model User {
-  id             Int            @id @default(autoincrement())
-  firstName String
-  lastName  String
-  email     String    @unique
-  phone     String       @unique
-  profile   String?
-  password  String
-  isVerified Boolean @default(false)
-  isEmailVerified Boolean @default(false)
-  tokenToActivate String @unique
-  role UserRole @default(COSTUMER)
-  status UserStatus @default(ACTIVE)
-  stats          Json
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
+  id              Int        @id @default(autoincrement())
+  firstName       String
+  lastName        String
+  email           String     @unique
+  phone           String     @unique
+  profile         String?
+  password        String
+  isVerified      Boolean    @default(false)
+  isEmailVerified Boolean    @default(false)
+  tokenToActivate String     @unique
+  role            UserRole   @default(COSTUMER)
+  status          UserStatus @default(ACTIVE)
+  stats           Json
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  profisionalData    Profisional[]
+  notifications      Notification[]
+  reviews            Review[]
+  Payments           Payments[]
+  verifications      Verifications[]
+  booking            Booking[]
+  executionsRequests BookingExecution[]
 
   @@index([email])
   @@index([phone])
   @@index([role, status])
   @@index([createdAt])
-
-  profisionalData Profisional[]
-  notifications Notification[]
-  reviews Review[]
-  Payments Payments[]
-  verifications Verifications[]
-  booking Booking[]
-  executionsRequests BookingExecution[]
 }
 
-model Verifications{
-  id             Int            @id @default(autoincrement())
-  userId Int @unique
-  token String  @unique
-  createdAt      DateTime       @default(now())
-  type VerificationsType
-  updatedAt      DateTime       @updatedAt
-  isUsed Boolean @default(false)
+model Verifications {
+  id        Int               @id @default(autoincrement())
+  userId    Int               @unique
+  token     String            @unique
+  createdAt DateTime          @default(now())
+  type      VerificationsType
+  updatedAt DateTime          @updatedAt
+  isUsed    Boolean           @default(false)
   expiresAt DateTime
-  metaData Json?
-  user User @relation(fields: [userId] , references: [id] ,onDelete: Cascade)
+  metaData  Json?
+  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([token])
   @@index([type, isUsed])
   @@index([expiresAt])
 }
 
-
 model Profisional {
-  id             Int            @id @default(autoincrement())
-  userId Int
-  waletId Int
-  type ProfisionalType
-  title String?
-  description String?
-  documentNumber String
-  especialities String[]
-  certifications String[]
-  status UserStatus @default(ACTIVE)
-  isVerified Boolean @default(false)
-  averageRating Float
-  yearsExperience Int
-  portfolioUrl String?
-  coverUrl String?
-  cvUrl String?
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
-  stats Json
-  contacts Json
-  socialMidea Json
+  id                 Int                @id @default(autoincrement())
+  userId             Int
+  waletId            Int
+  type               ProfisionalType
+  title              String?
+  description        String?
+  documentNumber     String
+  especialities      String[]
+  certifications     String[]
+  status             UserStatus         @default(ACTIVE)
+  isVerified         Boolean            @default(false)
+  averageRating      Float
+  yearsExperience    Int
+  portfolioUrl       String?
+  coverUrl           String?
+  cvUrl              String?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+  stats              Json
+  contacts           Json
+  socialMidea        Json
+  user               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reviews            Review[]
+  Payments           Payments[]
+  booking            Booking[]
+  wallets            Wallet[]
+  consolidations     Consolidation[]
+  executionsRequests BookingExecution[]
+
   @@index([userId])
   @@index([status, isVerified])
   @@index([type])
   @@index([averageRating])
   @@index([yearsExperience])
-  user User @relation(fields: [userId] , references: [id] ,onDelete: Cascade)
-  reviews Review[]
-  Payments Payments[]
-  booking Booking[]
-  wallets Wallet[]
-  consolidations Consolidation[]
-  executionsRequests BookingExecution[]
 }
 
-
-
 model Category {
-  id             Int            @id @default(autoincrement())
-  title String  
-  slug String @unique
-  description String?
-  tags String[]
-  color String
-  order Int
-  featured Boolean @default(true)
-  coverUrl String?
-  isActive Boolean @default(true)
-  stats Json
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
+  id            Int           @id @default(autoincrement())
+  title         String
+  slug          String        @unique
+  description   String?
+  tags          String[]
+  color         String
+  order         Int
+  featured      Boolean       @default(true)
+  coverUrl      String?
+  isActive      Boolean       @default(true)
+  stats         Json
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
   subCategories SubCategory[]
-  services Services[]
+  services      Services[]
+
   @@index([slug])
   @@index([isActive, featured])
   @@index([order])
 }
 
-
 model SubCategory {
-  id             Int            @id @default(autoincrement())
-  categoryId Int
-  title String  
-  slug String @unique
+  id          Int        @id @default(autoincrement())
+  categoryId  Int
+  title       String
+  slug        String     @unique
   description String?
-  tags String[]
-  order Int
-  stats Json
-  isActive Boolean @default(true)
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
-  Category Category @relation(fields: [categoryId] , references: [id] ,onDelete: Cascade)
-  services Services[]
+  tags        String[]
+  order       Int
+  stats       Json
+  isActive    Boolean    @default(true)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  Category    Category   @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  services    Services[]
+
   @@index([categoryId])
   @@index([slug])
   @@index([isActive])
 }
 
-
 model Services {
-  id             Int            @id @default(autoincrement())
+  id             Int              @id @default(autoincrement())
   profissionalId Int
-  categoryId Int
-  subCategoryId Int?
-  title String
-  descrition String
-  tags String[]
-  images String[]
-  basePrice Int
-  duration Int?
-  priceType ServicePriceType
-  requeriments String[]
-  includes String[]
-  notes String[]
-  isActive Boolean @default(true)
-  stats Json
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
+  categoryId     Int
+  subCategoryId  Int?
+  title          String
+  descrition     String
+  tags           String[]
+  images         String[]
+  basePrice      Int
+  duration       Int?
+  priceType      ServicePriceType
+  requeriments   String[]
+  includes       String[]
+  notes          String[]
+  isActive       Boolean          @default(true)
+  stats          Json
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  category       Category         @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  subCategory    SubCategory?     @relation(fields: [subCategoryId], references: [id], onDelete: Cascade)
+  reviews        Review[]
+  booking        Booking[]
 
   @@index([profissionalId])
   @@index([categoryId, isActive])
   @@index([subCategoryId])
   @@index([priceType])
   @@index([createdAt])
-  category Category @relation(fields: [categoryId] , references: [id] ,onDelete: Cascade)
-  subCategory SubCategory? @relation(fields: [subCategoryId] , references: [id] ,onDelete: Cascade)
-  reviews Review[]
-  booking Booking[]
-
 }
 
-
 model Booking {
-  id             Int            @id @default(autoincrement())
-  bookingCode String
-  clientId Int
-  profissionalId Int
-  serviceId Int
-  scheduleDate DateTime
-  startTime DateTime
-  endTime DateTime
-  duration Int
-  adress Json
-  location ServiceLocation
-  priority BookingPriority
-  status BookinStatus @default(PENDING)
-  paymentStatus PaymentStatus @default(PENDING)
-  totalAmount Int
+  id                  Int                @id @default(autoincrement())
+  bookingCode         String
+  clientId            Int
+  profissionalId      Int
+  serviceId           Int
+  scheduleDate        DateTime
+  startTime           DateTime
+  endTime             DateTime
+  duration            Int
+  adress              Json
+  location            ServiceLocation
+  priority            BookingPriority
+  status              BookinStatus       @default(PENDING)
+  paymentStatus       PaymentStatus      @default(PENDING)
+  totalAmount         Int
   cancellationReaseon String?
-  clientNotes String?
-  profissionalNodes String?
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
-  notifications Notification[]
-  reviews Review[]
-  Payments Payments[]
-  client User @relation(fields: [clientId] , references: [id], onDelete: Cascade)
-  profissional Profisional @relation(fields: [profissionalId] , references: [id], onDelete: Cascade)
-  service Services @relation(fields: [serviceId] , references: [id], onDelete: Cascade)
-  executionsRequests BookingExecution[]
+  clientNotes         String?
+  profissionalNodes   String?
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+  notifications       Notification[]
+  reviews             Review[]
+  Payments            Payments[]
+  client              User               @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  profissional        Profisional        @relation(fields: [profissionalId], references: [id], onDelete: Cascade)
+  service             Services           @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  executionsRequests  BookingExecution[]
+
   @@index([bookingCode])
   @@index([clientId])
   @@index([profissionalId])
@@ -279,48 +271,48 @@ model Booking {
 }
 
 model BookingExecution {
-  id             Int            @id @default(autoincrement())
+  id             Int         @id @default(autoincrement())
   profissionalId Int
-  clientId Int
-  bookingId Int @unique
-  optCode Int
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
-  expiredAt DateTime
-  acceptedAt DateTime?
-  isAcepted Boolean @default(false)
-  isOpen Boolean @default(true)
-  client User @relation(fields: [clientId] , references: [id], onDelete: Cascade)
-  profissional Profisional @relation(fields: [profissionalId] , references: [id], onDelete: Cascade)
-  booking Booking @relation(fields: [bookingId] , references: [id], onDelete: Cascade)
+  clientId       Int
+  bookingId      Int         @unique
+  optCode        Int
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  expiredAt      DateTime
+  acceptedAt     DateTime?
+  isAcepted      Boolean     @default(false)
+  isOpen         Boolean     @default(true)
+  client         User        @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  profissional   Profisional @relation(fields: [profissionalId], references: [id], onDelete: Cascade)
+  booking        Booking     @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
   @@index([bookingId])
   @@index([profissionalId, isOpen])
   @@index([clientId])
   @@index([expiredAt])
-
 }
 
-
 model Payments {
-  id             Int            @id @default(autoincrement())
-  bookingId Int
-  clientId Int
-  profissionalId Int
-  amount Int
-  currency String
+  id              Int             @id @default(autoincrement())
+  bookingId       Int
+  clientId        Int
+  profissionalId  Int
+  amount          Int
+  currency        String
   comprovativeUrl String?
-  iban String
-  method String
-  status PaymentStatus @default(PENDING) 
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
-  paidAt DateTime?
-  refunedAt DateTime?
-  notifications Notification[]
-  booking Booking @relation(fields: [bookingId] , references: [id], onDelete: Cascade)
-  client User @relation(fields: [clientId] , references: [id], onDelete: Cascade)
-  profissional Profisional @relation(fields: [profissionalId] , references: [id], onDelete: Cascade)
-  consolidations Consolidation[]
+  iban            String
+  method          String
+  status          PaymentStatus   @default(PENDING)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  paidAt          DateTime?
+  refunedAt       DateTime?
+  notifications   Notification[]
+  booking         Booking         @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  client          User            @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  profissional    Profisional     @relation(fields: [profissionalId], references: [id], onDelete: Cascade)
+  consolidations  Consolidation[]
+
   @@index([bookingId])
   @@index([clientId])
   @@index([profissionalId])
@@ -328,26 +320,26 @@ model Payments {
   @@index([createdAt])
 }
 
-
 model Review {
-  id             Int            @id @default(autoincrement())
-  bookingId Int
-  clientId Int
-  profissionalId Int
-  serviceId Int
-  rating Int
-  comment String?
+  id               Int            @id @default(autoincrement())
+  bookingId        Int
+  clientId         Int
+  profissionalId   Int
+  serviceId        Int
+  rating           Int
+  comment          String?
   profisionalReply String?
-  repliedAt DateTime?
-  isFeatured Boolean @default(true)
-  isRead Boolean @default(false)
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
-  notifications Notification[]
-  booking Booking @relation(fields: [bookingId] , references: [id], onDelete: Cascade)
-  client User @relation(fields: [clientId] , references: [id], onDelete: Cascade)
-  profissional Profisional @relation(fields: [profissionalId] , references: [id], onDelete: Cascade)
-  service Services @relation(fields: [serviceId] , references: [id], onDelete: Cascade)
+  repliedAt        DateTime?
+  isFeatured       Boolean        @default(true)
+  isRead           Boolean        @default(false)
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  notifications    Notification[]
+  booking          Booking        @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  client           User           @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  profissional     Profisional    @relation(fields: [profissionalId], references: [id], onDelete: Cascade)
+  service          Services       @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
   @@index([bookingId])
   @@index([clientId])
   @@index([profissionalId])
@@ -358,61 +350,63 @@ model Review {
 }
 
 model Notification {
-  id             Int            @id @default(autoincrement())
-  userId Int
-  type NotificationType
-  title String
-  subject String
-  deepLink String?
+  id        Int                @id @default(autoincrement())
+  userId    Int
+  type      NotificationType
+  title     String
+  subject   String
+  deepLink  String?
   bookingId Int?
-  reviewId Int?
+  reviewId  Int?
   paymentId Int?
-  message String
-  isRead Boolean @default(false)
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
-  channel NotificationChanel
-  review Review? @relation(fields: [reviewId] , references: [id], onDelete: SetNull)
-  booking Booking? @relation(fields: [bookingId] , references: [id], onDelete: SetNull)
-  payment Payments? @relation(fields: [paymentId] , references: [id], onDelete: SetNull)
-  user User @relation(fields: [userId] , references: [id], onDelete: Cascade)
+  message   String
+  isRead    Boolean            @default(false)
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+  channel   NotificationChanel
+  review    Review?            @relation(fields: [reviewId], references: [id], onDelete: SetNull)
+  booking   Booking?           @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+  payment   Payments?          @relation(fields: [paymentId], references: [id], onDelete: SetNull)
+  user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@index([userId, isRead])
   @@index([type])
   @@index([createdAt])
 }
 
 model Wallet {
-  id             Int            @id @default(autoincrement())
+  id             Int             @id @default(autoincrement())
   profissionalId Int
-  bankName String
-  acountNumber String @unique
-  acountHolder String
-  isActive Boolean @default(true)
-  isVerified Boolean @default(false)
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
-  profissional Profisional @relation(fields: [profissionalId] , references: [id], onDelete: Cascade)
+  bankName       String
+  acountNumber   String          @unique
+  acountHolder   String
+  isActive       Boolean         @default(true)
+  isVerified     Boolean         @default(false)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  profissional   Profisional     @relation(fields: [profissionalId], references: [id], onDelete: Cascade)
   consolidations Consolidation[]
+
   @@index([profissionalId])
   @@index([isActive])
 }
 
-
 model Consolidation {
-  id             Int            @id @default(autoincrement())
-  profissionalId Int
-  paymentId Int
-  walletId Int
-  commition Int
-  totalAmount Int
+  id                       Int         @id @default(autoincrement())
+  profissionalId           Int
+  paymentId                Int
+  walletId                 Int
+  commition                Int
+  totalAmount              Int
   totalProfisionalEarnings Int
-  notes String?
-  sheduledAt DateTime
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
-  profissional Profisional @relation(fields: [profissionalId] , references: [id], onDelete: Cascade)
-  payment Payments @relation(fields: [paymentId] , references: [id], onDelete: Cascade)
-  Wallet Wallet @relation(fields: [walletId] , references: [id], onDelete: Cascade)
+  notes                    String?
+  sheduledAt               DateTime
+  createdAt                DateTime    @default(now())
+  updatedAt                DateTime    @updatedAt
+  profissional             Profisional @relation(fields: [profissionalId], references: [id], onDelete: Cascade)
+  payment                  Payments    @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  Wallet                   Wallet      @relation(fields: [walletId], references: [id], onDelete: Cascade)
+
   @@index([profissionalId])
   @@index([paymentId])
   @@index([walletId])
