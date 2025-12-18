@@ -5,8 +5,10 @@ import {
 import { ILoginUseCase, ILoginUseCaseReturnType } from '@core/shared/types';
 import { ICryptoInterface } from '@core/shared/utils/services/CryptoService/crypto.interface';
 import { EmailServiceInterface } from '@core/shared/utils/services/EmailService/emailService.interface';
+import CacheService from '@infra/cache/cahe.service';
 import PrismaService from '@infra/database/prisma.service';
 import { Logger, UnauthorizedException } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 
 export class LoginUseCase {
   private readonly logger = new Logger(LoginUseCase.name);
@@ -14,6 +16,8 @@ export class LoginUseCase {
     private readonly database: PrismaService,
     private readonly encript: ICryptoInterface,
     private readonly emailService: EmailServiceInterface,
+    private readonly cache: CacheService,
+    private readonly jwt: JwtService,
   ) {}
 
   public async handle(
@@ -31,14 +35,20 @@ export class LoginUseCase {
         ],
       },
       include: {
-        profisionalData: true,
+        professional: true,
       },
     });
     if (!user) {
       throw new UserNotFoundExecption();
     }
-
     if (!user.isEmailVerified) {
+      const lastVerificationRequest =
+        await this.database.verification.findFirst({
+          where: {
+            userId: user.id,
+            type: 'ACCOUNT_VERIFICATION',
+          },
+        });
       const activationUrl = `https://kissalo.com/activate?token=${user.tokenToActivate}`;
       await this.emailService.send({
         subject: 'Activação de conta',
@@ -113,8 +123,35 @@ export class LoginUseCase {
         message: 'Senha incorrecta, tente novamente',
       });
     }
+
+    const ONE_WEEK = 60 * 60 * 24 * 7;
+    const [acessToken, refreshToken] = [
+      this.jwt.sign(
+        {
+          sub: user.id,
+        },
+        {
+          expiresIn: '1h',
+        },
+      ),
+      this.jwt.sign(
+        {
+          sub: user.id,
+          role: user.role,
+        },
+        {
+          expiresIn: '1m',
+        },
+      ),
+    ];
+    await Promise.all([
+      this.cache.set(`userProfile-${user.id}`, user, 60 * 60 * 1),
+      this.cache.set(`userRefreshToken-${user.id}`, refreshToken, ONE_WEEK),
+    ]);
+
     return {
       user,
+      acessToken,
     };
   }
 
