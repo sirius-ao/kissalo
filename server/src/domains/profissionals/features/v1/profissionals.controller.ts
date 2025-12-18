@@ -1,7 +1,15 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
 import { ProfissionalsService } from './profissionals.service';
-import { CreateProfissionalDto } from './dto/create-profissional.dto';
-import { UpdateProfissionalDto } from './dto/update-profissional.dto';
+import { CreateProfissionalDto } from '../../dto/create-profissional.dto';
+import { UpdateProfissionalDto } from '../../dto/update-profissional.dto';
 
 @Controller('profissionals')
 export class ProfissionalsController {
@@ -23,7 +31,10 @@ export class ProfissionalsController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateProfissionalDto: UpdateProfissionalDto) {
+  update(
+    @Param('id') id: string,
+    @Body() updateProfissionalDto: UpdateProfissionalDto,
+  ) {
     return this.profissionalsService.update(+id, updateProfissionalDto);
   }
 
