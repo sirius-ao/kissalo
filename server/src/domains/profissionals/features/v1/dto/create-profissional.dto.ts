@@ -1,10 +1,11 @@
-
 import { ISocialMedia } from '@core/shared/types';
 import { ApiProperty } from '@nestjs/swagger';
 import { ProfessionalType } from '@prisma/client';
 import {
+  ArrayNotEmpty,
   IsArray,
   IsEmail,
+  IsEnum,
   IsInt,
   IsNotEmpty,
   IsOptional,
@@ -13,113 +14,110 @@ import {
   IsString,
   IsStrongPassword,
   IsUrl,
+  Max,
+  Min,
 } from 'class-validator';
 
-export class CreateProfissionalDto {
-  @ApiProperty()
+export class CreateProfessionalDto {
+  @ApiProperty({ example: 'João' })
   @IsString()
   @IsNotEmpty()
   firstName: string;
-  @ApiProperty()
+
+  @ApiProperty({ example: 'Silva' })
   @IsString()
   @IsNotEmpty()
   lastName: string;
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
+
+  @ApiProperty({ example: 'joao@email.com' })
   @IsEmail()
   email: string;
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
+
+  @ApiProperty({ example: '+244923000000' })
   @IsPhoneNumber('AO')
   phone: string;
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  @IsStrongPassword()
+
+  @ApiProperty({
+    example: 'Senha@123',
+    description: 'Mín. 8 caracteres, maiúscula, minúscula, número e símbolo',
+  })
+  @IsStrongPassword({
+    minLength: 8,
+    minUppercase: 1,
+    minLowercase: 1,
+    minNumbers: 1,
+    minSymbols: 1,
+  })
   password: string;
-  @ApiProperty({
-    nullable: true,
-  })
-  @IsString()
+
+  @ApiProperty({ required: false })
   @IsOptional()
-  avatarUrl: string | undefined;
-  @ApiProperty({
-    enum: ProfessionalType,
-  })
-  @IsString()
-  @IsNotEmpty()
+  @IsUrl()
+  avatarUrl?: string;
+
+  @ApiProperty({ enum: ProfessionalType })
+  @IsEnum(ProfessionalType)
   type: ProfessionalType;
-  @ApiProperty()
+
+  @ApiProperty({ example: 'Desenvolvedor Fullstack' })
   @IsString()
   @IsNotEmpty()
   title: string;
-  @ApiProperty()
+
+  @ApiProperty({ example: 'Especialista em sistemas web e mobile' })
   @IsString()
   @IsNotEmpty()
   description: string;
-  @ApiProperty()
+
+  @ApiProperty({ example: 'BI123456789LA' })
   @IsString()
   @IsNotEmpty()
-  documentNumbe: string;
-  @ApiProperty()
+  documentNumber: string;
+
+  @ApiProperty({ example: 5, minimum: 0, maximum: 50 })
   @IsInt()
-  @IsPositive()
-  @IsNotEmpty()
+  @Min(0)
+  @Max(50)
   yearsExperience: number;
-  @ApiProperty({
-    isArray: true,
-  })
-  @IsNotEmpty()
-  @IsArray({
-    each: true,
-    always: true,
-  })
+
+  @ApiProperty({ example: ['Node.js', 'NestJS', 'React'] })
+  @IsArray()
+  @ArrayNotEmpty()
+  @IsString({ each: true })
   specialties: string[];
-  @ApiProperty({
-    isArray: true,
-  })
-  @IsNotEmpty()
-  @IsArray({
-    each: true,
-    always: true,
-  })
+
+  @ApiProperty({ example: ['AWS Certified', 'Scrum Master'] })
+  @IsArray()
+  @IsString({ each: true })
   certification: string[];
 
-  @ApiProperty()
-  @IsString()
+  @ApiProperty({ required: false })
   @IsOptional()
   @IsUrl()
-  portfolioUrl: string;
+  portfolioUrl?: string;
 
-  @ApiProperty()
-  @IsString()
+  @ApiProperty({ required: false })
   @IsOptional()
   @IsUrl()
-  coverUrl: string;
+  coverUrl?: string;
 
-  @ApiProperty()
-  @IsString()
+  @ApiProperty({ required: false })
   @IsOptional()
   @IsUrl()
-  cvUrl: string;
+  cvUrl?: string;
+
   @ApiProperty({
-    isArray: true,
+    example: ['+244923000000', '+244911000000'],
   })
-  @IsNotEmpty()
-  @IsArray({
-    each: true,
-    always: true,
-  })
-  contacts: number[];
+  @IsArray()
+  @ArrayNotEmpty()
+  @IsPhoneNumber('AO', { each: true })
+  contacts: string[];
+
   @ApiProperty({
-    isArray: true,
+    example: [{ type: 'LINKEDIN', url: 'https://linkedin.com/in/joao' }],
   })
-  @IsNotEmpty()
-  @IsArray({
-    each: true,
-    always: true,
-  })
+  @IsArray()
+  @ArrayNotEmpty()
   socialMedia: ISocialMedia[];
 }

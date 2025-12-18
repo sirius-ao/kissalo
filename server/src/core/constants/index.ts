@@ -8,5 +8,6 @@ export default {
       totalServices: 0,
       totalReviews: 0,
     },
+    
   },
 };

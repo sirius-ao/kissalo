@@ -1,9 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import {
-  CreateAuthDto,
-  CreateCostumerDto,
-  ResetPasswordDto,
-} from './dto/create-auth.dto';
+import { CreateAuthDto, ResetPasswordDto } from './dto/create-auth.dto';
 import { LoginUseCase } from './Usecases/loginUsecase';
 import PrismaService from '@infra/database/prisma.service';
 import { EmailService } from '@core/shared/utils/services/EmailService/Email.service';
