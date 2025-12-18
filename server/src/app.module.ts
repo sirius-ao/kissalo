@@ -1,4 +1,9 @@
-import { Module } from '@nestjs/common';
+import {
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+  RequestMethod,
+} from '@nestjs/common';
 import PrismaModule from '@infra/database/prisma.module';
 import CacheModule from '@infra/cache/cahe.module';
 import { JwtModule } from '@nestjs/jwt';
@@ -17,6 +22,7 @@ import { ConfigurationModule } from '@infra/config/config.module';
 import { ClientsModule } from './domains/clients/clients.module';
 import { ConciliationModule } from './domains/conciliation/conciliation.module';
 import { UtilModule } from '@core/shared/utils/util.module';
+import { IsAuthenticatedMiddlware } from '@core/http/middlewares/isAuthenticated.middleware';
 @Module({
   imports: [
     JwtModule.register({
@@ -49,4 +55,17 @@ import { UtilModule } from '@core/shared/utils/util.module';
     UtilModule,
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(IsAuthenticatedMiddlware)
+      .exclude(
+        { path: 'v1/auth/login', method: RequestMethod.POST },
+        { path: 'v1/auth/verify/:token', method: RequestMethod.PUT },
+        { path: 'v1/auth/refresh/:token', method: RequestMethod.PUT },
+        { path: 'v1/auth/recovery/:unique', method: RequestMethod.PATCH },
+        { path: 'v1/auth/reset', method: RequestMethod.POST },
+      )
+      .forRoutes('*');
+  }
+}

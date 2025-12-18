@@ -5,5 +5,12 @@ export interface ILoginUseCase {
   password: string;
 }
 export interface ILoginUseCaseReturnType {
-  user: User;
+  user: Omit<User, 'password'>;
+  acessToken: string;
+}
+
+export interface ISocialMedia {
+  title: string;
+  icon: string;
+  link: string;
 }
