@@ -119,6 +119,7 @@ model Verification {
   token       String           @unique
   isUsed      Boolean          @default(false)
   metaData    Json?
+  
   createdAt  DateTime          @default(now())
   updatedAt  DateTime          @updatedAt
   user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -130,6 +131,7 @@ model Professional {
   id                 Int               @id @default(autoincrement())
   userId             Int               @unique
   type               ProfessionalType
+  autoSelect Boolean @default(false)
   title              String?
   description        String?
   documentNumber     String
@@ -142,7 +144,7 @@ model Professional {
   portfolioUrl       String?
   coverUrl           String?
   cvUrl              String?
-  contacts           Json?
+  contacts           String[]
   socialMedia        Json?
   stats              Json?
   createdAt          DateTime          @default(now())
@@ -187,18 +189,41 @@ model Category {
 model ServiceTemplate {
   id            Int              @id @default(autoincrement())
   categoryId    Int
-  title         String
-  description   String
-  tags          String[]
-  basePrice     Int
-  duration      Int?
-  priceType     ServicePriceType
-  isActive      Boolean          @default(true)
+  title            String
+  shortDescription String?     
+  description      String        
+  deliverables     String?       
+  slug             String         @unique
+  keywords         String[]   
+  requirements     String[]
+  gallery          String[]       @default([])
+  videoUrl         String?
+  bannerUrl        String?
+  isNegotiable     Boolean        @default(false)
+  requiresApproval Boolean        @default(false)
+  basePrice        Int
+  minPrice         Int?
+  maxPrice         Int?
+  priceType        ServicePriceType
+  currency         String         @default("AOA")
+  duration         Int
+  isActive         Boolean        @default(true)
+  isFeatured       Boolean        @default(false)
+  maxRequestsPerDay Int?
+  maxBookings      Int?
+  viewsCount       Int            @default(0)
+  bookingsCount    Int            @default(0)
+  ratingAverage    Float          @default(0)
+  ratingCount      Int            @default(0)
   createdAt     DateTime         @default(now())
   updatedAt     DateTime         @updatedAt
   category      Category         @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   requests      ProfessionalServiceRequest[]
   bookings      Booking[]
+
+  @@index([categoryId])
+  @@index([isActive])
+  @@index([priceType])
 }
 
 model ProfessionalServiceRequest {

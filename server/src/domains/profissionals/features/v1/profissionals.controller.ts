@@ -8,8 +8,7 @@ import {
   Delete,
 } from '@nestjs/common';
 import { ProfissionalsService } from './profissionals.service';
-import { CreateProfissionalDto } from '../../dto/create-profissional.dto';
-import { UpdateProfissionalDto } from '../../dto/update-profissional.dto';
+import { CreateProfessionalDto } from './dto/create-profissional.dto';
 import { ApiTags } from '@nestjs/swagger';
 
 @ApiTags('Profissionals v1')
@@ -18,8 +17,8 @@ export class ProfissionalsController {
   constructor(private readonly profissionalsService: ProfissionalsService) {}
 
   @Post()
-  create(@Body() createProfissionalDto: CreateProfissionalDto) {
-    return this.profissionalsService.create(createProfissionalDto);
+  create(@Body() CreateProfessionalDto: CreateProfessionalDto) {
+    return this.profissionalsService.create(CreateProfessionalDto);
   }
 
   @Get()
@@ -32,16 +31,8 @@ export class ProfissionalsController {
     return this.profissionalsService.findOne(+id);
   }
 
-  @Patch(':id')
-  update(
-    @Param('id') id: string,
-    @Body() updateProfissionalDto: UpdateProfissionalDto,
-  ) {
-    return this.profissionalsService.update(+id, updateProfissionalDto);
-  }
-
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.profissionalsService.remove(+id);
+    return this.profissionalsService.tooleStatus(+id);
   }
 }

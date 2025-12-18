@@ -10,9 +10,10 @@ import {
 import { AuthService } from './auth.service';
 import { CreateAuthDto, ResetPasswordDto } from './dto/create-auth.dto';
 import { currentUser } from '@core/http/decorators/currentUser.decorator';
-import { ApiOperation } from '@nestjs/swagger';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 
-@Controller('auth')
+@ApiTags('Auth V1')
+@Controller('v1/auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
@@ -50,7 +51,7 @@ export class AuthController {
 
   @Patch('/recovery/:unique')
   @ApiOperation({
-    summary: 'recovery account',
+    summary: 'request recovery account',
   })
   recovery(@Param('unique') unique: string) {
     return this.authService.recoveryRequest(unique);
