@@ -7,6 +7,8 @@ import { EmailService } from '@core/shared/utils/services/EmailService/Email.ser
 import { BcryptService } from '@core/shared/utils/services/CryptoService/crypto.service';
 import { JwtService } from '@nestjs/jwt';
 import CacheService from '@infra/cache/cahe.service';
+import { RequestRecoveryUsecase } from './Usecases/requestRecoveryUsecase';
+import { ResetPasswordUsecase } from './Usecases/resetPasswordUsecase';
 
 @Injectable()
 export class AuthService {
@@ -17,7 +19,6 @@ export class AuthService {
     private readonly database: PrismaService,
     private readonly encript: BcryptService,
     private readonly emailService: EmailService,
-    private readonly logger: KissaloLogger,
     private readonly cache: CacheService,
   ) {}
 
@@ -26,7 +27,6 @@ export class AuthService {
       this.database,
       this.encript,
       this.emailService,
-      this.logger,
     );
     const useCaseResponse = await useCase.handle(data);
     const { user } = useCaseResponse;
@@ -62,14 +62,28 @@ export class AuthService {
       acessToken,
     };
   }
-
   public async verify(token: string) {}
 
   public async refresh(token: string) {}
 
-  public async recoveryRequest(unique: string) {}
+  public async recoveryRequest(unique: string) {
+    const useCase = new RequestRecoveryUsecase(
+      this.database,
+      this.emailService,
+      this.jwt,
+    );
+    return await useCase.request(unique);
+  }
 
-  public async resetPassword() {}
+  public async resetPassword(token: string, password: string) {
+    const encriptPass = this.encript.encript(password);
+    const useCase = new ResetPasswordUsecase(
+      this.database,
+      this.emailService,
+      this.jwt,
+    );
+    return await useCase.rest(token, encriptPass);
+  }
 
   public async logout(userid: number) {
     await Promise.all([

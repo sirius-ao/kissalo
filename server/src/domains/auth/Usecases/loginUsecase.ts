@@ -9,11 +9,11 @@ import PrismaService from '@infra/database/prisma.service';
 import { Logger, UnauthorizedException } from '@nestjs/common';
 
 export class LoginUseCase {
+  private readonly logger = new Logger(LoginUseCase.name);
   constructor(
     private readonly database: PrismaService,
     private readonly encript: ICryptoInterface,
     private readonly emailService: EmailServiceInterface,
-    private readonly logger: Logger,
   ) {}
 
   public async handle(
