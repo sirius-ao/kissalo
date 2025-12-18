@@ -24,7 +24,7 @@ export class ResetPasswordUsecase {
       throw new UserNotFoundExecption();
     }
     try {
-      const [user, _] = await Promise.all([
+      const [user, _] = await this.database.$transaction([
         this.database.user.update({
           data: {
             password: newPassword,
@@ -81,7 +81,7 @@ export class ResetPasswordUsecase {
       </table>
     </body>
   </html>`,
-        text: 'Novo link de recuperação da sua conta kissalo',
+        text: 'Redefinição da sua conta kissalo',
       });
 
       return {

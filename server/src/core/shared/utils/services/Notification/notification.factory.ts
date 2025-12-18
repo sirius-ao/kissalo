@@ -2,7 +2,7 @@ import { Injectable, UnsupportedMediaTypeException } from '@nestjs/common';
 import { EmailService } from '../EmailService/Email.service';
 import PrismaService from '@infra/database/prisma.service';
 import { INotificationFactory } from './notifcation.interface';
-import { NotificationChanel } from '@prisma/client';
+import { NotificationChannel } from '@prisma/client';
 import { EmailNotificationFactory } from './strategies/emailNotificationFactory';
 import { PushNotificationFactory } from './strategies/pushNotificationFactory';
 
@@ -13,9 +13,9 @@ export class NotificationFactory {
     private readonly database: PrismaService,
   ) {}
 
-  public send(notificationChanel: NotificationChanel): INotificationFactory {
+  public send(notificationChanel: NotificationChannel): INotificationFactory {
     switch (notificationChanel) {
-      case 'EMAIl':
+      case 'EMAIL':
         return new EmailNotificationFactory(this.emailService, this.database);
         break;
       case 'PUSH':

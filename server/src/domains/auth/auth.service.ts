@@ -1,5 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { CreateAuthDto, CreateCostumerDto } from './dto/create-auth.dto';
+import {
+  CreateAuthDto,
+  CreateCostumerDto,
+  ResetPasswordDto,
+} from './dto/create-auth.dto';
 import { LoginUseCase } from './Usecases/loginUsecase';
 import PrismaService from '@infra/database/prisma.service';
 import { EmailService } from '@core/shared/utils/services/EmailService/Email.service';
@@ -9,6 +13,7 @@ import CacheService from '@infra/cache/cahe.service';
 import { RequestRecoveryUsecase } from './Usecases/requestRecoveryUsecase';
 import { ResetPasswordUsecase } from './Usecases/resetPasswordUsecase';
 import { RefreshTokenUseCase } from './Usecases/refreshTokenUsecase';
+import { VerifyAcountUseCase } from './Usecases/verifyAcountUsecase';
 
 @Injectable()
 export class AuthService {
@@ -32,8 +37,15 @@ export class AuthService {
     );
     return await useCase.handle(data);
   }
-  
-  public async verify(token: string) {}
+
+  public async verify(token: string) {
+    const useCase = new VerifyAcountUseCase(
+      this.database,
+      this.emailService,
+      this.jwt,
+    );
+    return await useCase.verify(token);
+  }
 
   public async refresh(token: string) {
     const useCase = new RefreshTokenUseCase(
@@ -53,14 +65,14 @@ export class AuthService {
     return await useCase.request(unique);
   }
 
-  public async resetPassword(token: string, password: string) {
-    const encriptPass = this.encript.encript(password);
+  public async resetPassword(data: ResetPasswordDto) {
+    const encriptPass = this.encript.encript(data.password);
     const useCase = new ResetPasswordUsecase(
       this.database,
       this.emailService,
       this.jwt,
     );
-    return await useCase.rest(token, encriptPass);
+    return await useCase.rest(data.token, encriptPass);
   }
 
   public async logout(userid: number) {

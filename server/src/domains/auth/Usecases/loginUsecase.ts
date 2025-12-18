@@ -42,14 +42,31 @@ export class LoginUseCase {
       throw new UserNotFoundExecption();
     }
     if (!user.isEmailVerified) {
-      const lastVerificationRequest =
-        await this.database.verification.findFirst({
-          where: {
-            userId: user.id,
+      const token = this.jwt.sign(
+        { sub: user.id },
+        {
+          expiresIn: '5m',
+        },
+      );
+      let lastVerificationRequest = await this.database.verification.findFirst({
+        where: {
+          userId: user.id,
+          type: 'ACCOUNT_VERIFICATION',
+          isUsed: false,
+        },
+      });
+
+      if (!lastVerificationRequest) {
+        await this.database.verification.create({
+          data: {
+            token,
             type: 'ACCOUNT_VERIFICATION',
+            isUsed: false,
+            userId: user.id,
           },
         });
-      const activationUrl = `https://kissalo.com/activate?token=${user.tokenToActivate}`;
+      }
+      const activationUrl = `https://kissalo.com/activate?token=${lastVerificationRequest ? lastVerificationRequest.token : token}`;
       await this.emailService.send({
         subject: 'Activação de conta',
         to: user.email,
