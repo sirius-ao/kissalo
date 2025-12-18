@@ -1,9 +1,19 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
 import { ProfissionalsService } from './profissionals.service';
-import { CreateProfissionalDto } from './dto/create-profissional.dto';
-import { UpdateProfissionalDto } from './dto/update-profissional.dto';
+import { CreateProfissionalDto } from '../../dto/create-profissional.dto';
+import { UpdateProfissionalDto } from '../../dto/update-profissional.dto';
+import { ApiTags } from '@nestjs/swagger';
 
-@Controller('profissionals')
+@ApiTags('Profissionals v1')
+@Controller('v1/profissionals')
 export class ProfissionalsController {
   constructor(private readonly profissionalsService: ProfissionalsService) {}
 
@@ -23,7 +33,10 @@ export class ProfissionalsController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateProfissionalDto: UpdateProfissionalDto) {
+  update(
+    @Param('id') id: string,
+    @Body() updateProfissionalDto: UpdateProfissionalDto,
+  ) {
     return this.profissionalsService.update(+id, updateProfissionalDto);
   }
 
