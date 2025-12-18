@@ -10,8 +10,10 @@ import {
 import { ProfissionalsService } from './profissionals.service';
 import { CreateProfissionalDto } from '../../dto/create-profissional.dto';
 import { UpdateProfissionalDto } from '../../dto/update-profissional.dto';
+import { ApiTags } from '@nestjs/swagger';
 
-@Controller('profissionals')
+@ApiTags('Profissionals v1')
+@Controller('v1/profissionals')
 export class ProfissionalsController {
   constructor(private readonly profissionalsService: ProfissionalsService) {}
 

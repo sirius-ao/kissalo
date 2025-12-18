@@ -1,11 +1,10 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ConsoleLogger, ValidationPipe, VersioningType } from '@nestjs/common';
+import { ConsoleLogger, ValidationPipe } from '@nestjs/common';
 import helmet from 'helmet';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { apiReference } from '@scalar/nestjs-api-reference';
 import compression from 'compression';
-
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -29,11 +28,6 @@ async function bootstrap() {
     }),
   );
   app.enableCors();
-  app.enableVersioning({
-    type: VersioningType.URI,
-    defaultVersion: '1',
-    prefix: 'v',
-  });
   app.enableShutdownHooks();
   app.use(compression());
   app.use(helmet());
