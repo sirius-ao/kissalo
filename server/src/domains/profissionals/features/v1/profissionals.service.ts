@@ -6,6 +6,7 @@ import { EmailService } from '@core/shared/utils/services/EmailService/Email.ser
 import { JwtService } from '@nestjs/jwt';
 import { BcryptService } from '@core/shared/utils/services/CryptoService/crypto.service';
 import CacheService from '@infra/cache/cahe.service';
+import { UserNotFoundExecption } from '@core/http/erros/user.error';
 
 @Injectable()
 export class ProfissionalsService {
@@ -65,6 +66,9 @@ export class ProfissionalsService {
       .then()
       .catch();
 
+    if (!profissional) {
+      throw new UserNotFoundExecption();
+    }
     return profissional;
   }
 
@@ -72,6 +76,7 @@ export class ProfissionalsService {
     const profissional = await this.database.user.findFirst({
       where: {
         id,
+        role: 'PROFESSIONAL',
       },
     });
     if (profissional) {
@@ -81,6 +86,11 @@ export class ProfissionalsService {
       await this.database.user.update({
         data: {
           status: newCurrentStatus,
+          professional: {
+            update: {
+              isVerified: newCurrentStatus === 'ACTIVE',
+            },
+          },
         },
         where: {
           id,

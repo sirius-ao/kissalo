@@ -13,13 +13,13 @@ import { currentUser } from '@core/http/decorators/currentUser.decorator';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('Auth V1')
-@Controller('v1/uth')
+@Controller('v1/auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('/login')
   @ApiOperation({
-    summary: 'Create profissional',
+    summary: 'Login',
   })
   create(@Body() createAuthDto: CreateAuthDto) {
     return this.authService.login(createAuthDto);
@@ -51,7 +51,7 @@ export class AuthController {
 
   @Patch('/recovery/:unique')
   @ApiOperation({
-    summary: 'recovery account',
+    summary: 'request recovery account',
   })
   recovery(@Param('unique') unique: string) {
     return this.authService.recoveryRequest(unique);
