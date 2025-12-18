@@ -19,7 +19,7 @@ export class AuthController {
 
   @Post('/login')
   @ApiOperation({
-    summary: 'Login',
+    summary: 'Create profissional',
   })
   create(@Body() createAuthDto: CreateAuthDto) {
     return this.authService.login(createAuthDto);
