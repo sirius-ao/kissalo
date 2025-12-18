@@ -5,5 +5,6 @@ export interface ILoginUseCase {
   password: string;
 }
 export interface ILoginUseCaseReturnType {
-  user: User;
+  user: Omit<User, 'password'>;
+  acessToken: string;
 }

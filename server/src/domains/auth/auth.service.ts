@@ -1,12 +1,19 @@
 import { Injectable } from '@nestjs/common';
-import { CreateAuthDto } from './dto/create-auth.dto';
+import {
+  CreateAuthDto,
+  CreateCostumerDto,
+  ResetPasswordDto,
+} from './dto/create-auth.dto';
 import { LoginUseCase } from './Usecases/loginUsecase';
-import { KissaloLogger } from '@core/shared/utils/services/Logger/logger.service';
 import PrismaService from '@infra/database/prisma.service';
 import { EmailService } from '@core/shared/utils/services/EmailService/Email.service';
 import { BcryptService } from '@core/shared/utils/services/CryptoService/crypto.service';
 import { JwtService } from '@nestjs/jwt';
 import CacheService from '@infra/cache/cahe.service';
+import { RequestRecoveryUsecase } from './Usecases/requestRecoveryUsecase';
+import { ResetPasswordUsecase } from './Usecases/resetPasswordUsecase';
+import { RefreshTokenUseCase } from './Usecases/refreshTokenUsecase';
+import { VerifyAcountUseCase } from './Usecases/verifyAcountUsecase';
 
 @Injectable()
 export class AuthService {
@@ -17,7 +24,6 @@ export class AuthService {
     private readonly database: PrismaService,
     private readonly encript: BcryptService,
     private readonly emailService: EmailService,
-    private readonly logger: KissaloLogger,
     private readonly cache: CacheService,
   ) {}
 
@@ -26,50 +32,48 @@ export class AuthService {
       this.database,
       this.encript,
       this.emailService,
-      this.logger,
+      this.cache,
+      this.jwt,
     );
-    const useCaseResponse = await useCase.handle(data);
-    const { user } = useCaseResponse;
-    const ONE_WEEK = 60 * 60 * 24 * 7;
-    const [acessToken, refreshToken] = [
-      this.jwt.sign(
-        {
-          sub: user.id,
-        },
-        {
-          expiresIn: '1h',
-        },
-      ),
-      this.jwt.sign(
-        {
-          sub: user.id,
-          role: user.role,
-        },
-        {
-          expiresIn: '1m',
-        },
-      ),
-    ];
-    await Promise.all([
-      this.cache.set(`userProfile-${user.id}`, user, 60 * 60 * 1),
-      this.cache.set(`userRefreshToken-${user.id}`, refreshToken, ONE_WEEK),
-    ]);
-    return {
-      user: {
-        ...user,
-        password: null,
-      },
-      acessToken,
-    };
+    return await useCase.handle(data);
   }
 
-  public async verify(token: string) {}
+  public async verify(token: string) {
+    const useCase = new VerifyAcountUseCase(
+      this.database,
+      this.emailService,
+      this.jwt,
+    );
+    return await useCase.verify(token);
+  }
 
-  public async refresh(token: string) {}
+  public async refresh(token: string) {
+    const useCase = new RefreshTokenUseCase(
+      this.database,
+      this.jwt,
+      this.cache,
+    );
+    return await useCase.process(token);
+  }
 
-  public async recoveryRequest(unique: string) {}
+  public async recoveryRequest(unique: string) {
+    const useCase = new RequestRecoveryUsecase(
+      this.database,
+      this.emailService,
+      this.jwt,
+    );
+    return await useCase.request(unique);
+  }
 
-  public async resetPassword() {}
+  public async resetPassword(data: ResetPasswordDto) {
+    const encriptPass = this.encript.encript(data.password);
+    const useCase = new ResetPasswordUsecase(
+      this.database,
+      this.emailService,
+      this.jwt,
+    );
+    return await useCase.rest(data.token, encriptPass);
+  }
 
   public async logout(userid: number) {
     await Promise.all([

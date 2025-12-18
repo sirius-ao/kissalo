@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { CreateProfissionalDto } from './dto/create-profissional.dto';
-import { UpdateProfissionalDto } from './dto/update-profissional.dto';
+import { CreateProfissionalDto } from '../../dto/create-profissional.dto';
+import { UpdateProfissionalDto } from '../../dto/update-profissional.dto';
 
 @Injectable()
 export class ProfissionalsService {

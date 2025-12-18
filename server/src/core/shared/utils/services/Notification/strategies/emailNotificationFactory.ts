@@ -17,7 +17,7 @@ export class EmailNotificationFactory implements INotificationFactory {
       this.database.notification.create({
         data: {
           ...data,
-          channel: 'EMAIl',
+          channel: "EMAIL",
         },
       }),
       this.emailService.send({

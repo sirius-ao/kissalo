@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { ProfissionalsService } from './profissionals.service';
-import { ProfissionalsController } from './profissionals.controller';
+import { ProfissionalsService } from './features/v1/profissionals.service';
+import { ProfissionalsController } from './features/v1/profissionals.controller';
 
 @Module({
   controllers: [ProfissionalsController],
