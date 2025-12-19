@@ -7,6 +7,7 @@ import { JwtService } from '@nestjs/jwt';
 import { BcryptService } from '@core/shared/utils/services/CryptoService/crypto.service';
 import CacheService from '@infra/cache/cahe.service';
 import { UserNotFoundExecption } from '@core/http/erros/user.error';
+import { UpdateProfissionalUseCase } from './useCase/updateProfissionalUsecase';
 
 @Injectable()
 export class ProfissionalsService {
@@ -27,9 +28,51 @@ export class ProfissionalsService {
     );
     return await createUserFacede.create(data);
   }
+  public async update(data: CreateProfessionalDto, userId: number) {
+    const createUserFacede = new UpdateProfissionalUseCase(this.database);
+    return await createUserFacede.update(data, userId);
+  }
 
-  findAll() {
-    return `This action returns all profissionals`;
+  public async findAll(
+    page: number,
+    limit: number,
+    isVerified: boolean | undefined,
+  ) {
+    page = isNaN(page) || page == 0 ? 1 : page;
+    limit = isNaN(limit) || limit == 0 ? 10 : limit;
+    const skip = (page - 1) * limit;
+
+    const where: any = {};
+    if (isVerified !== undefined) {
+      where.isVerified = isVerified;
+    }
+    const [items, total] = await Promise.all([
+      this.database.professional.findMany({
+        skip,
+        take: limit,
+        orderBy: {
+          createdAt: 'desc',
+        },
+        where,
+      }),
+      this.database.professional.count({
+        where,
+      }),
+    ]);
+
+    const totalPages = Math.ceil(total / limit);
+    return {
+      data: items,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages,
+        hasNextPage: page < totalPages,
+        hasPrevPage: page > 1,
+        lasPage: totalPages,
+      },
+    };
   }
 
   public async findOne(id: number) {
@@ -71,7 +114,6 @@ export class ProfissionalsService {
     }
     return profissional;
   }
-
   public async tooleStatus(id: number) {
     const profissional = await this.database.user.findFirst({
       where: {

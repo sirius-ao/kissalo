@@ -121,3 +121,19 @@ export class CreateProfessionalDto {
   @ArrayNotEmpty()
   socialMedia: ISocialMedia[];
 }
+
+export class CreateProfissionalDocumentsDto {
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty()
+  type: string;
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty()
+  @IsUrl()
+  fileUrl: string;
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty()
+  notes: string;
+}
