@@ -10,7 +10,6 @@ import {
   IsNotEmpty,
   IsOptional,
   IsPhoneNumber,
-  IsPositive,
   IsString,
   IsStrongPassword,
   IsUrl,
@@ -120,4 +119,20 @@ export class CreateProfessionalDto {
   @IsArray()
   @ArrayNotEmpty()
   socialMedia: ISocialMedia[];
+}
+
+export class CreateProfissionalDocumentsDto {
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty()
+  type: string;
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty()
+  @IsUrl()
+  fileUrl: string;
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty()
+  notes: string;
 }
