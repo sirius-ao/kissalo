@@ -169,10 +169,31 @@ ALTER TABLE "Verifications" DROP CONSTRAINT "Verifications_userId_fkey";
 ALTER TABLE "Wallet" DROP CONSTRAINT "Wallet_profissionalId_fkey";
 
 -- DropIndex
+DROP INDEX "Booking_bookingCode_idx";
+
+-- DropIndex
+DROP INDEX "Booking_createdAt_idx";
+
+-- DropIndex
 DROP INDEX "Booking_profissionalId_idx";
 
 -- DropIndex
+DROP INDEX "Booking_scheduleDate_idx";
+
+-- DropIndex
 DROP INDEX "Booking_serviceId_idx";
+
+-- DropIndex
+DROP INDEX "Category_isActive_featured_idx";
+
+-- DropIndex
+DROP INDEX "Category_order_idx";
+
+-- DropIndex
+DROP INDEX "Category_slug_idx";
+
+-- DropIndex
+DROP INDEX "Notification_createdAt_idx";
 
 -- DropIndex
 DROP INDEX "Review_bookingId_idx";
@@ -181,22 +202,34 @@ DROP INDEX "Review_bookingId_idx";
 DROP INDEX "Review_clientId_idx";
 
 -- DropIndex
+DROP INDEX "Review_createdAt_idx";
+
+-- DropIndex
+DROP INDEX "Review_isFeatured_idx";
+
+-- DropIndex
 DROP INDEX "Review_profissionalId_idx";
+
+-- DropIndex
+DROP INDEX "Review_rating_idx";
 
 -- DropIndex
 DROP INDEX "Review_serviceId_idx";
 
 -- DropIndex
-DROP INDEX "User_id_idx";
-
--- DropIndex
-DROP INDEX "User_role_idx";
+DROP INDEX "User_createdAt_idx";
 
 -- DropIndex
 DROP INDEX "User_tokenToActivate_key";
 
 -- DropIndex
 DROP INDEX "Wallet_acountNumber_key";
+
+-- DropIndex
+DROP INDEX "Wallet_isActive_idx";
+
+-- DropIndex
+DROP INDEX "Wallet_profissionalId_idx";
 
 -- AlterTable
 ALTER TABLE "Booking" DROP COLUMN "adress",
@@ -423,19 +456,7 @@ CREATE INDEX "Booking_professionalId_idx" ON "Booking"("professionalId");
 CREATE INDEX "Booking_status_paymentStatus_idx" ON "Booking"("status", "paymentStatus");
 
 -- CreateIndex
-CREATE INDEX "Notification_userId_isRead_idx" ON "Notification"("userId", "isRead");
-
--- CreateIndex
-CREATE INDEX "Notification_type_idx" ON "Notification"("type");
-
--- CreateIndex
 CREATE UNIQUE INDEX "Review_bookingId_key" ON "Review"("bookingId");
-
--- CreateIndex
-CREATE INDEX "User_phone_idx" ON "User"("phone");
-
--- CreateIndex
-CREATE INDEX "User_role_status_idx" ON "User"("role", "status");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Wallet_accountNumber_key" ON "Wallet"("accountNumber");

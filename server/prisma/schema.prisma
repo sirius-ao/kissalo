@@ -5,6 +5,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 enum UserRole {
@@ -184,7 +185,6 @@ model Category {
   updatedAt   DateTime   @updatedAt
   services      ServiceTemplate[]
 }
-
 
 model ServiceTemplate {
   id            Int              @id @default(autoincrement())
