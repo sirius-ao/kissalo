@@ -3,7 +3,6 @@ import {
   Get,
   Post,
   Body,
-  Patch,
   Param,
   Delete,
   Query,
@@ -11,7 +10,10 @@ import {
   Put,
 } from '@nestjs/common';
 import { ProfissionalsService } from './profissionals.service';
-import { CreateProfessionalDto } from './dto/create-profissional.dto';
+import {
+  CreateProfessionalDto,
+  CreateProfissionalDocumentsDto,
+} from './dto/create-profissional.dto';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { currentUser } from '@core/http/decorators/currentUser.decorator';
 
@@ -26,6 +28,15 @@ export class ProfissionalsController {
   })
   create(@Body() data: CreateProfessionalDto) {
     return this.profissionalsService.create(data);
+  }
+  @ApiOperation({
+    summary: 'Profissional account request verification',
+  })
+  requestVerification(
+    @Body() data: CreateProfissionalDocumentsDto,
+    @currentUser() userId: number,
+  ) {
+    return this.profissionalsService.requestVerification(data, userId);
   }
   @ApiOperation({
     summary: 'Profissional account update',

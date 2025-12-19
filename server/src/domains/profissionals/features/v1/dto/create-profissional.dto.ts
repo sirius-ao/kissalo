@@ -10,7 +10,6 @@ import {
   IsNotEmpty,
   IsOptional,
   IsPhoneNumber,
-  IsPositive,
   IsString,
   IsStrongPassword,
   IsUrl,

@@ -1,5 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { CreateProfessionalDto } from './dto/create-profissional.dto';
+import {
+  CreateProfessionalDto,
+  CreateProfissionalDocumentsDto,
+} from './dto/create-profissional.dto';
 import { CreateProfissionalUseCase } from './useCase/createProfisionalUsecase';
 import PrismaService from '@infra/database/prisma.service';
 import { EmailService } from '@core/shared/utils/services/EmailService/Email.service';
@@ -8,6 +11,7 @@ import { BcryptService } from '@core/shared/utils/services/CryptoService/crypto.
 import CacheService from '@infra/cache/cahe.service';
 import { UserNotFoundExecption } from '@core/http/erros/user.error';
 import { UpdateProfissionalUseCase } from './useCase/updateProfissionalUsecase';
+import { CreateProfissionalVerificationUsecase } from './useCase/createVerificationRequestUsecase';
 
 @Injectable()
 export class ProfissionalsService {
@@ -27,6 +31,17 @@ export class ProfissionalsService {
       this.jwt,
     );
     return await createUserFacede.create(data);
+  }
+
+  public async requestVerification(
+    data: CreateProfissionalDocumentsDto,
+    userId: number,
+  ) {
+    const requestVerificationFacade = new CreateProfissionalVerificationUsecase(
+      this.database,
+      this.emailService,
+    );
+    return await requestVerificationFacade.create(userId, data);
   }
   public async update(data: CreateProfessionalDto, userId: number) {
     const createUserFacede = new UpdateProfissionalUseCase(this.database);
@@ -74,7 +89,6 @@ export class ProfissionalsService {
       },
     };
   }
-
   public async findOne(id: number) {
     const cachedUser = await this.cache.get(`Profissional-${id}`);
     if (cachedUser) {
@@ -120,17 +134,29 @@ export class ProfissionalsService {
         id,
         role: 'PROFESSIONAL',
       },
+      include: {
+        professional: true,
+      },
     });
     if (profissional) {
       const newCurrentStatus =
         profissional.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
-
       await this.database.user.update({
         data: {
           status: newCurrentStatus,
           professional: {
             update: {
               isVerified: newCurrentStatus === 'ACTIVE',
+              docs: {
+                updateMany: {
+                  data: {
+                    status: 'APPROVED',
+                  },
+                  where: {
+                    professionalId: profissional.professional.id,
+                  },
+                },
+              },
             },
           },
         },
