@@ -185,7 +185,6 @@ model Category {
   services      ServiceTemplate[]
 }
 
-
 model ServiceTemplate {
   id            Int              @id @default(autoincrement())
   categoryId    Int
