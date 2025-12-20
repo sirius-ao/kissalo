@@ -14,3 +14,12 @@ export interface ISocialMedia {
   icon: string;
   link: string;
 }
+export interface IAddress {
+  province: string;
+  city: string;
+  district: string;
+  street: string;
+  reference?: string;
+  latitude?: number;
+  longitude?: number;
+}

@@ -12,7 +12,7 @@ import type { Request } from 'express';
 import { UserNotFoundExecption } from '../erros/user.error';
 
 @Injectable()
-export class IsAdminGuard implements CanActivate {
+export class IsClientGuard implements CanActivate {
   private readonly jwt: JwtService = new JwtService({
     secret: process.env.JWT_SECRET,
   });
@@ -29,11 +29,11 @@ export class IsAdminGuard implements CanActivate {
         sub: number;
         role: UserRole;
       };
-      if (tokenData?.role != 'ADMIN') {
+      if (tokenData?.role != 'CUSTOMER') {
         return true;
       }
       throw new UnauthorizedException(
-        'Precisar ser admin para executar esta acção',
+        'Precisar ser cliente para executar esta acção',
       );
     } catch (error) {
       throw new ForbiddenException(

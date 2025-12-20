@@ -15,6 +15,7 @@ import {
   IsUrl,
   Max,
   Min,
+  arrayNotEmpty,
 } from 'class-validator';
 
 export class CreateProfessionalDto {
@@ -122,17 +123,22 @@ export class CreateProfessionalDto {
 }
 
 export class CreateProfissionalDocumentsDto {
-  @IsString()
-  @IsNotEmpty()
+  @ArrayNotEmpty()
+  @ApiProperty({
+    isArray: true,
+  })
+  @IsArray({
+    each: true,
+  })
+  files: string[];
+}
+
+export class UpdateProfissionalDocumentsDto {
+  @IsInt()
   @ApiProperty()
-  type: string;
+  userId: number;
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   @ApiProperty()
-  @IsUrl()
-  fileUrl: string;
-  @IsString()
-  @IsNotEmpty()
-  @ApiProperty()
-  notes: string;
+  notes?: string;
 }

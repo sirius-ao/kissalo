@@ -45,10 +45,24 @@ export class ServicesService {
   }
 
   async findOne(id: number) {
-    return await this.database.serviceTemplate.findUnique({
+    return await this.database.serviceTemplate.findFirst({
       where: {
         id: id,
         isActive: true,
+      },
+      include: {
+        requests: {
+          where: {
+            status: 'APPROVED',
+          },
+          include: {
+            professional: {
+              include: {
+                user: true,
+              },
+            },
+          },
+        },
       },
     });
   }

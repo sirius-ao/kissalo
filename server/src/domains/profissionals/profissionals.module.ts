@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Global, Module } from '@nestjs/common';
 import { ProfissionalsService } from './features/v1/profissionals.service';
 import { ProfissionalsController } from './features/v1/profissionals.controller';
 
@@ -6,4 +6,5 @@ import { ProfissionalsController } from './features/v1/profissionals.controller'
   controllers: [ProfissionalsController],
   providers: [ProfissionalsService],
 })
+@Global()
 export class ProfissionalsModule {}

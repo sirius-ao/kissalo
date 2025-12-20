@@ -12,7 +12,7 @@ export class ClientsService {
     return `This action returns all clients`;
   }
 
-  findOne(id: number) {
+  public async findOne(id: number) {
     return `This action returns a #${id} client`;
   }
 
