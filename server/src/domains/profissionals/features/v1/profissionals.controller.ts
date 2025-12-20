@@ -8,6 +8,7 @@ import {
   Query,
   ParseIntPipe,
   Put,
+  UseGuards,
 } from '@nestjs/common';
 import { ProfissionalsService } from './profissionals.service';
 import {
@@ -16,6 +17,7 @@ import {
 } from './dto/create-profissional.dto';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { currentUser } from '@core/http/decorators/currentUser.decorator';
+import { IsAdminGuard } from '@core/http/guards/isAdmin.guard';
 
 @ApiTags('Profissionals v1')
 @Controller('v1/profissionals')
@@ -66,6 +68,7 @@ export class ProfissionalsController {
     return this.profissionalsService.findOne(+id);
   }
 
+  @UseGuards(IsAdminGuard)
   @ApiOperation({
     summary: 'Profissional account toogle status , only for admin',
   })

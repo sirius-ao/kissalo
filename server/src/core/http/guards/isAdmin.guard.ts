@@ -23,11 +23,6 @@ export class IsAdminGuard implements CanActivate {
   ) {}
   public async canActivate(ctx: ExecutionContext): Promise<boolean> {
     const request: Request = ctx.switchToHttp().getRequest();
-    const admin = await this.database.user.findFirst({
-      where: {
-        role: 'ADMIN',
-      },
-    });
     const userId = request.headers['intern-user'];
     if (!userId) {
       throw new UserNotFoundExecption();
@@ -38,7 +33,7 @@ export class IsAdminGuard implements CanActivate {
         sub: number;
         role: UserRole;
       };
-      if (tokenData?.role == 'ADMIN' && admin?.id == tokenData?.sub) {
+      if (tokenData?.role != 'ADMIN') {
         return true;
       }
       throw new UnauthorizedException(

@@ -28,20 +28,23 @@ export class CreateServiceDto {
   title: string;
 
   @ApiProperty({
-    description: 'Descrição detalhada do serviço, explicando o que está incluído',
-    example: 'Serviço completo de limpeza para casas e apartamentos, incluindo quartos, salas e cozinha.',
+    description:
+      'Descrição detalhada do serviço, explicando o que está incluído',
+    example:
+      'Serviço completo de limpeza para casas e apartamentos, incluindo quartos, salas e cozinha.',
   })
   @IsString()
   @MaxLength(500)
   description: string;
 
   @ApiProperty({
-    description: 'Lista de tags para facilitar a busca e categorização do serviço',
+    description:
+      'Lista de tags para facilitar a busca e categorização do serviço',
     example: ['limpeza', 'residencial', 'padrão'],
   })
   @IsArray()
   @IsString({ each: true })
-  tags: string[];
+  keywords: string[];
 
   @ApiProperty({
     description: 'Preço base do serviço em centavos (ex: 5000 = 50,00)',
