@@ -5,13 +5,13 @@
 # === DEPENDÊNCIAS ===
 /node_modules
 /server/node_modules
-/frontend/node_modules
+/client/node_modules
 
 # === BUILDS / DIST ===
 /server/dist
-/frontend/.next
-/frontend/out
-/frontend/build
+/client/.next
+/client/out
+/client/build
 /build
 /dist
 
@@ -25,7 +25,7 @@ pnpm-debug.log*
 # === ENV FILES ===
 .env
 .env.*
-/frontend/.env
+/client/.env
 /server/.env
 !.env.example
 

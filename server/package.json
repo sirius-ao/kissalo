@@ -1,8 +1,8 @@
 {
-  "name": "backend-lombongoPay",
+  "name": "backend-kissalo",
   "version": "0.0.1",
-  "description": "Api do meu markeplace ",
-  "author": "Francisco Diakomas",
+  "description": "Api  kissalo ",
+  "author": "Sirius AO",
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
