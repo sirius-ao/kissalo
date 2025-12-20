@@ -1,3 +1,4 @@
+import { Conciliation } from './../../../domains/conciliation/entities/conciliation.entity';
 import { HttpException, HttpStatus } from '@nestjs/common';
 
 export class UserNotFoundExecption extends HttpException {
@@ -35,7 +36,7 @@ export class UserAlreadyExistExecption extends HttpException {
         cause: 'Usuário existente',
         name: 'Usuário existente',
       },
-      HttpStatus.UNAUTHORIZED,
+      HttpStatus.CONFLICT,
     );
   }
 }
