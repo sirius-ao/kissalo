@@ -20,7 +20,6 @@ export class BookingsService {
     private readonly notification: NotificationFactory,
     private readonly services: ServicesService,
     private readonly clientService: ClientsService,
-    private readonly bookingService: BookingsService,
     private readonly profissionalService: ProfissionalsService,
   ) {}
   public async create(data: CreateBookingDto, userId: number) {
@@ -38,7 +37,7 @@ export class BookingsService {
     const toogleFacade = new ProfissionalToogleBookingStatus(
       this.database,
       this.notification,
-      this.bookingService,
+      this,
       this.profissionalService,
       this.clientService,
       this.services,
