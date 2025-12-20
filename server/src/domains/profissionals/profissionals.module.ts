@@ -5,6 +5,7 @@ import { ProfissionalsController } from './features/v1/profissionals.controller'
 @Module({
   controllers: [ProfissionalsController],
   providers: [ProfissionalsService],
+  exports: [ProfissionalsService],
 })
 @Global()
 export class ProfissionalsModule {}
