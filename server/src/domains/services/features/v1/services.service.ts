@@ -22,14 +22,15 @@ export class ServicesService {
       data: {
         title: dto.title,
         description: dto.description,
-        tags: dto.tags,
+        keywords: dto.keywords,
         isActive: dto.isActive ?? true,
         basePrice: dto.basePrice,
         duration: dto.duration,
         categoryId: category.id,
-        priceType: dto.priceType
-
-      }
+        priceType: dto.priceType,
+        isFeatured: true,
+        
+      },
     });
     return service;
   }
