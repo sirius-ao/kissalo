@@ -1,5 +1,5 @@
 import {
-  BadGatewayException,
+  BadRequestException,
   ForbiddenException,
   Injectable,
   NestMiddleware,
@@ -16,11 +16,11 @@ export class IsAuthenticatedMiddlware implements NestMiddleware {
   public async use(req: Request, res: Response, next: NextFunction) {
     const authHeader = req.headers['authorization'];
     if (!authHeader) {
-      throw new BadGatewayException('Authentication Header não informado');
+      throw new BadRequestException('Authentication Header não informado');
     }
     const [_, token] = authHeader.split(' ');
     if (!token) {
-      throw new BadGatewayException('TOken Header não informado');
+      throw new BadRequestException('TOken Header não informado');
     }
     try {
       const tokenData = this.jwt.verify(token) as {
