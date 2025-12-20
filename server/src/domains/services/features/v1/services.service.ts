@@ -1,18 +1,20 @@
+import { SlugService } from '@core/shared/utils/services/Slug/slug.service';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { UpdateServiceDto } from '../../dto/update-service.dto';
 import PrismaService from '@infra/database/prisma.service';
 
-
 @Injectable()
 export class ServicesService {
-
-  constructor(private readonly database: PrismaService) {}
+  constructor(
+    private readonly database: PrismaService,
+    private readonly SlugService: SlugService,
+  ) {}
 
   async create(dto: UpdateServiceDto) {
-    const category = await this.database.category.findUnique({
+    const category = await this.database.category.findFirst({
       where: {
-        id: dto.categoryId
-      }
+        id: dto.categoryId,
+      },
     });
 
     if (!category) {
@@ -29,7 +31,6 @@ export class ServicesService {
         categoryId: category.id,
         priceType: dto.priceType,
         isFeatured: true,
-        
       },
     });
     return service;
@@ -39,7 +40,7 @@ export class ServicesService {
     return await this.database.serviceTemplate.findMany({
       where: {
         isActive: true,
-      }
+      },
     });
   }
 

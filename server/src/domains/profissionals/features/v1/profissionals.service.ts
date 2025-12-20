@@ -12,6 +12,7 @@ import CacheService from '@infra/cache/cahe.service';
 import { UserNotFoundExecption } from '@core/http/erros/user.error';
 import { UpdateProfissionalUseCase } from './useCase/updateProfissionalUsecase';
 import { CreateProfissionalVerificationUsecase } from './useCase/createVerificationRequestUsecase';
+import { ToogleProfissionalUseCase } from './useCase/toogleProfissifionalUsecase';
 
 @Injectable()
 export class ProfissionalsService {
@@ -116,57 +117,28 @@ export class ProfissionalsService {
             wallets: true,
           },
         },
+        serviceRequests: {
+          where: {
+            status: 'APPROVED',
+          },
+        },
+        wallets: true,
+        reviews: {
+          take: 5,
+        },
       },
     });
     this.cache
       .set(`Profissional-${id}`, profissional, 60 * 10)
       .then()
       .catch();
-
     if (!profissional) {
       throw new UserNotFoundExecption();
     }
     return profissional;
   }
   public async tooleStatus(id: number) {
-    const profissional = await this.database.user.findFirst({
-      where: {
-        id,
-        role: 'PROFESSIONAL',
-      },
-      include: {
-        professional: true,
-      },
-    });
-    if (profissional) {
-      const newCurrentStatus =
-        profissional.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
-      await this.database.user.update({
-        data: {
-          status: newCurrentStatus,
-          professional: {
-            update: {
-              isVerified: newCurrentStatus === 'ACTIVE',
-              docs: {
-                updateMany: {
-                  data: {
-                    status: 'APPROVED',
-                  },
-                  where: {
-                    professionalId: profissional.professional.id,
-                  },
-                },
-              },
-            },
-          },
-        },
-        where: {
-          id,
-        },
-      });
-      return {
-        messsage: `Profissional actualizado para ${newCurrentStatus == 'ACTIVE' ? 'Activo' : 'Inactivo'}`,
-      };
-    }
+    const useCase = new ToogleProfissionalUseCase(this.database);
+    return await useCase.toogle(id);
   }
 }
