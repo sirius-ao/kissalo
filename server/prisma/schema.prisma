@@ -41,6 +41,8 @@ enum BookingStatus {
   STARTED
   COMPLETED
   CANCELED
+  ACEPTED
+  REJECTED
 }
 
 enum PaymentStatus {
@@ -104,7 +106,7 @@ model User {
   reviews           Review[]
   payments          Payment[]
   verifications     Verification[]
-
+  bookingsteps BookingSteps[]
   @@index([email])
   @@index([phone])
   @@index([role, status])
@@ -159,9 +161,8 @@ model Professional {
 
 model ProfessionalDocument {
   id               Int             @id @default(autoincrement())
-  professionalId   Int
-  type             String
-  fileUrl          String
+  professionalId   Int @unique
+  files          String[]
   status           ApprovalStatus  @default(PENDING)
   notes            String?
   createdAt        DateTime        @default(now())
@@ -241,7 +242,6 @@ model ProfessionalServiceRequest {
 
 model Booking {
   id               Int             @id @default(autoincrement())
-  bookingCode      String          @unique
   clientId         Int
   professionalId   Int?
   serviceId        Int
@@ -254,8 +254,6 @@ model Booking {
   status           BookingStatus   @default(PENDING)
   paymentStatus    PaymentStatus   @default(PENDING)
   totalAmount      Int
-  clientNotes      String?
-  professionalNotes String?
   createdAt        DateTime        @default(now())
   updatedAt        DateTime        @updatedAt
   client           User            @relation("ClientBookings", fields: [clientId], references: [id], onDelete: Cascade)
@@ -263,10 +261,23 @@ model Booking {
   service          ServiceTemplate @relation(fields: [serviceId], references: [id], onDelete: Cascade)
   payment          Payment?
   review           Review?
-
+  steps BookingSteps[]
   @@index([clientId])
   @@index([professionalId])
   @@index([status, paymentStatus])
+}
+
+model BookingSteps {
+  id               Int             @id @default(autoincrement())
+  bookingId      Int          
+  senderId Int
+  notes String
+  files String[]
+  createdAt        DateTime        @default(now())
+  booking        Booking       @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  user         User          @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  @@index([bookingId])
+  @@index([senderId])
 }
 
 model Payment {
@@ -274,6 +285,7 @@ model Payment {
   bookingId      Int           @unique
   clientId       Int
   professionalId Int?
+  fileUrl String?
   amount         Int
   currency       String
   method         String
@@ -286,6 +298,7 @@ model Payment {
   client         User          @relation(fields: [clientId], references: [id], onDelete: Cascade)
   professional   Professional? @relation(fields: [professionalId], references: [id], onDelete: SetNull)
 }
+
 
 model Wallet {
   id               Int        @id @default(autoincrement())

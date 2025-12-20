@@ -1,4 +1,3 @@
-import { Conciliation } from './../../../domains/conciliation/entities/conciliation.entity';
 import { HttpException, HttpStatus } from '@nestjs/common';
 
 export class UserNotFoundExecption extends HttpException {
@@ -37,6 +36,20 @@ export class UserAlreadyExistExecption extends HttpException {
         name: 'Usuário existente',
       },
       HttpStatus.CONFLICT,
+    );
+  }
+}
+
+export class AdminNotFoundExistExecption extends HttpException {
+  constructor() {
+    super(
+      {
+        message:
+          'Admininstrador do sistema não existente , tente com outros dados',
+        cause: 'Admininstrador do sistema não existente',
+        name: 'Admininstrador do sistema não existente',
+      },
+      HttpStatus.FORBIDDEN,
     );
   }
 }

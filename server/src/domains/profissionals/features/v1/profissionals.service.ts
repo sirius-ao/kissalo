@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import {
   CreateProfessionalDto,
   CreateProfissionalDocumentsDto,
+  UpdateProfissionalDocumentsDto,
 } from './dto/create-profissional.dto';
 import { CreateProfissionalUseCase } from './useCase/createProfisionalUsecase';
 import PrismaService from '@infra/database/prisma.service';
@@ -9,21 +10,26 @@ import { EmailService } from '@core/shared/utils/services/EmailService/Email.ser
 import { JwtService } from '@nestjs/jwt';
 import { BcryptService } from '@core/shared/utils/services/CryptoService/crypto.service';
 import CacheService from '@infra/cache/cahe.service';
-import { UserNotFoundExecption } from '@core/http/erros/user.error';
 import { UpdateProfissionalUseCase } from './useCase/updateProfissionalUsecase';
 import { CreateProfissionalVerificationUsecase } from './useCase/createVerificationRequestUsecase';
 import { ToogleProfissionalUseCase } from './useCase/toogleProfissifionalUsecase';
+import { CreateProfissionalDocumentUseCase } from './useCase/createProfissinalDocumentsUsecase';
+import { NotificationFactory } from '@core/shared/utils/services/Notification/notification.factory';
+import { ProfissionalGetUseCase } from './useCase/getProfissionalsUseCase';
 
 @Injectable()
 export class ProfissionalsService {
+  protected userGetter: ProfissionalGetUseCase;
   constructor(
     private readonly database: PrismaService,
     private readonly emailService: EmailService,
     private readonly jwt: JwtService,
     private readonly cache: CacheService,
     private readonly encript: BcryptService,
-  ) {}
-
+    private readonly notifier: NotificationFactory,
+  ) {
+    this.userGetter = new ProfissionalGetUseCase(this.database, this.cache);
+  }
   public async create(data: CreateProfessionalDto) {
     const createUserFacede = new CreateProfissionalUseCase(
       this.database,
@@ -33,7 +39,17 @@ export class ProfissionalsService {
     );
     return await createUserFacede.create(data);
   }
+  public async createDocument(
+    userId: number,
+    data: CreateProfissionalDocumentsDto,
+  ) {
+    const useCase = new CreateProfissionalDocumentUseCase(
+      this.database,
+      this.notifier,
+    );
 
+    return await useCase.create(userId, data);
+  }
   public async requestVerification(
     data: CreateProfissionalDocumentsDto,
     userId: number,
@@ -48,97 +64,18 @@ export class ProfissionalsService {
     const createUserFacede = new UpdateProfissionalUseCase(this.database);
     return await createUserFacede.update(data, userId);
   }
-
   public async findAll(
     page: number,
     limit: number,
     isVerified: boolean | undefined,
   ) {
-    page = isNaN(page) || page == 0 ? 1 : page;
-    limit = isNaN(limit) || limit == 0 ? 10 : limit;
-    const skip = (page - 1) * limit;
-
-    const where: any = {};
-    if (isVerified !== undefined) {
-      where.isVerified = isVerified;
-    }
-    const [items, total] = await Promise.all([
-      this.database.professional.findMany({
-        skip,
-        take: limit,
-        orderBy: {
-          createdAt: 'desc',
-        },
-        where,
-      }),
-      this.database.professional.count({
-        where,
-      }),
-    ]);
-
-    const totalPages = Math.ceil(total / limit);
-    return {
-      data: items,
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages,
-        hasNextPage: page < totalPages,
-        hasPrevPage: page > 1,
-        lasPage: totalPages,
-      },
-    };
+    return await this.userGetter.getAlls(page, limit, isVerified);
   }
   public async findOne(id: number) {
-    const cachedUser = await this.cache.get(`Profissional-${id}`);
-    if (cachedUser) {
-      return {
-        data: cachedUser,
-      };
-    }
-    const profissional = await this.database.professional.findFirst({
-      where: {
-        id,
-      },
-      include: {
-        user: {
-          omit: {
-            password: true,
-          },
-        },
-        _count: {
-          select: {
-            bookings: true,
-            docs: true,
-            payments: true,
-            reviews: true,
-            serviceRequests: true,
-            wallets: true,
-          },
-        },
-        serviceRequests: {
-          where: {
-            status: 'APPROVED',
-          },
-        },
-        wallets: true,
-        reviews: {
-          take: 5,
-        },
-      },
-    });
-    this.cache
-      .set(`Profissional-${id}`, profissional, 60 * 10)
-      .then()
-      .catch();
-    if (!profissional) {
-      throw new UserNotFoundExecption();
-    }
-    return profissional;
+    return await this.userGetter.getOne(id);
   }
-  public async tooleStatus(id: number) {
-    const useCase = new ToogleProfissionalUseCase(this.database);
-    return await useCase.toogle(id);
+  public async tooleStatus(data: UpdateProfissionalDocumentsDto) {
+    const useCase = new ToogleProfissionalUseCase(this.database, this.notifier);
+    return await useCase.toogle(data.userId, data.notes);
   }
 }
