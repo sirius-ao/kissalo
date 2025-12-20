@@ -2,55 +2,40 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateCategoryDto } from '../../dto/create-category.dto';
 import { UpdateCategoryDto } from '../../dto/update-category.dto';
 import PrismaService from '@infra/database/prisma.service';
-
-import slugify from 'slugify';
+import { SlugService } from '@core/shared/utils/services/Slug/slug.service';
 
 @Injectable()
 export class CategoriesService {
-
-  constructor(private readonly database: PrismaService){}
+  constructor(
+    private readonly database: PrismaService,
+    private readonly slugService: SlugService,
+  ) {}
 
   async create(dto: CreateCategoryDto) {
-
-    const slug = slugify(dto.title, {
-      lower: true,
-      strict: true,
-    });
-
-    const existingCategory = await this.database.category.findUnique({
-      where: {
+    const slug = await this.slugService.gen(dto.title, 'category');
+    const categories = await this.database.category.create({
+      data: {
+        title: dto.title,
         slug: slug,
+        description: dto.description,
+        color: dto.color,
+        order: dto.order,
+        isActive: true,
       },
     });
-
-    if (existingCategory) {
-      throw new BadRequestException('Category with this slug already exists');
-    }
-
-    const categories = await this.database.category.create({
-          data: {
-            title: dto.title,
-            slug: slug,
-            description: dto.description,
-            color: dto.color,
-            order: dto.order,
-            isActive: dto.isActive ?? true,
-          },
-        });
-
-    return  categories;
+    return categories;
   }
 
   findAll() {
     return this.database.category.findMany({
       where: {
         isActive: true,
-      }
+      },
     });
   }
 
   async findOne(id: number) {
-    const category =  await this.database.category.findUnique({
+    const category = await this.database.category.findUnique({
       where: {
         id: id,
         isActive: true,
@@ -66,10 +51,17 @@ export class CategoriesService {
         isActive: true,
       },
     });
-    return category
+    return category;
   }
-  update(id: number, updateCategoryDto: UpdateCategoryDto) {
-    const category = this.database.category.update({
+  async update(id: number, updateCategoryDto: UpdateCategoryDto) {
+    const category = await this.database.category.findFirst({
+      where: { id },
+    });
+
+    if (!category) {
+      throw new BadRequestException('Categoria não enontrada');
+    }
+    const updated = await this.database.category.update({
       where: {
         id: id,
       },
@@ -77,11 +69,18 @@ export class CategoriesService {
         ...updateCategoryDto,
       },
     });
-    return category;
+    return updated;
   }
 
   async remove(id: number) {
-    const category = await this.database.category.delete({
+    const category = await this.database.category.findFirst({
+      where: { id },
+    });
+
+    if (!category) {
+      throw new BadRequestException('Categoria não enontrada');
+    }
+    await this.database.category.delete({
       where: {
         id: id,
       },
@@ -90,20 +89,17 @@ export class CategoriesService {
   }
 
   async changeState(id: number) {
-    const category = await this.database.category.findUnique({
+    const category = await this.database.category.findFirst({
       where: { id },
     });
 
     if (!category) {
-      throw new BadRequestException('Category not found');
+      throw new BadRequestException('Categoria não enontrada');
     }
-
     const updatedCategory = await this.database.category.update({
       where: { id },
       data: { isActive: !category.isActive },
     });
-
     return updatedCategory;
   }
-
 }
