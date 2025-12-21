@@ -15,6 +15,8 @@ import { ProfissionalsService } from '@domains/profissionals/features/v1/profiss
 import { GetBookingFacede } from './useCases/getBookingUsacse';
 import CacheService from '@infra/cache/cahe.service';
 import { CancelBookingUseCase } from './useCases/cancelBookingUsecase';
+import { StartBookingUseCase } from './useCases/startBookingUsecase';
+import { CreateBookingStepUseCase } from './useCases/CreateBookingStepUseCase';
 
 @Injectable()
 export class BookingsService {
@@ -35,6 +37,27 @@ export class BookingsService {
       this.clientService,
     );
     return await createFacade.create(data, userId);
+  }
+
+  public async createSteps(
+    data: UpdateBookinSatatusProfisional,
+    userId: number,
+  ) {
+    const createFacade = new CreateBookingStepUseCase(
+      this.database,
+      this.cache,
+    );
+
+    data.userId = userId;
+    return await createFacade.execute(data);
+  }
+
+  public async start(bookingId: number, userId: number) {
+    const startFacede = new StartBookingUseCase(
+      this.database,
+      this.notification,
+    );
+    return await startFacede.execute(bookingId, userId);
   }
 
   public async toogle(data: UpdateBookinSatatusProfisional, userId: number) {
@@ -59,16 +82,14 @@ export class BookingsService {
     return await getBookingFacede.getOne(id);
   }
 
-  public async cancel(
-    bookingId: number,
-    userId: number,
-    data: UpdateBookinSatatusProfisional,
-  ) {
+  public async cancel(userId: number, data: UpdateBookinSatatusProfisional) {
     const facede = new CancelBookingUseCase(
       this.database,
       this.notification,
       this,
     );
-    return await facede.cancel(bookingId, userId, data);
+
+    data.userId = userId;
+    return await facede.cancel(data);
   }
 }

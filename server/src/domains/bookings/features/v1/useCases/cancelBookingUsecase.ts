@@ -13,14 +13,10 @@ export class CancelBookingUseCase {
     private readonly bookinservice: BookingsService,
   ) {}
 
-  public async cancel(
-    userId: number,
-    bookingId: number,
-    data: UpdateBookinSatatusProfisional,
-  ): Promise<void> {
+  public async cancel(data: UpdateBookinSatatusProfisional): Promise<void> {
     const [admin, booking] = await Promise.all([
       this.database.user.findFirst({ where: { role: 'ADMIN' } }),
-      this.bookinservice.findOne(bookingId),
+      this.bookinservice.findOne(data.bookingId),
     ]);
     const Pushnotifier = this.notifier.send('PUSH');
     const Emailnotifier = this.notifier.send('EMAIL');
@@ -31,9 +27,9 @@ export class CancelBookingUseCase {
       throw new BadRequestException('Agendamento não pode ser cancelado');
     }
     if (
-      booking.clientId != userId &&
-      booking.professionalId != userId &&
-      admin.id != userId
+      booking.clientId != data.userId &&
+      booking.professionalId != data.userId &&
+      admin.id != data.userId
     ) {
       throw new ForbiddenException(
         'Precisa ser o prestador , cliente ou administrador do sistema para execurtar essa ação ',
@@ -46,7 +42,7 @@ export class CancelBookingUseCase {
       message: `O agendamento do serviço "${service.title}", no valor de ${service.basePrice.toFixed(
         2,
       )} Kz, foi cancelado por ${
-        userId === professional.id ? 'o prestador de serviço' : 'você'
+        data.userId === professional.id ? 'o prestador de serviço' : 'você'
       }.`,
       type: 'ALERT' as NotificationType,
       isRead: false,
@@ -70,9 +66,9 @@ export class CancelBookingUseCase {
       message: `O agendamento do serviço "${service.title}" (valor: ${service.basePrice.toFixed(
         2,
       )} Kz) foi cancelado por ${
-        userId === client.id
+        data.userId === client.id
           ? 'o cliente'
-          : userId === professional.id
+          : data.userId === professional.id
             ? 'o prestador'
             : 'o administrador'
       }.`,
@@ -86,7 +82,7 @@ export class CancelBookingUseCase {
     await Promise.all([
       this.database.bookingSteps.create({
         data: {
-          senderId: userId,
+          senderId: data.userId,
           notes: data.notes,
           bookingId: booking.id,
           files: data.files,
