@@ -50,6 +50,24 @@ export class PaymentsController {
     return this.paymentsService.create(createPaymentDto, userId);
   }
 
+  @Post(':id/:file/:walletId/consolidate')
+  @UseGuards(IsAdminGuard)
+  @ApiOperation({
+    summary: 'Criar consolidação de um pagamento',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Apenas clientes podem criar pagamentos',
+  })
+  consolidate(
+    @currentUser() userId: number,
+    @Param('id', ParseIntPipe) id: number,
+    @Param('walletId', ParseIntPipe) walletId: number,
+    @Param('file', ParseIntPipe) file: string,
+  ) {
+    return this.paymentsService.consolidate(id, walletId, file);
+  }
+
   @Patch(':id')
   @UseGuards(IsAdminGuard)
   @ApiOperation({

@@ -17,6 +17,8 @@ import CacheService from '@infra/cache/cahe.service';
 import { CancelBookingUseCase } from './useCases/cancelBookingUsecase';
 import { StartBookingUseCase } from './useCases/startBookingUsecase';
 import { CreateBookingStepUseCase } from './useCases/CreateBookingStepUseCase';
+import { EndBookingUseCase } from './useCases/endBookingUsecase';
+import { LiberateBookingUseCase } from './useCases/liberateBookingusecase';
 
 @Injectable()
 export class BookingsService {
@@ -60,6 +62,18 @@ export class BookingsService {
     return await startFacede.execute(bookingId, userId);
   }
 
+  public async end(bookingId: number, userId: number) {
+    const endFacede = new EndBookingUseCase(this.database, this.notification);
+    return await endFacede.execute(bookingId, userId);
+  }
+
+  public async liberate(bookingId: number, userId: number) {
+    const liberateFacede = new LiberateBookingUseCase(
+      this.database,
+      this.notification,
+    );
+    return await liberateFacede.liberate(bookingId, userId);
+  }
   public async toogle(data: UpdateBookinSatatusProfisional, userId: number) {
     data.userId = userId;
     const toogleFacade = new ProfissionalToogleBookingStatus(
@@ -72,7 +86,6 @@ export class BookingsService {
     );
     return await toogleFacade.toogle(data);
   }
-
   public async findAll(page: number, limit: number, userId: number) {
     const getBookingFacede = new GetBookingFacede(this.database, this.cache);
     return await getBookingFacede.get(page, limit, userId);
@@ -81,7 +94,6 @@ export class BookingsService {
     const getBookingFacede = new GetBookingFacede(this.database, this.cache);
     return await getBookingFacede.getOne(id);
   }
-
   public async cancel(userId: number, data: UpdateBookinSatatusProfisional) {
     const facede = new CancelBookingUseCase(
       this.database,

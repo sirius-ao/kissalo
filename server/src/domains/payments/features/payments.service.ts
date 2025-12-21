@@ -7,6 +7,7 @@ import { NotificationFactory } from '@core/shared/utils/services/Notification/no
 import { BookingsService } from '@domains/bookings/features/v1/bookings.service';
 import { GetPaymentUseCase } from './useCases/getPayentUseCase';
 import { UpdatePaymentUseCase } from './useCases/updatePaymentUseCase';
+import { CreateConciliationUsecase } from './useCases/createConciliationUsecase';
 
 @Injectable()
 export class PaymentsService {
@@ -23,6 +24,18 @@ export class PaymentsService {
       this.bookservice,
     );
     return await createPaymentFacede.execute(createPaymentDto, userId);
+  }
+
+  public async consolidate(
+    paymentId: number,
+    walleltId: number,
+    fileUrl: string,
+  ) {
+    const consolidateFacede = new CreateConciliationUsecase(
+      this.prisma,
+      this.notifier,
+    );
+    return await consolidateFacede.create(paymentId, walleltId, fileUrl);
   }
 
   public async update(

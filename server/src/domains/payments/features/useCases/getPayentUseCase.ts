@@ -8,7 +8,6 @@ import { Prisma, UserRole } from '@prisma/client';
 
 export class GetPaymentUseCase {
   constructor(private readonly prisma: PrismaService) {}
-
   async getOne(paymentId: number, userId: number) {
     const payment = await this.prisma.payment.findUnique({
       where: { id: paymentId },
@@ -76,10 +75,19 @@ export class GetPaymentUseCase {
           booking: {
             include: {
               service: true,
-              client: true,
-              professional: { include: { user: true } },
             },
           },
+          client: true,
+          professional: {
+            include: {
+              user: {
+                omit: {
+                  password: true,
+                },
+              },
+            },
+          },
+          conclidation: true,
         },
         skip,
         take: limit,

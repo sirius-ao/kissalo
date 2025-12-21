@@ -100,6 +100,7 @@ model User {
   stats             Json?
   createdAt         DateTime   @default(now())
   updatedAt         DateTime   @updatedAt
+  amountAvaliable Int @default(0)
   professional      Professional?
   notifications     Notification[]
   bookings          Booking[]        @relation("ClientBookings")
@@ -107,6 +108,7 @@ model User {
   payments          Payment[]
   verifications     Verification[]
   bookingsteps BookingSteps[]
+  conclidation ConcliationPayment[]
   @@index([email])
   @@index([phone])
   @@index([role, status])
@@ -120,7 +122,6 @@ model Verification {
   token       String           @unique
   isUsed      Boolean          @default(false)
   metaData    Json?
-  
   createdAt  DateTime          @default(now())
   updatedAt  DateTime          @updatedAt
   user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -157,6 +158,7 @@ model Professional {
   reviews            Review[]
   payments           Payment[]
   docs ProfessionalDocument[]
+
 }
 
 model ProfessionalDocument {
@@ -244,6 +246,7 @@ model Booking {
   id               Int             @id @default(autoincrement())
   clientId         Int
   professionalId   Int?
+  canEnd Boolean @default( false)
   serviceId        Int
   scheduleDate     DateTime
   startTime        DateTime
@@ -297,8 +300,8 @@ model Payment {
   booking        Booking       @relation(fields: [bookingId], references: [id], onDelete: Cascade)
   client         User          @relation(fields: [clientId], references: [id], onDelete: Cascade)
   professional   Professional? @relation(fields: [professionalId], references: [id], onDelete: SetNull)
+  conclidation ConcliationPayment?
 }
-
 
 model Wallet {
   id               Int        @id @default(autoincrement())
@@ -311,7 +314,22 @@ model Wallet {
   createdAt        DateTime   @default(now())
   updatedAt        DateTime   @updatedAt
   professional     Professional @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  conclidation ConcliationPayment[]
 }
+
+
+model ConcliationPayment {
+  id             Int           @id @default(autoincrement())
+  paymentId Int @unique
+  userId Int
+  waaletId Int
+  fileUrl String?
+  payment Payment @relation( fields: [paymentId] ,references: [id], onDelete: Cascade)
+  profissional         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  wallet Wallet @relation(fields: [waaletId] , references: [id] , onDelete: Cascade)
+  
+}
+
 
 model Review {
   id               Int        @id @default(autoincrement())
