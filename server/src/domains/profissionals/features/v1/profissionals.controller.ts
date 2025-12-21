@@ -8,7 +8,10 @@ import {
   ParseIntPipe,
   Put,
   UseGuards,
+<<<<<<< HEAD
   Patch,
+=======
+>>>>>>> 8969769 (feat : Slug Service)
 } from '@nestjs/common';
 import { ProfissionalsService } from './profissionals.service';
 import {
@@ -88,4 +91,16 @@ export class ProfissionalsController {
   findOne(@Param('id') id: string) {
     return this.profissionalsService.findOne(+id);
   }
+<<<<<<< HEAD
+=======
+
+  @UseGuards(IsAdminGuard)
+  @ApiOperation({
+    summary: 'Profissional account toogle status , only for admin',
+  })
+  @Delete(':id')
+  remove(@Param('id') id: string) {
+    return this.profissionalsService.tooleStatus(+id);
+  }
+>>>>>>> 8969769 (feat : Slug Service)
 }
