@@ -9,7 +9,7 @@ Simple Factory - Para criar instancias de objectos
 camelCase
 PascalCase
 
-****\***** Frandev **\*\*\*\***
+\***\*\*\*\*** Frandev **\*\*\*\***
 1 Auth
 2 Profisional
 3 Bookings
@@ -25,4 +25,3 @@ PascalCase
 3 ProfessionalServiceRequest
 3 Wallets
 4 Clients
-5 Subcategory
