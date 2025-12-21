@@ -3,12 +3,12 @@ import {
   Get,
   Post,
   Body,
-  Put,
   Query,
   Param,
   Delete,
   UseGuards,
   ParseIntPipe,
+  Patch,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -27,12 +27,15 @@ import { currentUser } from '@core/http/decorators/currentUser.decorator';
 import { IsClientGuard } from '@core/http/guards/isClient.guard';
 import { IsProfissionalGuard } from '@core/http/guards/isProfissional.guard';
 
-@ApiTags('Bookings')
+@ApiTags('Bookings V1')
 @ApiBearerAuth()
-@Controller('bookings')
+@Controller('v1/bookings')
 export class BookingsController {
   constructor(private readonly bookingsService: BookingsService) {}
 
+  // ============================
+  // CREATE BOOKING
+  // ============================
   @Post()
   @UseGuards(IsClientGuard)
   @ApiOperation({
@@ -49,37 +52,80 @@ export class BookingsController {
     return this.bookingsService.create(data, userId);
   }
 
-  @Put()
+  // ============================
+  // CREATE BOOKING STEP
+  // ============================
+  @Post(':id/steps')
+  @ApiOperation({
+    summary: 'Criar etapa do agendamento',
+    description:
+      'Permite que o cliente ou o profissional adicionem uma etapa ao agendamento',
+  })
+  @ApiResponse({ status: 201, description: 'Etapa criada com sucesso' })
+  @ApiResponse({ status: 403, description: 'Sem permissão' })
+  createSteps(
+    @Body() data: UpdateBookinSatatusProfisional,
+    @currentUser() userId: number,
+    @Param('id', ParseIntPipe) bookingId: number,
+  ) {
+    data.bookingId = bookingId;
+    return this.bookingsService.createSteps(data, userId);
+  }
+
+  // ============================
+  // START BOOKING
+  // ============================
+  @Patch(':id/start')
+  @UseGuards(IsProfissionalGuard)
+  @ApiOperation({
+    summary: 'Iniciar execução do agendamento',
+    description:
+      'Permite que o profissional inicie a execução do serviço agendado',
+  })
+  @ApiParam({ name: 'id', example: 1 })
+  @ApiResponse({
+    status: 200,
+    description: 'Agendamento iniciado com sucesso',
+  })
+  start(
+    @Param('id', ParseIntPipe) bookingId: number,
+    @currentUser() userId: number,
+  ) {
+    return this.bookingsService.start(bookingId, userId);
+  }
+
+  // ============================
+  // ACCEPT / REJECT BOOKING
+  // ============================
+  @Patch(':id/status')
   @UseGuards(IsProfissionalGuard)
   @ApiOperation({
     summary: 'Aceitar ou rejeitar um agendamento',
     description:
       'Permite que o profissional aceite ou rejeite um agendamento pendente',
   })
+  @ApiParam({ name: 'id', example: 1 })
   @ApiBody({ type: UpdateBookinSatatusProfisional })
-  @ApiResponse({ status: 200, description: 'Status do agendamento atualizado' })
-  @ApiResponse({
-    status: 403,
-    description: 'Apenas o profissional pode executar esta ação',
-  })
-  toogle(
+  @ApiResponse({ status: 200, description: 'Status atualizado com sucesso' })
+  updateStatus(
+    @Param('id', ParseIntPipe) bookingId: number,
     @Body() data: UpdateBookinSatatusProfisional,
     @currentUser() userId: number,
   ) {
+    data.bookingId = bookingId;
     return this.bookingsService.toogle(data, userId);
   }
 
+  // ============================
+  // LIST BOOKINGS
+  // ============================
   @Get()
   @ApiOperation({
     summary: 'Listar agendamentos',
     description: 'Lista os agendamentos do utilizador autenticado',
   })
-  @ApiQuery({ name: 'page', required: true, example: 1 })
-  @ApiQuery({ name: 'limit', required: true, example: 10 })
-  @ApiResponse({
-    status: 200,
-    description: 'Lista de agendamentos retornada com sucesso',
-  })
+  @ApiQuery({ name: 'page', example: 1 })
+  @ApiQuery({ name: 'limit', example: 10 })
   findAll(
     @Query('page', ParseIntPipe) page: number,
     @Query('limit', ParseIntPipe) limit: number,
@@ -87,18 +133,23 @@ export class BookingsController {
   ) {
     return this.bookingsService.findAll(page, limit, userId);
   }
+
+  // ============================
+  // GET BOOKING BY ID
+  // ============================
   @Get(':id')
   @ApiOperation({
     summary: 'Buscar agendamento por ID',
     description: 'Retorna os detalhes completos de um agendamento',
   })
   @ApiParam({ name: 'id', example: 1 })
-  @ApiResponse({ status: 200, description: 'Agendamento encontrado' })
-  @ApiResponse({ status: 404, description: 'Agendamento não encontrado' })
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.bookingsService.findOne(id);
   }
 
+  // ============================
+  // CANCEL BOOKING
+  // ============================
   @Delete(':id')
   @ApiOperation({
     summary: 'Cancelar um agendamento',
@@ -106,20 +157,12 @@ export class BookingsController {
       'Permite que o cliente, profissional ou administrador cancele um agendamento',
   })
   @ApiParam({ name: 'id', example: 1 })
-  @ApiBody({ type: UpdateBookinSatatusProfisional })
-  @ApiResponse({
-    status: 200,
-    description: 'Agendamento cancelado com sucesso',
-  })
-  @ApiResponse({
-    status: 403,
-    description: 'Sem permissão para cancelar este agendamento',
-  })
-  remove(
-    @Param('id', ParseIntPipe) id: number,
+  cancel(
+    @Param('id', ParseIntPipe) bookingId: number,
     @currentUser() userId: number,
     @Body() data: UpdateBookinSatatusProfisional,
   ) {
-    return this.bookingsService.cancel(id, userId, data);
+    data.bookingId = bookingId;
+    return this.bookingsService.cancel(userId, data);
   }
 }
