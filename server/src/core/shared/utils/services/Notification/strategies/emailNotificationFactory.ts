@@ -4,22 +4,13 @@ import { EmailService } from '../../EmailService/Email.service';
 import PrismaService from '@infra/database/prisma.service';
 
 export class EmailNotificationFactory implements INotificationFactory {
-  constructor(
-    private readonly emailService: EmailService,
-    private readonly database: PrismaService,
-  ) {}
+  constructor(private readonly emailService: EmailService) {}
 
   public async send(
     data: Omit<Notification, 'id'>,
     user: User,
   ): Promise<Notification> {
-    const [notification, _] = await Promise.all([
-      this.database.notification.create({
-        data: {
-          ...data,
-          channel: "EMAIL",
-        },
-      }),
+    const [notification] = await Promise.all([
       this.emailService.send({
         subject: data.title,
         to: user.email,
@@ -27,6 +18,9 @@ export class EmailNotificationFactory implements INotificationFactory {
         text: data.title,
       }),
     ]);
-    return notification;
+    return {
+      ...data,
+      id: 0,
+    };
   }
 }

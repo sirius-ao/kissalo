@@ -16,7 +16,7 @@ export class NotificationFactory {
   public send(notificationChanel: NotificationChannel): INotificationFactory {
     switch (notificationChanel) {
       case 'EMAIL':
-        return new EmailNotificationFactory(this.emailService, this.database);
+        return new EmailNotificationFactory(this.emailService);
         break;
       case 'PUSH':
         return new PushNotificationFactory(this.database);

@@ -28,6 +28,9 @@ export class CreateBookingStepUseCase {
     if (!booking) {
       throw new NotFoundException('Agendamento não encontrado');
     }
+    if (booking.status == 'CANCELED' || booking.status == 'REJECTED') {
+      throw new ForbiddenException('Agendamento cancelado');
+    }
     const isClient = booking.clientId === userId;
     const isProfessional = booking.professional?.userId === userId;
 

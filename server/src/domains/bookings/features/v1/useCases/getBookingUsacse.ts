@@ -18,7 +18,7 @@ export class GetBookingFacede {
     if (cachedBooking) {
       return cachedBooking;
     }
-    const booking = await this.database.booking.findFirst({
+    const booking = await this.database.booking.findUnique({
       where: {
         id,
       },

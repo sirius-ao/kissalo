@@ -23,7 +23,11 @@ export class UpdatePaymentUseCase {
     const payment = await this.prisma.payment.findUnique({
       where: { id: paymentId },
       include: {
-        booking: true,
+        booking: {
+          include: {
+            service: true,
+          },
+        },
         client: true,
         professional: {
           include: { user: true },
@@ -31,14 +35,6 @@ export class UpdatePaymentUseCase {
       },
     });
     if (!payment) throw new NotFoundException('Pagamento não encontrado');
-
-    const admin = await this.prisma.user.findUnique({
-      where: { id: adminUserId },
-    });
-    if (!admin || admin.role !== 'ADMIN')
-      throw new ForbiddenException(
-        'Apenas administradores podem atualizar pagamentos',
-      );
 
     const PushNotifier = this.notifier.send('PUSH');
     const EmailNotifier = this.notifier.send('EMAIL');
@@ -66,7 +62,6 @@ export class UpdatePaymentUseCase {
           title: 'Pagamento cancelado',
           message,
         },
-        { user: admin, title: 'Pagamento cancelado', message },
       ];
 
       await Promise.all(
@@ -102,7 +97,7 @@ export class UpdatePaymentUseCase {
     } else {
       const clientNotification = {
         title: 'Pagamento confirmado',
-        message: `O pagamento do serviço "${payment.booking.serviceId}" foi confirmado. Você já pode aguardar o início do serviço.`,
+        message: `O pagamento do serviço "${payment.booking.service.title}" foi confirmado. Você já pode aguardar o início do serviço.`,
         type: NotificationType.PAYMENT,
         isRead: false,
         userId: payment.clientId,
@@ -111,7 +106,7 @@ export class UpdatePaymentUseCase {
       };
       const professionalNotification = {
         title: 'Pagamento confirmado',
-        message: `O pagamento do serviço "${payment.booking.serviceId}" foi confirmado. Você já pode iniciar o serviço para o cliente ${payment.client.firstName} ${payment.client.lastName}.`,
+        message: `O pagamento do serviço "${payment.booking.service.title}" foi confirmado. Você já pode iniciar o serviço para o cliente ${payment.client.firstName} ${payment.client.lastName}.`,
         type: NotificationType.PAYMENT,
         isRead: false,
         userId: payment.professional?.userId,
@@ -126,6 +121,16 @@ export class UpdatePaymentUseCase {
           professionalNotification,
           payment.professional?.user,
         ),
+        this.prisma.user.update({
+          where: {
+            id: payment.clientId,
+          },
+          data: {
+            amountAvaliable: {
+              increment: payment.amount,
+            },
+          },
+        }),
       ]);
     }
     const updatedPayment = await this.prisma.payment.update({
@@ -133,6 +138,8 @@ export class UpdatePaymentUseCase {
       data: {
         ...updateData,
         status: updateData.status == 'PAID' ? 'PAID' : 'REFUNDED',
+        refundedAt: updateData.status == 'PAID' ? null : new Date(),
+        paidAt: updateData.status == 'REFUNDED' ? null : new Date(),
       },
     });
     return updatedPayment;

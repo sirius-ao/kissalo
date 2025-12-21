@@ -17,13 +17,13 @@ import { PaymentsModule } from './domains/payments/payments.module';
 import { ProfissionalsModule } from './domains/profissionals/profissionals.module';
 import { BookingsModule } from './domains/bookings/bookings.module';
 import { WalletsModule } from './domains/wallets/wallets.module';
-import { ExecutionModule } from './domains/execution/execution.module';
 import { ConfigurationModule } from '@infra/config/config.module';
 import { ClientsModule } from './domains/clients/clients.module';
-import { ConciliationModule } from './domains/conciliation/conciliation.module';
 import { UtilModule } from '@core/shared/utils/util.module';
 import { IsAuthenticatedMiddlware } from '@core/http/middlewares/isAuthenticated.middleware';
 import { BoostrapModule } from '@infra/boostrap/boostrap.module';
+import { NotificationsModule } from './domains/notifications/notifications.module';
+import { Shedule } from '@infra/schedule/schedule.module';
 @Module({
   imports: [
     JwtModule.register({
@@ -38,7 +38,7 @@ import { BoostrapModule } from '@infra/boostrap/boostrap.module';
         },
       ],
     }),
-    ScheduleModule.forRoot({}),
+    Shedule,
     PrismaModule,
     CacheModule,
     AuthModule,
@@ -49,12 +49,11 @@ import { BoostrapModule } from '@infra/boostrap/boostrap.module';
     ProfissionalsModule,
     BookingsModule,
     WalletsModule,
-    ExecutionModule,
     ConfigurationModule,
     ClientsModule,
-    ConciliationModule,
     UtilModule,
     BoostrapModule,
+    NotificationsModule,
   ],
 })
 export class AppModule implements NestModule {

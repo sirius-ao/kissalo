@@ -32,10 +32,6 @@ import { IsProfissionalGuard } from '@core/http/guards/isProfissional.guard';
 @Controller('v1/bookings')
 export class BookingsController {
   constructor(private readonly bookingsService: BookingsService) {}
-
-  // ============================
-  // CREATE BOOKING
-  // ============================
   @Post()
   @UseGuards(IsClientGuard)
   @ApiOperation({
@@ -52,9 +48,6 @@ export class BookingsController {
     return this.bookingsService.create(data, userId);
   }
 
-  // ============================
-  // CREATE BOOKING STEP
-  // ============================
   @Post(':id/steps')
   @ApiOperation({
     summary: 'Criar etapa do agendamento',
@@ -72,9 +65,6 @@ export class BookingsController {
     return this.bookingsService.createSteps(data, userId);
   }
 
-  // ============================
-  // START BOOKING
-  // ============================
   @Patch(':id/start')
   @UseGuards(IsProfissionalGuard)
   @ApiOperation({
@@ -94,9 +84,45 @@ export class BookingsController {
     return this.bookingsService.start(bookingId, userId);
   }
 
-  // ============================
-  // ACCEPT / REJECT BOOKING
-  // ============================
+  @Patch(':id/end')
+  @UseGuards(IsProfissionalGuard)
+  @ApiOperation({
+    summary: 'Terminar execução do agendamento',
+    description:
+      'Permite que o profissional termine a execução do serviço agendado',
+  })
+  @ApiParam({ name: 'id', example: 1 })
+  @ApiResponse({
+    status: 200,
+    description: 'Agendamento terminado com sucesso',
+  })
+  end(
+    @Param('id', ParseIntPipe) bookingId: number,
+    @currentUser() userId: number,
+  ) {
+    return this.bookingsService.end(bookingId, userId);
+  }
+
+  @Patch(':id/liberate')
+  @UseGuards(IsClientGuard)
+  @ApiOperation({
+    summary:
+      'Permitir que o profissional possa terminar execução do agendamento',
+    description:
+      'Permite que o profissional termine a execução do serviço agendado',
+  })
+  @ApiParam({ name: 'id', example: 1 })
+  @ApiResponse({
+    status: 200,
+    description: 'Agendamento terminado com sucesso',
+  })
+  liberate(
+    @Param('id', ParseIntPipe) bookingId: number,
+    @currentUser() userId: number,
+  ) {
+    return this.bookingsService.end(bookingId, userId);
+  }
+
   @Patch(':id/status')
   @UseGuards(IsProfissionalGuard)
   @ApiOperation({
