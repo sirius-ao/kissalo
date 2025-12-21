@@ -1,6 +1,0 @@
-{
-  "version": 3,
-  "sources": [],
-  "sections": [
-    {"offset": {"line": 4, "column": 0}, "map": {"version":3,"sources":["file:///home/fckdir/Documentos/Projects/sellify/frontend/app/auth/login/page.tsx"],"sourcesContent":["\"use client\";\n\nimport LeftPanel from \"@/components/patterns/EnterPatterns\";\n\nexport default function Login() {\n  return (\n    <main className=\"grid lg:grid-cols-2 \">\n      <article>\n      </article>\n\n      <form action=\"\"></form>\n    </main>\n  );\n}\n"],"names":[],"mappings":";;;;;AAAA;;AAIe,SAAS;IACtB,qBACE,8VAAC;QAAK,WAAU;;0BACd,8VAAC;;;;;0BAGD,8VAAC;gBAAK,QAAO;;;;;;;;;;;;AAGnB;KATwB","debugId":null}}]
-}

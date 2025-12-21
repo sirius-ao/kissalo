@@ -1,6 +1,0 @@
-{
-  "version": 3,
-  "sources": [],
-  "sections": [
-    {"offset": {"line": 18, "column": 0}, "map": {"version":3,"sources":["file:///home/fckdir/Documentos/Projects/sellify/frontend/app/page.tsx"],"sourcesContent":["import Image from \"next/image\";\n\nexport default function Home() {\n  return (\n    <div className=\"flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black\">\n      <p>ola mundo</p>\n    </div>\n  );\n}\n"],"names":[],"mappings":";;;;;;AAEe,SAAS;IACtB,qBACE,+YAAC;QAAI,WAAU;kBACb,cAAA,+YAAC;sBAAE;;;;;;;;;;;AAGT","debugId":null}}]
-}
