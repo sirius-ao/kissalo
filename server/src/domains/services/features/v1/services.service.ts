@@ -23,8 +23,21 @@ export class ServicesService {
     }
     const service = await this.database.serviceTemplate.create({
       data: {
+<<<<<<< HEAD
         ...data,
         isFeatured: true,
+=======
+        title: dto.title,
+        description: dto.description,
+        keywords: dto.keywords,
+        isActive: dto.isActive ?? true,
+        basePrice: dto.basePrice,
+        duration: dto.duration,
+        categoryId: category.id,
+        priceType: dto.priceType,
+        isFeatured: true,
+        
+>>>>>>> 8969769 (feat : Slug Service)
       },
     });
     return service;
