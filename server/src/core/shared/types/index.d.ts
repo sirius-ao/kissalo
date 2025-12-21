@@ -23,3 +23,28 @@ export interface IAddress {
   latitude?: number;
   longitude?: number;
 }
+
+import { Prisma } from '@prisma/client';
+
+export type BookingWithRelations = Prisma.BookingGetPayload<{
+  include: {
+    client: true;
+    professional: {
+      include: {
+        user: {
+          omit: {
+            password: true;
+          };
+        };
+      };
+    };
+    service: {
+      include: {
+        category: true;
+      };
+    };
+    steps: true;
+    review: true;
+  };
+}>;
+

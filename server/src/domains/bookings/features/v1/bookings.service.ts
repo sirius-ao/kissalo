@@ -12,6 +12,9 @@ import { CreateBookingUseFacade } from './useCases/createBookingUsecase';
 import { Booking } from '@prisma/client';
 import { ProfissionalToogleBookingStatus } from './useCases/profissionalToggleStatusUsecase';
 import { ProfissionalsService } from '@domains/profissionals/features/v1/profissionals.service';
+import { GetBookingFacede } from './useCases/getBookingUsacse';
+import CacheService from '@infra/cache/cahe.service';
+import { CancelBookingUseCase } from './useCases/cancelBookingUsecase';
 
 @Injectable()
 export class BookingsService {
@@ -21,7 +24,9 @@ export class BookingsService {
     private readonly services: ServicesService,
     private readonly clientService: ClientsService,
     private readonly profissionalService: ProfissionalsService,
+    private readonly cache: CacheService,
   ) {}
+
   public async create(data: CreateBookingDto, userId: number) {
     const createFacade = new CreateBookingUseFacade(
       this.database,
@@ -44,19 +49,26 @@ export class BookingsService {
     );
     return await toogleFacade.toogle(data);
   }
-  findAll() {
-    return `This action returns all bookings`;
+
+  public async findAll(page: number, limit: number, userId: number) {
+    const getBookingFacede = new GetBookingFacede(this.database, this.cache);
+    return await getBookingFacede.get(page, limit, userId);
+  }
+  async findOne(id: number) {
+    const getBookingFacede = new GetBookingFacede(this.database, this.cache);
+    return await getBookingFacede.getOne(id);
   }
 
-  async findOne(id: number): Promise<Booking> {
-    return {} as Booking;
-  }
-
-  update(id: number, updateBookingDto: UpdateBookingDto) {
-    return `This action updates a #${id} booking`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} booking`;
+  public async cancel(
+    bookingId: number,
+    userId: number,
+    data: UpdateBookinSatatusProfisional,
+  ) {
+    const facede = new CancelBookingUseCase(
+      this.database,
+      this.notification,
+      this,
+    );
+    return await facede.cancel(bookingId, userId, data);
   }
 }
