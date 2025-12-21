@@ -1,6 +1,17 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+} from '@nestjs/common';
 import { ServicesService } from './services.service';
-import { UpdateServiceDto } from '../../dto/update-service.dto';
+import { CreateServiceTemplateDto } from '@domains/services/dto/create-service.dto';
+import { IsAdminGuard } from '@core/http/guards/isAdmin.guard';
+import { UpdateServiceTemplateDto } from '@domains/services/dto/update-service.dto';
 
 @Controller({
   path: 'services',
@@ -9,9 +20,10 @@ import { UpdateServiceDto } from '../../dto/update-service.dto';
 export class ServicesController {
   constructor(private readonly servicesService: ServicesService) {}
 
+  @UseGuards(IsAdminGuard)
   @Post()
-  async create(@Body() createServiceDto: UpdateServiceDto) {
-    return await this.servicesService.create(createServiceDto);
+  async create(@Body() data: CreateServiceTemplateDto) {
+    return await this.servicesService.create(data);
   }
 
   @Get()
@@ -25,11 +37,16 @@ export class ServicesController {
   }
 
   @Patch(':id')
-  async update(@Param('id') id: string, @Body() updateServiceDto: UpdateServiceDto) {
+  @UseGuards(IsAdminGuard)
+  async update(
+    @Param('id') id: string,
+    @Body() updateServiceDto: UpdateServiceTemplateDto,
+  ) {
     return await this.servicesService.update(+id, updateServiceDto);
   }
 
   @Delete(':id')
+  @UseGuards(IsAdminGuard)
   async remove(@Param('id') id: string) {
     return await this.servicesService.remove(+id);
   }

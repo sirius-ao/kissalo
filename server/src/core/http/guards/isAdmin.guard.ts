@@ -1,5 +1,4 @@
 import CacheService from '@infra/cache/cahe.service';
-import PrismaService from '@infra/database/prisma.service';
 import {
   CanActivate,
   Injectable,
@@ -17,10 +16,7 @@ export class IsAdminGuard implements CanActivate {
   private readonly jwt: JwtService = new JwtService({
     secret: process.env.JWT_SECRET,
   });
-  constructor(
-    private readonly cache: CacheService,
-    private readonly database: PrismaService,
-  ) {}
+  constructor(private readonly cache: CacheService) {}
   public async canActivate(ctx: ExecutionContext): Promise<boolean> {
     const request: Request = ctx.switchToHttp().getRequest();
     const userId = request.headers['intern-user'];

@@ -23,6 +23,7 @@ import { ClientsModule } from './domains/clients/clients.module';
 import { ConciliationModule } from './domains/conciliation/conciliation.module';
 import { UtilModule } from '@core/shared/utils/util.module';
 import { IsAuthenticatedMiddlware } from '@core/http/middlewares/isAuthenticated.middleware';
+import { BoostrapModule } from '@infra/boostrap/boostrap.module';
 @Module({
   imports: [
     JwtModule.register({
@@ -53,6 +54,7 @@ import { IsAuthenticatedMiddlware } from '@core/http/middlewares/isAuthenticated
     ClientsModule,
     ConciliationModule,
     UtilModule,
+    BoostrapModule,
   ],
 })
 export class AppModule implements NestModule {
@@ -61,6 +63,8 @@ export class AppModule implements NestModule {
       .apply(IsAuthenticatedMiddlware)
       .exclude(
         { path: 'v1/auth/login', method: RequestMethod.POST },
+        { path: 'v1/profissionals', method: RequestMethod.POST },
+        { path: 'v1/profissionals', method: RequestMethod.GET },
         { path: 'v1/auth/verify/:token', method: RequestMethod.PUT },
         { path: 'v1/auth/refresh/:token', method: RequestMethod.PUT },
         { path: 'v1/auth/recovery/:unique', method: RequestMethod.PATCH },
