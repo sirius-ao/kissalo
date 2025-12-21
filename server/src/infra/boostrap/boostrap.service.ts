@@ -26,7 +26,12 @@ export class BoostratService implements OnModuleInit {
     
 
     this.logger.verbose('Criando admin');
+<<<<<<< HEAD
     const password =  this.bcript.encript(this.ADMIN_PASS);
+=======
+    const password = await this.bcript.encript(this.ADMIN_PASS);
+
+>>>>>>> 70513b8 (feat : Admin starter)
     await this.database.user.create({
       data: {
         firstName: 'Kissalo',
