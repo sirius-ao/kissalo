@@ -3,6 +3,7 @@ import { BookingWithRelations } from '@core/shared/types';
 import CacheService from '@infra/cache/cahe.service';
 import PrismaService from '@infra/database/prisma.service';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 
 export class GetBookingFacede {
   constructor(
@@ -11,7 +12,9 @@ export class GetBookingFacede {
   ) {}
 
   public async getOne(id: number): Promise<BookingWithRelations> {
-    const cachedBooking = await this.cache.get(`booking-${id}`);
+    const cachedBooking = await this.cache.get<BookingWithRelations>(
+      `booking-${id}`,
+    );
     if (cachedBooking) {
       return cachedBooking;
     }
@@ -60,7 +63,7 @@ export class GetBookingFacede {
     if (!user) {
       throw new UserNotFoundExecption();
     }
-    let where = {};
+    let where: Prisma.BookingWhereInput = {};
     switch (user.role) {
       case 'ADMIN':
         where = {};
@@ -71,6 +74,9 @@ export class GetBookingFacede {
         };
         break;
       case 'PROFESSIONAL':
+        if (!user.professional) {
+          throw new BadRequestException('Perfil profissional não encontrado');
+        }
         where = { professionalId: user.professional.id };
         break;
       default:
@@ -125,7 +131,7 @@ export class GetBookingFacede {
         totalPages,
         hasNextPage: page < totalPages,
         hasPrevPage: page > 1,
-        lasPage: totalPages,
+        lastPage: totalPages,
       },
     };
   }
