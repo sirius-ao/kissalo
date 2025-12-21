@@ -42,7 +42,7 @@ export class CancelBookingUseCase {
       message: `O agendamento do serviço "${service.title}", no valor de ${service.basePrice.toFixed(
         2,
       )} Kz, foi cancelado por ${
-        data.userId === professional.id ? 'o prestador de serviço' : 'você'
+        data.userId === professional.userId ? 'o prestador de serviço' : 'você'
       }.`,
       type: 'ALERT' as NotificationType,
       isRead: false,
@@ -57,7 +57,7 @@ export class CancelBookingUseCase {
       )} Kz, foi cancelado com sucesso.`,
       type: 'ALERT' as NotificationType,
       isRead: false,
-      userId: professional.id,
+      userId: professional.userId,
       createdAt: new Date(),
       deepLink: `/bookings/${booking.id}`,
     };
@@ -68,7 +68,7 @@ export class CancelBookingUseCase {
       )} Kz) foi cancelado por ${
         data.userId === client.id
           ? 'o cliente'
-          : data.userId === professional.id
+          : data.userId === professional.userId
             ? 'o prestador'
             : 'o administrador'
       }.`,

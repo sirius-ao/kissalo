@@ -63,6 +63,7 @@ export class CreateBookingStepUseCase {
           },
           steps: true,
           review: true,
+          payment: true,
         },
       });
     if (updatedBooking) {

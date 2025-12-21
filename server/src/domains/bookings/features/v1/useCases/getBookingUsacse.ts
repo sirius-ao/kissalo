@@ -40,6 +40,7 @@ export class GetBookingFacede {
         },
         steps: true,
         review: true,
+        payment: true,
       },
     });
     if (booking) {

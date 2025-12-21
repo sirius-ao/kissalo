@@ -5,6 +5,7 @@ import { BookingsController } from './features/v1/bookings.controller';
 @Module({
   controllers: [BookingsController],
   providers: [BookingsService],
+  exports: [BookingsService],
 })
 @Global()
 export class BookingsModule {}

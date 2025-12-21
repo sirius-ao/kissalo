@@ -45,6 +45,6 @@ export type BookingWithRelations = Prisma.BookingGetPayload<{
     };
     steps: true;
     review: true;
+    payment: true;
   };
 }>;
-
