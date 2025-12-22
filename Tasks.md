@@ -17,11 +17,12 @@ PascalCase
 6 Review
 7 Conciliation
 8 Notification (Push & Email)
+9 Wallets
+10 IA integration
 
 **\*\*\*** Zaya **\*\*\*\***
 
 1 Categories
 2 Services
 3 ProfessionalServiceRequest
-3 Wallets
 4 Clients
