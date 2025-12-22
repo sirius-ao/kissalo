@@ -56,3 +56,15 @@ export type BookingWithRelations = Prisma.BookingGetPayload<{
     payment: true;
   };
 }>;
+
+export interface Image {
+  id: number;
+  type: string;
+  tags: string;
+  webformatURL: string;
+  largeImageURL: string;
+  previewURL: string;
+  imageWidth: number;
+  imageHeight: number;
+  imageSize: number;
+}
