@@ -4,6 +4,8 @@ import { BcryptService } from './services/CryptoService/crypto.service';
 import { KissaloLogger } from './services/Logger/logger.service';
 import { NotificationFactory } from './services/Notification/notification.factory';
 import { SlugService } from './services/Slug/slug.service';
+import { IAFactory } from './services/AI/ia.factory';
+import { PixeBayService } from './services/AI/pixebay.service';
 
 @Module({
   exports: [
@@ -12,6 +14,8 @@ import { SlugService } from './services/Slug/slug.service';
     KissaloLogger,
     NotificationFactory,
     SlugService,
+    IAFactory,
+    PixeBayService,
   ],
   providers: [
     EmailService,
@@ -19,6 +23,8 @@ import { SlugService } from './services/Slug/slug.service';
     KissaloLogger,
     NotificationFactory,
     SlugService,
+    IAFactory,
+    PixeBayService,
   ],
 })
 @Global()

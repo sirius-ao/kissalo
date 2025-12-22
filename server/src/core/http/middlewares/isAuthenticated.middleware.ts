@@ -1,3 +1,4 @@
+import { IAcessToken } from '@core/shared/types';
 import {
   BadRequestException,
   ForbiddenException,
@@ -23,9 +24,7 @@ export class IsAuthenticatedMiddlware implements NestMiddleware {
       throw new BadRequestException('TOken Header não informado');
     }
     try {
-      const tokenData = this.jwt.verify(token) as {
-        sub: number;
-      };
+      const tokenData = this.jwt.verify(token) as IAcessToken;
       req.headers['intern-user'] = String(tokenData.sub);
       next();
     } catch (error) {

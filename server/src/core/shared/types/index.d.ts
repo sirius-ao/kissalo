@@ -1,4 +1,4 @@
-import { User } from '@prisma/client';
+import { User, UserRole } from '@prisma/client';
 
 export interface ILoginUseCase {
   unique: string;
@@ -7,6 +7,14 @@ export interface ILoginUseCase {
 export interface ILoginUseCaseReturnType {
   user: Omit<User, 'password'>;
   acessToken: string;
+}
+
+export interface IAcessToken {
+  sub: number;
+}
+export interface IRefreshToken {
+  sub: number;
+  role: UserRole;
 }
 
 export interface ISocialMedia {
