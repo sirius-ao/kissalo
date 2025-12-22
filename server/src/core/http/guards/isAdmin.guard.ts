@@ -1,3 +1,4 @@
+import { IRefreshToken } from './../../shared/types/index.d';
 import CacheService from '@infra/cache/cahe.service';
 import {
   CanActivate,
@@ -25,10 +26,7 @@ export class IsAdminGuard implements CanActivate {
     }
     const userRefreshToken = await this.cache.get(`userRefreshToken-${userId}`);
     try {
-      const tokenData = this.jwt.verify(userRefreshToken) as {
-        sub: number;
-        role: UserRole;
-      };
+      const tokenData = this.jwt.verify(userRefreshToken) as IRefreshToken
       if (tokenData?.role != 'ADMIN') {
         return true;
       }

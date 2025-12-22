@@ -24,6 +24,7 @@ import { IsAuthenticatedMiddlware } from '@core/http/middlewares/isAuthenticated
 import { BoostrapModule } from '@infra/boostrap/boostrap.module';
 import { NotificationsModule } from './domains/notifications/notifications.module';
 import { Shedule } from '@infra/schedule/schedule.module';
+import { LlmsModule } from './domains/llms/llms.module';
 @Module({
   imports: [
     JwtModule.register({
@@ -54,6 +55,7 @@ import { Shedule } from '@infra/schedule/schedule.module';
     UtilModule,
     BoostrapModule,
     NotificationsModule,
+    LlmsModule,
   ],
 })
 export class AppModule implements NestModule {

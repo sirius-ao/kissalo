@@ -1,4 +1,5 @@
 import { UserNotFoundExecption } from '@core/http/erros/user.error';
+import { IAcessToken } from '@core/shared/types';
 import CacheService from '@infra/cache/cahe.service';
 import PrismaService from '@infra/database/prisma.service';
 import { BadRequestException, ForbiddenException } from '@nestjs/common';
@@ -12,7 +13,7 @@ export class RefreshTokenUseCase {
   ) {}
 
   public async process(token: string): Promise<{ newAcessToken: string }> {
-    const userId = this.jwt.decode(token) as { sub: number };
+    const userId = this.jwt.decode(token) as IAcessToken;
     if (!userId?.sub) {
       throw new ForbiddenException('Token inválido para refresh');
     }

@@ -10,6 +10,7 @@ import { JwtService } from '@nestjs/jwt';
 import { UserRole } from '@prisma/client';
 import type { Request } from 'express';
 import { UserNotFoundExecption } from '../erros/user.error';
+import { IRefreshToken } from '@core/shared/types';
 
 @Injectable()
 export class IsClientGuard implements CanActivate {
@@ -25,10 +26,7 @@ export class IsClientGuard implements CanActivate {
     }
     const userRefreshToken = await this.cache.get(`userRefreshToken-${userId}`);
     try {
-      const tokenData = this.jwt.verify(userRefreshToken) as {
-        sub: number;
-        role: UserRole;
-      };
+      const tokenData = this.jwt.verify(userRefreshToken) as IRefreshToken
       if (tokenData?.role != 'CUSTOMER') {
         return true;
       }
