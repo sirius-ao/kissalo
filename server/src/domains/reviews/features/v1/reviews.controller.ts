@@ -14,9 +14,11 @@ import { UpdateReviewDto } from './dto/update-review.dto';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { IsClientGuard } from '@core/http/guards/isClient.guard';
 import { currentUser } from '@core/http/decorators/currentUser.decorator';
+import { IsEmailVerifiedGuard } from '@core/http/guards/isEmailVerifiedGuard';
 
 @ApiTags('Review v1')
 @Controller('v1/reviews')
+@UseGuards(IsEmailVerifiedGuard)
 export class ReviewsController {
   constructor(private readonly reviewsService: ReviewsService) {}
 

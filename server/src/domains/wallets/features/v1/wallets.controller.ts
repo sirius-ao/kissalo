@@ -16,9 +16,11 @@ import { currentUser } from '@core/http/decorators/currentUser.decorator';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { IsAdminGuard } from '@core/http/guards/isAdmin.guard';
 import { IsProfissionalGuard } from '@core/http/guards/isProfissional.guard';
+import { IsEmailVerifiedGuard } from '@core/http/guards/isEmailVerifiedGuard';
 
 @ApiTags('Wallets v1')
 @Controller('v1/wallets')
+@UseGuards(IsEmailVerifiedGuard)
 export class WalletsController {
   constructor(private readonly walletsService: WalletsService) {}
 

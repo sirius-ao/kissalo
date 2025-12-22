@@ -8,12 +8,15 @@ import {
   Delete,
   Query,
   ParseIntPipe,
+  UseGuards,
 } from '@nestjs/common';
 import { NotificationsService } from './notifications.service';
 import { currentUser } from '@core/http/decorators/currentUser.decorator';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { IsEmailVerifiedGuard } from '@core/http/guards/isEmailVerifiedGuard';
 
 @ApiTags('Notification V1')
+@UseGuards(IsEmailVerifiedGuard)
 @Controller('v1/notifications')
 export class NotificationsController {
   constructor(private readonly notificationsService: NotificationsService) {}

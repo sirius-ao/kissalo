@@ -19,9 +19,11 @@ import {
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { currentUser } from '@core/http/decorators/currentUser.decorator';
 import { IsAdminGuard } from '@core/http/guards/isAdmin.guard';
+import { IsEmailVerifiedGuard } from '@core/http/guards/isEmailVerifiedGuard';
 
 @ApiTags('Profissionals v1')
 @Controller('v1/profissionals')
+@UseGuards(IsEmailVerifiedGuard)
 export class ProfissionalsController {
   constructor(private readonly profissionalsService: ProfissionalsService) {}
 

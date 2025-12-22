@@ -13,8 +13,10 @@ import { CategoriesService } from './categories.service';
 import { CreateCategoryDto } from '../../dto/create-category.dto';
 import { UpdateCategoryDto } from '../../dto/update-category.dto';
 import { IsAdminGuard } from '@core/http/guards/isAdmin.guard';
+import { ApiTags } from '@nestjs/swagger';
 
 @Controller('v1/categories')
+@ApiTags('Categories v1')
 export class CategoriesController {
   constructor(private readonly categoriesService: CategoriesService) {}
 
