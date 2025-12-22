@@ -3,9 +3,10 @@
 # =============================
 
 # === DEPENDÊNCIAS ===
-/node_modules
-/server/node_modules
-/client/node_modules
+node_modules
+**/node_modules
+.pnpm
+**/.pnpm
 
 # === BUILDS / DIST ===
 /server/dist
@@ -29,6 +30,9 @@ pnpm-debug.log*
 /client/.env
 /server/.env
 !.env.example
+
+# === BINÁRIOS NATIVOS ===
+*.node
 
 # === MISC ===
 .DS_Store
@@ -54,6 +58,9 @@ next-env.d.ts
 *.swp
 *.swo
 
-# === LOCAL BUILD TOOLS ===
+# === CACHE / TOOLS ===
 /tmp
 .cache
+.turbo
+.nx
+.eslintcache
