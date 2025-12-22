@@ -9,6 +9,7 @@
 
 # === BUILDS / DIST ===
 /server/dist
+/client/dist
 /client/.next
 /client/out
 /client/build
