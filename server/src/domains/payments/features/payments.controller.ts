@@ -23,9 +23,11 @@ import {
 import { IsClientGuard } from '@core/http/guards/isClient.guard';
 import { currentUser } from '@core/http/decorators/currentUser.decorator';
 import { IsAdminGuard } from '@core/http/guards/isAdmin.guard';
+import { IsEmailVerifiedGuard } from '@core/http/guards/isEmailVerifiedGuard';
 
 @ApiTags('Payments V1')
 @ApiBearerAuth()
+@UseGuards(IsEmailVerifiedGuard)
 @Controller('v1/payments')
 export class PaymentsController {
   constructor(private readonly paymentsService: PaymentsService) {}

@@ -26,10 +26,12 @@ import { UpdateBookinSatatusProfisional } from './dto/update-booking.dto';
 import { currentUser } from '@core/http/decorators/currentUser.decorator';
 import { IsClientGuard } from '@core/http/guards/isClient.guard';
 import { IsProfissionalGuard } from '@core/http/guards/isProfissional.guard';
+import { IsEmailVerifiedGuard } from '@core/http/guards/isEmailVerifiedGuard';
 
 @ApiTags('Bookings V1')
 @ApiBearerAuth()
 @Controller('v1/bookings')
+@UseGuards(IsEmailVerifiedGuard)
 export class BookingsController {
   constructor(private readonly bookingsService: BookingsService) {}
   @Post()

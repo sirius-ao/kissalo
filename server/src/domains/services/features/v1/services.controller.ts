@@ -12,11 +12,12 @@ import { ServicesService } from './services.service';
 import { CreateServiceTemplateDto } from '@domains/services/dto/create-service.dto';
 import { IsAdminGuard } from '@core/http/guards/isAdmin.guard';
 import { UpdateServiceTemplateDto } from '@domains/services/dto/update-service.dto';
+import { IsEmailVerifiedGuard } from '@core/http/guards/isEmailVerifiedGuard';
+import { ApiTags } from '@nestjs/swagger';
 
-@Controller({
-  path: 'services',
-  version: '1',
-})
+@Controller('v1/services')
+@ApiTags('Services V1')
+@UseGuards(IsEmailVerifiedGuard)
 export class ServicesController {
   constructor(private readonly servicesService: ServicesService) {}
 
