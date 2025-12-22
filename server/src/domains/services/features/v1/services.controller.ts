@@ -17,7 +17,6 @@ import { ApiTags } from '@nestjs/swagger';
 
 @Controller('v1/services')
 @ApiTags('Services V1')
-@UseGuards(IsEmailVerifiedGuard)
 export class ServicesController {
   constructor(private readonly servicesService: ServicesService) {}
 
