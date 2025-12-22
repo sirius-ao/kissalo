@@ -1,6 +1,6 @@
 import { Global, Module } from '@nestjs/common';
-import { ClientsService } from './clients.service';
-import { ClientsController } from './clients.controller';
+import { ClientsService } from './features/v1/clients.service';
+import { ClientsController } from './features/v1/clients.controller';
 
 @Global()
 @Module({
