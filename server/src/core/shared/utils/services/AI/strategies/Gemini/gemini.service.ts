@@ -8,6 +8,4 @@ export class GeminiService implements IAstrategy {
       response: prompt,
     };
   }
-
-  private conncet() {}
 }

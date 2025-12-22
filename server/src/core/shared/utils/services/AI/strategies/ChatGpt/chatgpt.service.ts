@@ -8,5 +8,4 @@ export class ChatGptService implements IAstrategy {
       response: prompt,
     };
   }
-  private conncet() {}
 }
