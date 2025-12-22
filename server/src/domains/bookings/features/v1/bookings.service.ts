@@ -7,7 +7,7 @@ import {
 import PrismaService from '@infra/database/prisma.service';
 import { NotificationFactory } from '@core/shared/utils/services/Notification/notification.factory';
 import { ServicesService } from '@domains/services/features/v1/services.service';
-import { ClientsService } from '@domains/clients/clients.service';
+import { ClientsService } from '@domains/clients/features/v1/clients.service';
 import { CreateBookingUseFacade } from './useCases/createBookingUsecase';
 import { Booking } from '@prisma/client';
 import { ProfissionalToogleBookingStatus } from './useCases/profissionalToggleStatusUsecase';

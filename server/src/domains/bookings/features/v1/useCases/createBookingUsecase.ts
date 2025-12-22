@@ -13,7 +13,7 @@ import { ServicesService } from '@domains/services/features/v1/services.service'
 import { NotFoundException } from '@nestjs/common';
 import { NotificationFactory } from '@core/shared/utils/services/Notification/notification.factory';
 import { NotifyBookingObservers } from '../booking.observers';
-import { ClientsService } from '@domains/clients/clients.service';
+import { ClientsService } from '@domains/clients/features/v1/clients.service';
 
 export class CreateBookingUseFacade {
   protected notiefer: NotifyBookingObservers;

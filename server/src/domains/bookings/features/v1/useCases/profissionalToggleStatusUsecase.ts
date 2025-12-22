@@ -8,7 +8,7 @@ import {
   AdminNotFoundExistExecption,
   UserNotFoundExecption,
 } from '@core/http/erros/user.error';
-import { ClientsService } from '@domains/clients/clients.service';
+import { ClientsService } from '@domains/clients/features/v1/clients.service';
 import { ServicesService } from '@domains/services/features/v1/services.service';
 import { NotificationType, User } from '@prisma/client';
 import { UpdateBookinSatatusProfisional } from '../dto/update-booking.dto';
