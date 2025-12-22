@@ -1,5 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { CreateAuthDto, ResetPasswordDto } from './dto/create-auth.dto';
+import {
+  CreateAuthDto,
+  ResetPasswordDto,
+  UpateCredentials,
+  UpdateProfileDto,
+} from './dto/create-auth.dto';
 import { LoginUseCase } from './Usecases/loginUsecase';
 import PrismaService from '@infra/database/prisma.service';
 import { EmailService } from '@core/shared/utils/services/EmailService/Email.service';
@@ -10,6 +15,8 @@ import { RequestRecoveryUsecase } from './Usecases/requestRecoveryUsecase';
 import { ResetPasswordUsecase } from './Usecases/resetPasswordUsecase';
 import { RefreshTokenUseCase } from './Usecases/refreshTokenUsecase';
 import { VerifyAcountUseCase } from './Usecases/verifyAcountUsecase';
+import { UpdateProfileUseCase } from './Usecases/updateProfileUseCase';
+import { NotificationFactory } from '@core/shared/utils/services/Notification/notification.factory';
 
 @Injectable()
 export class AuthService {
@@ -21,6 +28,7 @@ export class AuthService {
     private readonly encript: BcryptService,
     private readonly emailService: EmailService,
     private readonly cache: CacheService,
+    private readonly notifier: NotificationFactory,
   ) {}
 
   public async login(data: CreateAuthDto) {
@@ -32,6 +40,26 @@ export class AuthService {
       this.jwt,
     );
     return await useCase.handle(data);
+  }
+
+  public async update(data: UpdateProfileDto, userId: number) {
+    const useCase = new UpdateProfileUseCase(
+      this.database,
+      this.encript,
+      this.notifier,
+      this.cache,
+    );
+    return await useCase.updateProfile(userId, data);
+  }
+
+  public async updateCredentials(data: UpateCredentials, userId: number) {
+    const useCase = new UpdateProfileUseCase(
+      this.database,
+      this.encript,
+      this.notifier,
+      this.cache,
+    );
+    return await useCase.updateCredentials(userId, data);
   }
 
   public async verify(token: string) {

@@ -41,6 +41,6 @@ export class ScheduleService implements OnModuleInit {
     this.logger.debug(`${data.count} Agendamentos Cancelados`);
   }
   onModuleInit() {
-    this.logger.debug(`Cron job on`);
+    this.logger.debug(`✅ Cron job iniciado`);
   }
 }

@@ -8,7 +8,12 @@ import {
   Patch,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { CreateAuthDto, ResetPasswordDto } from './dto/create-auth.dto';
+import {
+  CreateAuthDto,
+  ResetPasswordDto,
+  UpateCredentials,
+  UpdateProfileDto,
+} from './dto/create-auth.dto';
 import { currentUser } from '@core/http/decorators/currentUser.decorator';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 
@@ -25,7 +30,7 @@ export class AuthController {
     return this.authService.login(createAuthDto);
   }
 
-  @Put('/verify/:token')
+  @Put(':token/verify')
   @ApiOperation({
     summary: 'Verify account',
   })
@@ -33,7 +38,23 @@ export class AuthController {
     return this.authService.verify(token);
   }
 
-  @Put('/refresh/:token')
+  @Put('/credentials')
+  @ApiOperation({
+    summary: 'Credentials update',
+  })
+  credentials(@currentUser() userId: number, @Body() data: UpateCredentials) {
+    return this.authService.updateCredentials(data, userId);
+  }
+
+  @Put('/profile')
+  @ApiOperation({
+    summary: 'profile update',
+  })
+  profile(@currentUser() userId: number, @Body() data: UpdateProfileDto) {
+    return this.authService.update(data, userId);
+  }
+
+  @Put(':token/refresh')
   @ApiOperation({
     summary: 'refresh account',
   })
@@ -49,7 +70,7 @@ export class AuthController {
     return this.authService.logout(userId);
   }
 
-  @Patch('/recovery/:unique')
+  @Put(':unique/recovery')
   @ApiOperation({
     summary: 'request recovery account',
   })

@@ -35,7 +35,7 @@ export class CreateAuthDto {
   password: string;
 }
 
-export class CreateCostumerDto {
+export class UpdateProfileDto {
   @IsNotEmpty()
   @IsString()
   @ApiProperty({
@@ -67,14 +67,24 @@ export class CreateCostumerDto {
   @ApiProperty({
     description: 'Nome do cliente',
   })
+  avatarUrl: string;
+}
+
+export class UpateCredentials {
+  @IsNotEmpty()
+  @IsString()
+  @ApiProperty({
+    description: 'Senha nova',
+  })
   @IsStrongPassword(undefined, {
     message: 'Senha fraca',
   })
   password: string;
+
   @IsNotEmpty()
   @IsString()
   @ApiProperty({
-    description: 'Nome do cliente',
+    description: 'Senha antiga',
   })
-  avatarUrl: string;
+  oldPassword: string;
 }

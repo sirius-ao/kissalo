@@ -17,7 +17,6 @@ export class CreateProfissionalUseCase {
 
   public async create(data: CreateProfessionalDto) {
     const password = this.encript.encript(data.password);
-
     const isAnUser = await this.database.user.findFirst({
       where: {
         OR: [
@@ -72,6 +71,6 @@ export class CreateProfissionalUseCase {
       this.emailservice,
       this.jwt,
     );
-    await requestActivation.request(createdUser);
+    return await requestActivation.request(createdUser);
   }
 }

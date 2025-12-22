@@ -25,9 +25,7 @@ export default class CacheService implements OnModuleInit, OnModuleDestroy {
       this.redis.on('error', (err) =>
         this.logger.error('Erro na conexão Redis', err),
       );
-      this.logger.debug(
-        '✅ Redis conectado e CacheService inicializado com sucesso.',
-      );
+      this.logger.debug('✅ Redis conectado');
     } catch (error) {
       this.logger.error('Falha ao inicializar Redis', error);
     }
@@ -48,7 +46,9 @@ export default class CacheService implements OnModuleInit, OnModuleDestroy {
   }
 
   async delete(key: string) {
-    await this.redis.delete(key);
+    try {
+      await this.redis.delete(key);
+    } catch (error) {}
     this.logger.debug(`Cache DELETE: ${key}`);
   }
 
