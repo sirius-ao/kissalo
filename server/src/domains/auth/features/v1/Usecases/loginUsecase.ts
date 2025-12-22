@@ -46,6 +46,7 @@ export class LoginUseCase {
         this.jwt,
       );
       await requestActivation.request(user);
+      return;
     }
     if (!this.isPassMatch(user.password, userData.password)) {
       this.logger.error(
