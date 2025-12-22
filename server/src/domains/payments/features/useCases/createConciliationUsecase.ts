@@ -25,6 +25,8 @@ export class CreateConciliationUsecase {
             wallets: {
               where: {
                 id: waaletId,
+                isActive: true,
+                isVerified: true,
               },
             },
           },
@@ -41,7 +43,9 @@ export class CreateConciliationUsecase {
       throw new NotFoundException('Pagamento não encotrado');
     }
     if (payment?.professional?.wallets.length == 0) {
-      throw new BadRequestException('Profissional sem carteiras');
+      throw new BadRequestException(
+        'Profissional sem carteiras verificadas ou activas',
+      );
     }
     if (payment.conclidation) {
       throw new ConflictException('Consolidação existente');

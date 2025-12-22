@@ -1,54 +1,28 @@
 import PrismaService from '@infra/database/prisma.service';
-import { CreateProfessionalDto } from '../dto/create-profissional.dto';
-import {
-  UserAlreadyExistExecption,
-  UserNotFoundExecption,
-} from '@core/http/erros/user.error';
+import { UpdateProfessionalDto } from '../dto/create-profissional.dto';
 import { BadRequestException } from '@nestjs/common';
+import { ProfissionalNotFoundExecption } from '@core/http/erros/profissional.error';
 
 export class UpdateProfissionalUseCase {
   constructor(private readonly database: PrismaService) {}
 
-  public async update(data: CreateProfessionalDto, id: number) {
-    const [isAnUser, user] = await Promise.all([
-      this.database.user.findFirst({
-        where: {
-          OR: [
-            {
-              email: data.email,
-            },
-            {
-              phone: data.phone,
-            },
-          ],
-        },
-      }),
-      this.database.user.findFirst({
-        where: {
-          id,
-        },
-      }),
-    ]);
-    if (isAnUser) {
-      throw new UserAlreadyExistExecption();
+  public async update(data: UpdateProfessionalDto, id: number) {
+    const user = await this.database.user.findFirst({
+      where: {
+        id,
+        role: 'PROFESSIONAL',
+      },
+      include: {
+        professional: true,
+      },
+    });
+
+    if (!user || !user?.professional) {
+      throw new ProfissionalNotFoundExecption('');
     }
-    if (!user) {
-      throw new UserNotFoundExecption();
-    }
+
     try {
       await Promise.all([
-        this.database.user.update({
-          data: {
-            email: data.email,
-            firstName: data.firstName,
-            lastName: data.lastName,
-            avatarUrl: data.avatarUrl,
-            phone: data.phone,
-          },
-          where: {
-            id,
-          },
-        }),
         this.database.professional.update({
           data: {
             documentNumber: data.documentNumber,
@@ -70,6 +44,9 @@ export class UpdateProfissionalUseCase {
           },
         }),
       ]);
+      return {
+        sucess: true,
+      };
     } catch (error) {
       throw new BadRequestException('Erro ao actualizar os seus dados');
     }

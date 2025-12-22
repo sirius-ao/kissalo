@@ -9,7 +9,6 @@ import { PrismaClient } from '@prisma/client';
 
 @Injectable()
 export default class PrismaService
-  
   extends PrismaClient
   implements OnModuleDestroy, OnModuleInit
 {
@@ -26,10 +25,10 @@ export default class PrismaService
   }
   async onModuleDestroy() {
     await this.$disconnect();
-    this.logger.debug('Database Desconected');
+    this.logger.debug('Banco de dados desconectado');
   }
   async onModuleInit() {
     await this.$connect();
-    this.logger.debug('Database Connected');
+    this.logger.debug('✅ Banco de dados conectado');
   }
 }

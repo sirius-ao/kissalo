@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import {
   CreateProfessionalDto,
   CreateProfissionalDocumentsDto,
+  UpdateProfessionalDto,
   UpdateProfissionalDocumentsDto,
 } from './dto/create-profissional.dto';
 import { CreateProfissionalUseCase } from './useCase/createProfisionalUsecase';
@@ -60,9 +61,9 @@ export class ProfissionalsService {
     );
     return await requestVerificationFacade.create(userId, data);
   }
-  public async update(data: CreateProfessionalDto, userId: number) {
-    const createUserFacede = new UpdateProfissionalUseCase(this.database);
-    return await createUserFacede.update(data, userId);
+  public async update(data: UpdateProfessionalDto, userId: number) {
+    const update = new UpdateProfissionalUseCase(this.database);
+    return await update.update(data, userId);
   }
   public async findAll(
     page: number,
