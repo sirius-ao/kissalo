@@ -55,9 +55,7 @@ export class LoginUseCase {
       throw new UnauthorizedException({
         message: 'Senha incorrecta, tente novamente',
       });
-    }
-
-    const ONE_WEEK = 60 * 60 * 24 * 7;
+    }const TWO_WEEKS = 60 * 60 * 24 * 14;
     const [acessToken, refreshToken] = [
       this.jwt.sign(
         {
@@ -73,13 +71,13 @@ export class LoginUseCase {
           role: user.role,
         },
         {
-          expiresIn: '1m',
+          expiresIn: '14d',
         },
       ),
     ];
     await Promise.all([
       this.cache.set(`userProfile-${user.id}`, user, 60 * 60 * 1),
-      this.cache.set(`userRefreshToken-${user.id}`, refreshToken, ONE_WEEK),
+      this.cache.set(`userRefreshToken-${user.id}`, refreshToken, TWO_WEEKS),
     ]);
 
     return {
