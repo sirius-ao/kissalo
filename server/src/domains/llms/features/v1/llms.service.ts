@@ -11,7 +11,7 @@ export class LlmsService {
   public async genImages(basedTitle: string) {
     return await this.PixeBayService.getImages(basedTitle);
   }
-  public async replayPrompt(prompt: string) {
-    return await this.gemini.gen(prompt);
+  public async replayPrompt(prompt: string, type: string) {
+    return await this.gemini.gen(prompt, type as any);
   }
 }
