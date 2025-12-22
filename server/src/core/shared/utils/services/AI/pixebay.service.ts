@@ -5,7 +5,7 @@ export class PixeBayService {
   private readonly PIXABAY_API = process.env.PIXABAY_API;
 
   public async getImages(basedTitle: string) {
-    if (this.PIXABAY_API) {
+    if (!this.PIXABAY_API) {
       throw new BadRequestException('PIXABAY_API não definido');
     }
     try {
