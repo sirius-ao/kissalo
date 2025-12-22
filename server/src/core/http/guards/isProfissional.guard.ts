@@ -7,7 +7,6 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { UserRole } from '@prisma/client';
 import type { Request } from 'express';
 import { UserNotFoundExecption } from '../erros/user.error';
 import { IRefreshToken } from '@core/shared/types';
