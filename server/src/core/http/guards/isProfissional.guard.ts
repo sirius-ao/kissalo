@@ -24,18 +24,20 @@ export class IsProfissionalGuard implements CanActivate {
       throw new UserNotFoundExecption();
     }
     const userRefreshToken = await this.cache.get(`userRefreshToken-${userId}`);
+    let tokenData: IRefreshToken;
     try {
-      const tokenData = this.jwt.verify(userRefreshToken) as IRefreshToken
-      if (tokenData?.role != 'PROFESSIONAL') {
-        return true;
-      }
-      throw new UnauthorizedException(
-        'Precisar ser profissional para executar esta acção',
-      );
+      tokenData = this.jwt.verify(userRefreshToken) as IRefreshToken;
     } catch (error) {
       throw new ForbiddenException(
         'Refresh Token expirado precisa se autenticar',
       );
     }
+
+    if (tokenData?.role !== 'PROFESSIONAL') {
+      throw new UnauthorizedException(
+        'Precisar ser profissional para executar esta acção',
+      );
+    }
+    return true;
   }
 }

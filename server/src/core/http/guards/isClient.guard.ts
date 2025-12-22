@@ -24,18 +24,20 @@ export class IsClientGuard implements CanActivate {
       throw new UserNotFoundExecption();
     }
     const userRefreshToken = await this.cache.get(`userRefreshToken-${userId}`);
+    let tokenData: IRefreshToken;
     try {
-      const tokenData = this.jwt.verify(userRefreshToken) as IRefreshToken
-      if (tokenData?.role != 'CUSTOMER') {
-        return true;
-      }
-      throw new UnauthorizedException(
-        'Precisar ser cliente para executar esta acção',
-      );
+      tokenData = this.jwt.verify(userRefreshToken) as IRefreshToken;
     } catch (error) {
       throw new ForbiddenException(
         'Refresh Token expirado precisa se autenticar',
       );
     }
+
+    if (tokenData?.role === 'CUSTOMER') {
+      return true;
+    }
+    throw new UnauthorizedException(
+      'Precisar ser cliente para executar esta acção',
+    );
   }
 }

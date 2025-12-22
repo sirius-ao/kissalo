@@ -24,18 +24,22 @@ export class IsAdminGuard implements CanActivate {
       throw new UserNotFoundExecption();
     }
     const userRefreshToken = await this.cache.get(`userRefreshToken-${userId}`);
+
+    if (!userRefreshToken) {
+      throw new ForbiddenException('Refresh Token não encontrado ou expirado');
+    }
+    let tokenData: IRefreshToken;
     try {
-      const tokenData = this.jwt.verify(userRefreshToken) as IRefreshToken;
-      if (tokenData?.role != 'ADMIN') {
-        return true;
-      }
-      throw new UnauthorizedException(
-        'Precisar ser admin para executar esta acção',
-      );
+      tokenData = this.jwt.verify(userRefreshToken) as IRefreshToken;
     } catch (error) {
+      console.log(error);
       throw new ForbiddenException(
         'Refresh Token expirado precisa se autenticar',
       );
     }
+    if (tokenData?.role === 'ADMIN') {
+      return true;
+    }
+    throw new UnauthorizedException('Precisa ser admin para exuctar esta ação');
   }
 }

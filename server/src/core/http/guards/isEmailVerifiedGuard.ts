@@ -30,32 +30,33 @@ export class IsEmailVerifiedGuard implements CanActivate {
       throw new UserNotFoundExecption();
     }
     const userRefreshToken = await this.cache.get(`userRefreshToken-${userId}`);
+
+    let tokenData: IRefreshToken;
     try {
-      const tokenData = this.jwt.verify(userRefreshToken) as IRefreshToken;
-      const user = await this.database.user.findFirst({
-        where: {
-          id: Number(tokenData?.sub),
-        },
-      });
-
-      if (!user) {
-        throw new UserNotFoundExecption();
-      }
-      if (user.isEmailVerified) {
-        return true;
-      }
-
-      const requestActivation = new RequestActivation(
-        this.database,
-        this.emailService,
-        this.jwt,
-      );
-      await requestActivation.request(user);
-      return;
+      tokenData = this.jwt.verify(userRefreshToken) as IRefreshToken;
     } catch (error) {
       throw new ForbiddenException(
         'Refresh Token expirado precisa se autenticar',
       );
     }
+    const user = await this.database.user.findFirst({
+      where: {
+        id: Number(tokenData?.sub),
+      },
+    });
+
+    if (!user) {
+      throw new UserNotFoundExecption();
+    }
+    if (user.isEmailVerified) {
+      return true;
+    }
+
+    const requestActivation = new RequestActivation(
+      this.database,
+      this.emailService,
+      this.jwt,
+    );
+    await requestActivation.request(user);
   }
 }
