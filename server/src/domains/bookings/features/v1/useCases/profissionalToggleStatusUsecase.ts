@@ -19,7 +19,6 @@ export class ProfissionalToogleBookingStatus {
     private readonly notification: NotificationFactory,
     private readonly bookingService: BookingsService,
     private readonly profissionalService: ProfissionalsService,
-    private readonly clientService: ClientsService,
     private readonly services: ServicesService,
   ) {}
 
@@ -43,7 +42,11 @@ export class ProfissionalToogleBookingStatus {
         },
       }),
       this.services.findOne(booking.serviceId),
-      this.clientService.findOne(booking.clientId) as any as User,
+      this.database.user.findFirst({
+        where: {
+          id: booking.clientId,
+        },
+      }),
     ]);
 
     if (!client) {

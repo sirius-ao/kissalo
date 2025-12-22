@@ -26,7 +26,6 @@ export class BookingsService {
     private readonly database: PrismaService,
     private readonly notification: NotificationFactory,
     private readonly services: ServicesService,
-    private readonly clientService: ClientsService,
     private readonly profissionalService: ProfissionalsService,
     private readonly cache: CacheService,
   ) {}
@@ -36,7 +35,6 @@ export class BookingsService {
       this.database,
       this.notification,
       this.services,
-      this.clientService,
     );
     return await createFacade.create(data, userId);
   }
@@ -81,7 +79,6 @@ export class BookingsService {
       this.notification,
       this,
       this.profissionalService,
-      this.clientService,
       this.services,
     );
     return await toogleFacade.toogle(data);

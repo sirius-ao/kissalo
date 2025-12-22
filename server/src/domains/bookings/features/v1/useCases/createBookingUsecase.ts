@@ -21,7 +21,6 @@ export class CreateBookingUseFacade {
     private readonly database: PrismaService,
     private readonly notification: NotificationFactory,
     private readonly services: ServicesService,
-    private readonly clientService: ClientsService,
   ) {
     this.notiefer = new NotifyBookingObservers(this.notification);
   }
@@ -35,7 +34,11 @@ export class CreateBookingUseFacade {
         },
       }),
       this.services.findOne(data.serviceId),
-      this.clientService.findOne(userId),
+      this.database.user.findFirst({
+        where: {
+          id: userId,
+        },
+      }),
     ]);
     if (!client) {
       throw new UserNotFoundExecption();
