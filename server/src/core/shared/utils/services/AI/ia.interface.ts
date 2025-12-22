@@ -1,5 +1,8 @@
 export interface IAstrategy {
-  gen(prompt: string): Promise<{ response: string }>;
+  gen(
+    prompt: string,
+    type: 'service' | 'category',
+  ): Promise<{ response: string }>;
 }
 
 export enum IAenum {

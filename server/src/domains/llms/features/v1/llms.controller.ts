@@ -17,11 +17,11 @@ export class LlmsController {
     return this.llmsService.genImages(title);
   }
 
-  @Get(':prompt/prompt')
+  @Get(':prompt/:type/gen')
   @ApiOperation({
     summary: 'Ia generation only for admin',
   })
-  prompt(@Param('prompt') prompt: string) {
-    return this.llmsService.replayPrompt(prompt);
+  prompt(@Param('prompt') prompt: string, @Param('prompt') type: string) {
+    return this.llmsService.replayPrompt(prompt, type);
   }
 }
