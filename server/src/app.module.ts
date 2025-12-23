@@ -63,11 +63,11 @@ export class AppModule implements NestModule {
       .apply(IsAuthenticatedMiddlware)
       .exclude(
         { path: 'v1/auth/login', method: RequestMethod.POST },
-        { path: 'v1/profissionals', method: RequestMethod.POST },
+        { path: 'v1/clients', method: RequestMethod.POST },
         { path: 'v1/profissionals', method: RequestMethod.GET },
-        { path: 'v1/auth/verify/:token', method: RequestMethod.PUT },
-        { path: 'v1/auth/refresh/:token', method: RequestMethod.PUT },
-        { path: 'v1/auth/recovery/:unique', method: RequestMethod.PATCH },
+        { path: 'v1/auth/:token/verify', method: RequestMethod.PUT },
+        { path: 'v1/auth/:token/refresh', method: RequestMethod.PUT },
+        { path: 'v1/auth/:unique/recovery', method: RequestMethod.PUT },
         { path: 'v1/auth/reset', method: RequestMethod.POST },
         { path: 'v1/services', method: RequestMethod.GET },
         { path: 'v1/services/:id', method: RequestMethod.GET },
