@@ -3,13 +3,22 @@ import { CreateClientDto } from './dto/create-client.dto';
 import { UpdateClientDto } from './dto/update-client.dto';
 import PrismaService from '@infra/database/prisma.service';
 import { GetclientUseCase } from './usecases/getUseCase';
+import { CreateclientUseCase } from './usecases/createUseCase';
+import { BcryptService } from '@core/shared/utils/services/CryptoService/crypto.service';
 
 @Injectable()
 export class ClientsService {
-  constructor(private readonly database: PrismaService) {}
+  constructor(
+    private readonly database: PrismaService,
+    private readonly encript: BcryptService,
+  ) {}
 
   public async create(createClientDto: CreateClientDto) {
-    return 'This action adds a new client';
+    const facede = new CreateclientUseCase(
+      this.database,
+      this.encript
+    );
+    return await facede.create(createClientDto);
   }
 
   public async get(page: number, limit: number, userId: number) {
