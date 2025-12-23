@@ -1,8 +1,11 @@
 import { CreateServiceTemplateDto } from './../../dto/create-service.dto';
 import { SlugService } from '@core/shared/utils/services/Slug/slug.service';
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import PrismaService from '@infra/database/prisma.service';
 import { UpdateServiceTemplateDto } from '@domains/services/dto/update-service.dto';
+import { ps } from 'zod/v4/locales';
+import { ca } from 'zod/v4/locales';
+import { ProfessionalServiceRequestDto } from '@domains/services/dto/professional-service-request.dto';
 
 @Injectable()
 export class ServicesService {
@@ -87,5 +90,54 @@ export class ServicesService {
         isActive: true,
       },
     });
+  }
+
+  async professionalServicesRequest(serviceId: number, userId: number, dto: ProfessionalServiceRequestDto) {
+    
+    const isProfessional = await this.database.professional.findFirst({
+      where: {
+        userId: userId
+      },
+      include: {
+        user: true
+      }
+    }  
+    )
+
+    if (!isProfessional) {
+      throw new NotFoundException("Usuario profissional nao encontrado.")
+    }
+
+    if (isProfessional.user.role !== 'PROFESSIONAL') {
+      throw new BadRequestException("Usuario nao e um profissional.")
+    }
+
+
+    try {
+      const isprofessionalServiceRequestExists = await this.database.professionalServiceRequest.findFirst({
+        where: {
+          professionalId: isProfessional.id,
+          serviceId: serviceId,
+        }
+      }) 
+      if (isprofessionalServiceRequestExists){
+        throw new BadRequestException("Ja existe uma requisicao pendente para este servico.")
+      }
+
+      const psr = await this.database.professionalServiceRequest.create({
+        data: {
+          ...dto,
+          serviceId: serviceId,
+          professionalId: isProfessional.id
+        }
+      })
+      return psr;
+
+    } catch(error) {
+      if (error instanceof BadRequestException || error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new BadRequestException("Erro ao criar requisicao de servico para profissional.")
+    }
   }
 }
