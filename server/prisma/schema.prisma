@@ -230,7 +230,7 @@ model ServiceTemplate {
 
 model ProfessionalServiceRequest {
   id               Int             @id @default(autoincrement())
-  professionalId   Int
+  professionalId   Int 
   serviceId        Int
   status           ApprovalStatus  @default(PENDING)
   adminNotes       String?
@@ -241,6 +241,7 @@ model ProfessionalServiceRequest {
   @@unique([professionalId, serviceId])
   @@index([status])
 }
+
 
 model Booking {
   id               Int             @id @default(autoincrement())

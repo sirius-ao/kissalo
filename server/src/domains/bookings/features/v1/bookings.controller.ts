@@ -122,7 +122,7 @@ export class BookingsController {
     @Param('id', ParseIntPipe) bookingId: number,
     @currentUser() userId: number,
   ) {
-    return this.bookingsService.end(bookingId, userId);
+    return this.bookingsService.liberate(bookingId, userId);
   }
 
   @Patch(':id/status')

@@ -125,6 +125,42 @@ export class ServicesService {
   }
 
   async professionalServicesRequest(serviceId: number, userId: number) {
+    const isProfessional = await this.database.user.findFirst({
+      where: {
+        id: userId,
+      },
+      include: {
+        professional: true,
+      },
+    });
+
+    if (!isProfessional) {
+      throw new ProfissionalNotFoundExecption('');
+    }
+    const isprofessionalServiceRequestExists =
+      await this.database.professionalServiceRequest.findFirst({
+        where: {
+          professionalId: isProfessional.professional.id,
+          serviceId: serviceId,
+        },
+      });
+
+    if (isprofessionalServiceRequestExists) {
+      throw new BadRequestException(
+        'Ja existe uma requisicao pendente para este servico.',
+      );
+    }
+
+    return await this.database.professionalServiceRequest.create({
+      data: {
+        serviceId: serviceId,
+        professionalId: isProfessional.professional.id,
+        status: 'PENDING',
+        adminNotes: 'Revisar o perfil do profissional',
+      },
+    });
+  }
+  async toogleStatus(serviceId: number, userId: number, status: boolean) {
     const isProfessional = await this.database.professional.findFirst({
       where: {
         userId: userId,
@@ -144,18 +180,18 @@ export class ServicesService {
           serviceId: serviceId,
         },
       });
-    if (isprofessionalServiceRequestExists) {
-      throw new BadRequestException(
-        'Ja existe uma requisicao pendente para este servico.',
-      );
+    if (!isprofessionalServiceRequestExists) {
+      throw new BadRequestException('Pedido não encontrado');
     }
 
-    return await this.database.professionalServiceRequest.create({
+    return await this.database.professionalServiceRequest.update({
       data: {
-        serviceId: serviceId,
+        status: status ? 'APPROVED' : 'REJECTED',
+      },
+      where: {
         professionalId: isProfessional.id,
-        status: 'PENDING',
-        adminNotes: 'Revisar o perfil do profissional',
+        serviceId: serviceId,
+        id: isprofessionalServiceRequestExists.id,
       },
     });
   }

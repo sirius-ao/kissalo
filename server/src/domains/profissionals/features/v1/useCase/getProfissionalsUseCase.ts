@@ -70,7 +70,7 @@ export class ProfissionalGetUseCase {
         },
         serviceRequests: {
           where: {
-            status: 'APPROVED',
+            professionalId: id,
           },
         },
         wallets: true,
@@ -79,10 +79,7 @@ export class ProfissionalGetUseCase {
         },
       },
     });
-    this.cache
-      .set(`Profissional-${id}`, profissional, 60 * 10)
-      .then()
-      .catch();
+    await this.cache.set(`Profissional-${id}`, profissional, 60 * 10);
     if (!profissional) {
       throw new ProfissionalNotFoundExecption(``);
     }

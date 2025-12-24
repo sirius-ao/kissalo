@@ -24,7 +24,7 @@ export class ProfissionalToogleBookingStatus {
 
   public async toogle(data: UpdateBookinSatatusProfisional) {
     const [profissional, booking] = await Promise.all([
-      this.profissionalService.findOne(data.userId) as any as User,
+      this.database.user.findFirst({where:{ id : data.userId}}),
       this.bookingService.findOne(data.bookingId),
     ]);
     if (!profissional) {

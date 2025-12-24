@@ -136,10 +136,10 @@ export class UpdatePaymentUseCase {
     const updatedPayment = await this.prisma.payment.update({
       where: { id: paymentId },
       data: {
-        ...updateData,
         status: updateData.status == 'PAID' ? 'PAID' : 'REFUNDED',
         refundedAt: updateData.status == 'PAID' ? null : new Date(),
         paidAt: updateData.status == 'REFUNDED' ? null : new Date(),
+        
       },
     });
     return updatedPayment;

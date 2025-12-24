@@ -26,7 +26,7 @@ export class CreateBookingUseFacade {
   }
 
   public async create(data: CreateBookingDto, userId: number) {
-    let user: User | undefined = undefined;
+    let user:  any = undefined;
     const [admin, service, client] = await Promise.all([
       this.database.user.findFirst({
         where: {
@@ -54,22 +54,22 @@ export class CreateBookingUseFacade {
         ...item?.professional?.user,
       };
     });
+
     if (data.professionalId) {
-      const isAnUser = await this.database.user.findFirst({
+      const isAnUser = await this.database.professional.findFirst({
         where: {
-          role: 'PROFESSIONAL',
-          id: data.professionalId,
+          userId: data.professionalId,
         },
         include: {
-          professional: true,
+          user: true,
         },
       });
-      if (!isAnUser || !isAnUser?.professional) {
+      if (!isAnUser) {
         throw new ProfissionalNotFoundExecption(
           `${user.firstName + ' ' + user.lastName}`,
         );
       }
-      if (isAnUser.status == 'INACTIVE') {
+      if (isAnUser.user.status == 'INACTIVE') {
         throw new ProfissionalNotVerifiedExecption(
           `${user.firstName + ' ' + user.lastName}`,
         );
@@ -85,7 +85,7 @@ export class CreateBookingUseFacade {
           location: data.location,
           startTime: data.startTime,
           priority: data.priority,
-          professionalId: data.professionalId,
+          professionalId: user.id,
           totalAmount: service.basePrice,
           serviceId: data.serviceId,
           status: 'PENDING',

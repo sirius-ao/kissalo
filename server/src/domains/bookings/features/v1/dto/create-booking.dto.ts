@@ -62,7 +62,6 @@ export class CreateBookingDto {
 
   @ApiProperty({
     description: 'Endereço do serviço',
-    type: Object,
     example: {
       street: 'Rua Principal',
       city: 'Luanda',
@@ -70,8 +69,6 @@ export class CreateBookingDto {
     },
   })
   @IsObject()
-  @ValidateNested()
-  @Type(() => Object)
   address: IAddress;
 
   @IsEnum(BookingPriority)

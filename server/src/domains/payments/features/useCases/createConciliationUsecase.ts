@@ -94,7 +94,7 @@ export class CreateConciliationUsecase {
     };
   }
 
-  public getPercentage(amount: number): number {
+  private getPercentage(amount: number): number {
     return amount;
   }
 }

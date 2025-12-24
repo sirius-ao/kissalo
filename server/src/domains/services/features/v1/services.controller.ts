@@ -8,6 +8,7 @@ import {
   Delete,
   UseGuards,
   ParseIntPipe,
+  ParseBoolPipe,
 } from '@nestjs/common';
 import { ServicesService } from './services.service';
 import { CreateServiceTemplateDto } from '@domains/services/dto/create-service.dto';
@@ -70,5 +71,15 @@ export class ServicesController {
       +serviceId,
       +userId,
     );
+  }
+
+  @UseGuards(IsAdminGuard)
+  @Post('professional/:serviceId/:status/:userid/toggle')
+  async toogle(
+    @Param('serviceId', ParseIntPipe) serviceId: number,
+    @Param('status') status: boolean,
+    @Param('userid') userId: number,
+  ) {
+    return await this.servicesService.toogleStatus(+serviceId, +userId, status);
   }
 }
