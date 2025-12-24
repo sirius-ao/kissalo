@@ -5,6 +5,7 @@ import PrismaService from '@infra/database/prisma.service';
 import { UpdateServiceTemplateDto } from '@domains/services/dto/update-service.dto';
 import { ProfessionalServiceRequestDto } from '@domains/services/dto/professional-service-request.dto';
 import { ca } from 'zod/v4/locales';
+import { ApprovalStatus } from '@prisma/client';
 
 @Injectable()
 export class ServicesService {
@@ -185,6 +186,81 @@ export class ServicesService {
         throw error;
       }
       throw new BadRequestException("Erro ao criar requisicao de servico para profissional.")
+    }
+  }
+
+  async findProfessionalServiceRequest(userId: number ) {
+    try{
+      const psr = await this.database.professionalServiceRequest.findMany()
+
+      if (psr.length <= 0) {
+        throw new NotFoundException("Nenhuma requisicao de servico encontrada para profissionais.")
+      }
+
+      return psr;
+
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new BadRequestException("Erro ao buscar requisicoes de servico para profissionais.")
+    }
+  }
+
+  async deleteProfessionalServiceRequest(userId: number, requestId: number) {
+    try {
+
+      const firstPsr = await this.database.professionalServiceRequest.findFirst({  
+        where: {
+          id: requestId
+        }
+      })
+
+      if (!firstPsr) {
+        throw new NotFoundException("Requisicao de servico profissional nao encontrada.")
+      }
+      const psr = await this.database.professionalServiceRequest.delete({
+        where: {
+          id: requestId
+        }
+      })  
+
+      return psr;
+
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new BadRequestException("Erro ao deletar a requisicao de servico profissional.")
+    }
+  }
+
+  async updateProfessionalServiceRequestStatus(userId: number, requestId: number, dto: ProfessionalServiceRequestDto) {
+    const psr = await this.database.professionalServiceRequest.findFirst({
+      where: {
+        id: requestId
+      }
+    })
+
+    if (!psr) {
+      throw new NotFoundException("Requisicao de servico profissional nao encontrada.")
+    }
+    
+    try {
+      const psr = await this.database.professionalServiceRequest.update({
+        where: {
+          id: requestId
+        },
+        data: {
+          status: dto.status,
+          adminNotes: dto.adminNotes
+        }
+      })
+
+      return psr;
+
+    } catch (error) { 
+      throw new BadRequestException("Erro ao atualizar o status da requisicao de servico profissional.")  
     }
   }
 }
