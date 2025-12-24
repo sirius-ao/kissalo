@@ -7,16 +7,23 @@ import {
   Param,
   Delete,
   UseGuards,
+  ParseIntPipe,
+  Query,
 } from '@nestjs/common';
 import { ServicesService } from './services.service';
 import { CreateServiceTemplateDto } from '@domains/services/dto/create-service.dto';
 import { IsAdminGuard } from '@core/http/guards/isAdmin.guard';
 import { UpdateServiceTemplateDto } from '@domains/services/dto/update-service.dto';
 import { IsEmailVerifiedGuard } from '@core/http/guards/isEmailVerifiedGuard';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiProperty, ApiTags } from '@nestjs/swagger';
+import { currentUser } from '@core/http/decorators/currentUser.decorator';
+import { ProfessionalServiceRequestDto } from '@domains/services/dto/professional-service-request.dto';
+import { ApprovalStatus } from '@prisma/client';
+
 
 @Controller('v1/services')
-@ApiTags('Services V1')
+@ApiTags('Services V1') 
+// @UseGuards(IsEmailVerifiedGuard)
 export class ServicesController {
   constructor(private readonly servicesService: ServicesService) {}
 
@@ -55,4 +62,45 @@ export class ServicesController {
   async findByCategory(@Param('categoryId') categoryId: string) {
     return await this.servicesService.findByCategory(+categoryId);
   }
+
+  @Post('professional/:serviceId')
+  async professionalServicesRequest(
+    @Param('serviceId', ParseIntPipe) serviceId: number,
+    @currentUser() userId: number,
+    @Body() professionalServiceRequestDto: ProfessionalServiceRequestDto
+  ) {
+    return await this.servicesService.professionalServicesRequest(+serviceId, +userId, professionalServiceRequestDto);
+  }
+
+
+
+  @Get("request/professional")
+  @UseGuards(IsAdminGuard)
+  async findProfessionalServiceRequest(
+    @currentUser() userId: number,
+  ) {
+    return await this.servicesService.findProfessionalServiceRequest(userId)
+  }
+
+  @Patch("request/professional/:requestId")
+  @UseGuards(IsAdminGuard)
+  async updateProfessionalServiceRequestStatus(
+    @currentUser() userId: number,
+    @Param('requestId', ParseIntPipe) requestId: number,
+    @Body() professionalServiceRequestDto: ProfessionalServiceRequestDto,
+  ) {
+    return await this.servicesService.updateProfessionalServiceRequestStatus(userId, requestId, professionalServiceRequestDto)
+  }
+
+  @Delete("request/professional/:requestId")
+  @UseGuards(IsAdminGuard)
+  async deleteProfessionalServiceRequest(
+    @currentUser() userId: number,
+    @Param('requestId', ParseIntPipe) requestId: number,
+  ) {
+    return await this.servicesService.deleteProfessionalServiceRequest(userId, requestId)
+  }
+  
+
+
 }
