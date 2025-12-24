@@ -13,15 +13,13 @@ import { ServicesService } from './services.service';
 import { CreateServiceTemplateDto } from '@domains/services/dto/create-service.dto';
 import { IsAdminGuard } from '@core/http/guards/isAdmin.guard';
 import { UpdateServiceTemplateDto } from '@domains/services/dto/update-service.dto';
-import { IsEmailVerifiedGuard } from '@core/http/guards/isEmailVerifiedGuard';
 import { ApiTags } from '@nestjs/swagger';
 import { currentUser } from '@core/http/decorators/currentUser.decorator';
 import { ProfessionalServiceRequestDto } from '@domains/services/dto/professional-service-request.dto';
+import { IsProfissionalGuard } from '@core/http/guards/isProfissional.guard';
 
 @Controller('v1/services')
 @ApiTags('Services V1')
-// @UseGuards(IsEmailVerifiedGuard)
-
 @Controller('v1/services')
 @ApiTags('Services V1')
 export class ServicesController {
@@ -63,13 +61,17 @@ export class ServicesController {
     return await this.servicesService.findByCategory(+categoryId);
   }
 
+  @UseGuards(IsProfissionalGuard)
   @Post('professional/:serviceId')
   async professionalServicesRequest(
     @Param('serviceId', ParseIntPipe) serviceId: number,
     @currentUser() userId: number,
-    @Body() professionalServiceRequestDto: ProfessionalServiceRequestDto
+    @Body() professionalServiceRequestDto: ProfessionalServiceRequestDto,
   ) {
-    return await this.servicesService.professionalServicesRequest(+serviceId, +userId, professionalServiceRequestDto);
+    return await this.servicesService.professionalServicesRequest(
+      +serviceId,
+      +userId,
+      professionalServiceRequestDto,
+    );
   }
-
 }

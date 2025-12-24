@@ -1,11 +1,14 @@
 import { CreateServiceTemplateDto } from './../../dto/create-service.dto';
 import { SlugService } from '@core/shared/utils/services/Slug/slug.service';
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import PrismaService from '@infra/database/prisma.service';
 import { UpdateServiceTemplateDto } from '@domains/services/dto/update-service.dto';
-import { ps } from 'zod/v4/locales';
-import { ca } from 'zod/v4/locales';
 import { ProfessionalServiceRequestDto } from '@domains/services/dto/professional-service-request.dto';
+import { ProfissionalNotFoundExecption } from '@core/http/erros/profissional.error';
 
 @Injectable()
 export class ServicesService {
@@ -15,11 +18,14 @@ export class ServicesService {
   ) {}
 
   async create(data: CreateServiceTemplateDto) {
-    const category = await this.database.category.findFirst({
-      where: {
-        id: data.categoryId,
-      },
-    });
+    const [category, slug] = await Promise.all([
+      this.database.category.findFirst({
+        where: {
+          id: data.categoryId,
+        },
+      }),
+      this.SlugService.gen(data.title, 'service'),
+    ]);
 
     if (!category) {
       throw new BadRequestException('Category not found');
@@ -28,6 +34,7 @@ export class ServicesService {
       data: {
         ...data,
         isFeatured: true,
+        slug,
       },
     });
     return service;
@@ -92,52 +99,44 @@ export class ServicesService {
     });
   }
 
-  async professionalServicesRequest(serviceId: number, userId: number, dto: ProfessionalServiceRequestDto) {
-    
+  async professionalServicesRequest(
+    serviceId: number,
+    userId: number,
+    dto: ProfessionalServiceRequestDto,
+  ) {
     const isProfessional = await this.database.professional.findFirst({
       where: {
-        userId: userId
+        userId: userId,
+        
       },
       include: {
-        user: true
-      }
-    }  
-    )
+        user: true,
+      },
+    });
 
     if (!isProfessional) {
-      throw new NotFoundException("Usuario profissional nao encontrado.")
+      throw new ProfissionalNotFoundExecption('');
     }
-
-    if (isProfessional.user.role !== 'PROFESSIONAL') {
-      throw new BadRequestException("Usuario nao e um profissional.")
-    }
-
-
-    try {
-      const isprofessionalServiceRequestExists = await this.database.professionalServiceRequest.findFirst({
+    const isprofessionalServiceRequestExists =
+      await this.database.professionalServiceRequest.findFirst({
         where: {
           professionalId: isProfessional.id,
           serviceId: serviceId,
-        }
-      }) 
-      if (isprofessionalServiceRequestExists){
-        throw new BadRequestException("Ja existe uma requisicao pendente para este servico.")
-      }
-
-      const psr = await this.database.professionalServiceRequest.create({
-        data: {
-          ...dto,
-          serviceId: serviceId,
-          professionalId: isProfessional.id
-        }
-      })
-      return psr;
-
-    } catch(error) {
-      if (error instanceof BadRequestException || error instanceof NotFoundException) {
-        throw error;
-      }
-      throw new BadRequestException("Erro ao criar requisicao de servico para profissional.")
+        },
+      });
+    if (isprofessionalServiceRequestExists) {
+      throw new BadRequestException(
+        'Ja existe uma requisicao pendente para este servico.',
+      );
     }
+
+    return await this.database.professionalServiceRequest.create({
+      data: {
+        ...dto,
+        serviceId: serviceId,
+        professionalId: isProfessional.id,
+        status: 'PENDING',
+      },
+    });
   }
 }
