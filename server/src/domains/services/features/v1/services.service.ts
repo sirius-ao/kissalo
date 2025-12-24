@@ -78,14 +78,23 @@ export class ServicesService {
   }
 
   async update(id: number, data: UpdateServiceTemplateDto) {
-    return await this.database.serviceTemplate.update({
-      where: {
-        id: id,
-      },
-      data: {
-        ...data,
-      },
-    });
+    try {
+      const serviceTemplate = await this.database.serviceTemplate.update({
+        where: {
+          id: id,
+        },
+        data: {
+          ...data,
+        },
+      });
+      
+      return serviceTemplate;
+    } catch (error) {
+      if (error.code == "P2025") {
+        throw new NotFoundException("Servico nao encontrado.")
+      }
+      throw new BadRequestException("Erro ao buscar o servico")
+    }
   }
 
   async remove(id: number) {

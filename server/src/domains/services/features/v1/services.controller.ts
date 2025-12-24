@@ -21,7 +21,7 @@ import { ProfessionalServiceRequestDto } from '@domains/services/dto/professiona
 
 @Controller('v1/services')
 @ApiTags('Services V1') 
-@UseGuards(IsEmailVerifiedGuard)
+// @UseGuards(IsEmailVerifiedGuard)
 export class ServicesController {
   constructor(private readonly servicesService: ServicesService) {}
 
