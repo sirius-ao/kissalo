@@ -87,7 +87,7 @@ export class ServicesService {
           ...data,
         },
       });
-      
+
       return serviceTemplate;
     } catch (error) {
       if (error.code == "P2025") {
@@ -98,11 +98,21 @@ export class ServicesService {
   }
 
   async remove(id: number) {
-    return await this.database.serviceTemplate.delete({
-      where: {
-        id: id,
-      },
-    });
+    try {
+      const serviceTemplate = await this.database.serviceTemplate.delete({
+        where: {
+          id: id,
+        },
+      });
+
+      return serviceTemplate; 
+    } catch (error) {
+      if (error.code == "P2025") {
+        throw new NotFoundException("Servico nao encotrado.")
+      }
+
+      throw new BadRequestException("Erro ao processar o servico.")
+    }
   }
 
   async findByCategory(categoryId: number) {
