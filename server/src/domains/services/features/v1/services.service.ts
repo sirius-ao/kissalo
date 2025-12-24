@@ -116,12 +116,27 @@ export class ServicesService {
   }
 
   async findByCategory(categoryId: number) {
-    return await this.database.serviceTemplate.findMany({
-      where: {
-        categoryId: categoryId,
-        isActive: true,
-      },
-    });
+    try {
+      const serviceTemplate = await this.database.serviceTemplate.findMany({
+        where: {
+          categoryId: categoryId,
+          isActive: true,
+        },
+      });
+
+      if (serviceTemplate.length <= 0) {
+        throw new NotFoundException("Servicos nao encontrados.")
+      }
+
+      return serviceTemplate;
+    } catch (error) {
+
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new BadRequestException("Erro ao processar os servicos")
+    }
+    
   }
 
   async professionalServicesRequest(serviceId: number, userId: number, dto: ProfessionalServiceRequestDto) {
