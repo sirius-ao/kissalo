@@ -18,12 +18,10 @@ import { ApiTags } from '@nestjs/swagger';
 import { currentUser } from '@core/http/decorators/currentUser.decorator';
 import { ProfessionalServiceRequestDto } from '@domains/services/dto/professional-service-request.dto';
 
-@Controller('v1/services')
-@ApiTags('Services V1')
-// @UseGuards(IsEmailVerifiedGuard)
 
 @Controller('v1/services')
-@ApiTags('Services V1')
+@ApiTags('Services V1') 
+@UseGuards(IsEmailVerifiedGuard)
 export class ServicesController {
   constructor(private readonly servicesService: ServicesService) {}
 

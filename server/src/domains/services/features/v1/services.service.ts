@@ -3,9 +3,8 @@ import { SlugService } from '@core/shared/utils/services/Slug/slug.service';
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import PrismaService from '@infra/database/prisma.service';
 import { UpdateServiceTemplateDto } from '@domains/services/dto/update-service.dto';
-import { ps } from 'zod/v4/locales';
-import { ca } from 'zod/v4/locales';
 import { ProfessionalServiceRequestDto } from '@domains/services/dto/professional-service-request.dto';
+import { ca } from 'zod/v4/locales';
 
 @Injectable()
 export class ServicesService {
@@ -42,26 +41,40 @@ export class ServicesService {
   }
 
   async findOne(id: number) {
-    return await this.database.serviceTemplate.findFirst({
-      where: {
-        id: id,
-        isActive: true,
-      },
-      include: {
-        requests: {
+    try {
+      const serviceTemplate = await this.database.serviceTemplate.findFirst({
           where: {
-            status: 'APPROVED',
+            id: id,
+            isActive: true,
           },
           include: {
-            professional: {
+            requests: {
+              where: {
+                status: 'APPROVED',
+              },
               include: {
-                user: true,
+                professional: {
+                  include: {
+                    user: true,
+                  },
+                },
               },
             },
           },
-        },
-      },
-    });
+        });
+
+      if (!serviceTemplate) {
+        throw new NotFoundException("Servico nao encontrado.")
+      }
+
+      return serviceTemplate;
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new BadRequestException("Erro ao buscar servico.")
+    }
+  
   }
 
   async update(id: number, data: UpdateServiceTemplateDto) {
