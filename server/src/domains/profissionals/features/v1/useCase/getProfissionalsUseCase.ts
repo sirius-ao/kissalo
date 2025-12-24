@@ -1,5 +1,4 @@
 import { ProfissionalNotFoundExecption } from '@core/http/erros/profissional.error';
-import { UserNotFoundExecption } from '@core/http/erros/user.error';
 import CacheService from '@infra/cache/cahe.service';
 import PrismaService from '@infra/database/prisma.service';
 
@@ -9,18 +8,11 @@ export class ProfissionalGetUseCase {
     private readonly cache: CacheService,
   ) {}
 
-  public async getAlls(
-    page: number,
-    limit: number,
-    isVerified: boolean | undefined,
-  ) {
+  public async getAlls(page: number, limit: number) {
     page = isNaN(page) || page == 0 ? 1 : page;
     limit = isNaN(limit) || limit == 0 ? 10 : limit;
     const skip = (page - 1) * limit;
     const where: any = {};
-    if (isVerified !== undefined) {
-      where.isVerified = isVerified;
-    }
     const [items, total] = await Promise.all([
       this.database.professional.findMany({
         skip,

@@ -19,13 +19,34 @@ import {
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { currentUser } from '@core/http/decorators/currentUser.decorator';
 import { IsAdminGuard } from '@core/http/guards/isAdmin.guard';
-import { IsEmailVerifiedGuard } from '@core/http/guards/isEmailVerifiedGuard';
+import { IsProfissionalGuard } from '@core/http/guards/isProfissional.guard';
 
 @ApiTags('Profissionals v1')
 @Controller('v1/profissionals')
-@UseGuards(IsEmailVerifiedGuard)
 export class ProfissionalsController {
   constructor(private readonly profissionalsService: ProfissionalsService) {}
+
+  @UseGuards(IsAdminGuard)
+  @ApiOperation({
+    summary: 'Profissionals list',
+  })
+  @Get()
+  findAll(
+    @Query('page', ParseIntPipe) page: number,
+    @Query('limit', ParseIntPipe) limit: number,
+  ) {
+    console.log(page, limit);
+    return this.profissionalsService.findAll(page, limit);
+  }
+
+  @ApiOperation({
+    summary: 'Profissional account details',
+  })
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    console.log(id);
+    return this.profissionalsService.findOne(+id);
+  }
 
   @UseGuards(IsAdminGuard)
   @Patch('/toogle')
@@ -44,6 +65,7 @@ export class ProfissionalsController {
     return this.profissionalsService.create(data);
   }
 
+  @UseGuards(IsProfissionalGuard)
   @Post('/docs')
   @ApiOperation({
     summary: 'Profissional documents create',
@@ -55,6 +77,7 @@ export class ProfissionalsController {
     return this.profissionalsService.createDocument(userId, data);
   }
 
+  @UseGuards(IsProfissionalGuard)
   @Post('/request/verification')
   @ApiOperation({
     summary: 'Profissional account request verification',
@@ -65,29 +88,13 @@ export class ProfissionalsController {
   ) {
     return this.profissionalsService.requestVerification(data, userId);
   }
+
+  @UseGuards(IsProfissionalGuard)
   @ApiOperation({
     summary: 'Profissional account update',
   })
   @Put()
   update(@Body() data: CreateProfessionalDto, @currentUser() userId: number) {
     return this.profissionalsService.update(data, userId);
-  }
-  @ApiOperation({
-    summary: 'Profissionals list',
-  })
-  @Get()
-  findAll(
-    @Query('page', ParseIntPipe) page: number,
-    @Query('limit', ParseIntPipe) limit: number,
-    @Query('isVerified') isVerified: boolean | undefined,
-  ) {
-    return this.profissionalsService.findAll(page, limit, isVerified);
-  }
-  @ApiOperation({
-    summary: 'Profissional account details',
-  })
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.profissionalsService.findOne(+id);
   }
 }

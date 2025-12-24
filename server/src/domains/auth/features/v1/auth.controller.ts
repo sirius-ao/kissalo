@@ -43,6 +43,7 @@ export class AuthController {
     summary: 'profile update',
   })
   profile(@currentUser() userId: number, @Body() data: UpdateProfileDto) {
+    console.log(userId)
     return this.authService.update(data, userId);
   }
 

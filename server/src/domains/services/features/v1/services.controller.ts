@@ -19,7 +19,6 @@ import { ProfessionalServiceRequestDto } from '@domains/services/dto/professiona
 import { IsProfissionalGuard } from '@core/http/guards/isProfissional.guard';
 
 @Controller('v1/services')
-@ApiTags('Services V1')
 @Controller('v1/services')
 @ApiTags('Services V1')
 export class ServicesController {
@@ -66,12 +65,10 @@ export class ServicesController {
   async professionalServicesRequest(
     @Param('serviceId', ParseIntPipe) serviceId: number,
     @currentUser() userId: number,
-    @Body() professionalServiceRequestDto: ProfessionalServiceRequestDto,
   ) {
     return await this.servicesService.professionalServicesRequest(
       +serviceId,
       +userId,
-      professionalServiceRequestDto,
     );
   }
 }

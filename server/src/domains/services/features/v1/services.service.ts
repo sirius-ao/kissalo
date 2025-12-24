@@ -45,6 +45,9 @@ export class ServicesService {
       where: {
         isActive: true,
       },
+      include: {
+        category: true,
+      },
     });
   }
 
@@ -67,27 +70,49 @@ export class ServicesService {
             },
           },
         },
+        category: true,
       },
     });
   }
 
   async update(id: number, data: UpdateServiceTemplateDto) {
-    return await this.database.serviceTemplate.update({
-      where: {
-        id: id,
-      },
-      data: {
-        ...data,
-      },
-    });
+    const [category, slug] = await Promise.all([
+      this.database.category.findFirst({
+        where: {
+          id: data.categoryId,
+        },
+      }),
+      this.SlugService.gen(data.title, 'service'),
+    ]);
+
+    if (!category) {
+      throw new BadRequestException('Category not found');
+    }
+    try {
+      return await this.database.serviceTemplate.update({
+        where: {
+          id: id,
+        },
+        data: {
+          ...data,
+          slug,
+        },
+      });
+    } catch (error) {
+      throw new NotFoundException('Serviço não encontrado');
+    }
   }
 
   async remove(id: number) {
-    return await this.database.serviceTemplate.delete({
-      where: {
-        id: id,
-      },
-    });
+    try {
+      return await this.database.serviceTemplate.delete({
+        where: {
+          id: id,
+        },
+      });
+    } catch (error) {
+      throw new NotFoundException('Serviço não encontrado');
+    }
   }
 
   async findByCategory(categoryId: number) {
@@ -99,15 +124,10 @@ export class ServicesService {
     });
   }
 
-  async professionalServicesRequest(
-    serviceId: number,
-    userId: number,
-    dto: ProfessionalServiceRequestDto,
-  ) {
+  async professionalServicesRequest(serviceId: number, userId: number) {
     const isProfessional = await this.database.professional.findFirst({
       where: {
         userId: userId,
-        
       },
       include: {
         user: true,
@@ -132,10 +152,10 @@ export class ServicesService {
 
     return await this.database.professionalServiceRequest.create({
       data: {
-        ...dto,
         serviceId: serviceId,
         professionalId: isProfessional.id,
         status: 'PENDING',
+        adminNotes: 'Revisar o perfil do profissional',
       },
     });
   }

@@ -51,8 +51,8 @@ export class CreateProfessionalDto {
   password: string;
 
   @ApiProperty({ required: false })
-  @IsOptional()
   @IsUrl()
+  @IsOptional()
   avatarUrl?: string;
 
   @ApiProperty({ enum: ProfessionalType })

@@ -20,7 +20,6 @@ import { ConfigurationModule } from '@infra/config/config.module';
 import { ClientsModule } from './domains/clients/clients.module';
 import { UtilModule } from '@core/shared/utils/util.module';
 import { IsAuthenticatedMiddlware } from '@core/http/middlewares/isAuthenticated.middleware';
-import { BoostrapModule } from '@infra/boostrap/boostrap.module';
 import { NotificationsModule } from './domains/notifications/notifications.module';
 import { Shedule } from '@infra/schedule/schedule.module';
 import { LlmsModule } from './domains/llms/llms.module';
@@ -52,7 +51,6 @@ import { LlmsModule } from './domains/llms/llms.module';
     ConfigurationModule,
     ClientsModule,
     UtilModule,
-    BoostrapModule,
     NotificationsModule,
     LlmsModule,
   ],
@@ -64,13 +62,14 @@ export class AppModule implements NestModule {
       .exclude(
         { path: 'v1/auth/login', method: RequestMethod.POST },
         { path: 'v1/clients', method: RequestMethod.POST },
-        { path: 'v1/profissionals', method: RequestMethod.GET },
+        { path: 'v1/profissionals', method: RequestMethod.POST },
         { path: 'v1/auth/:token/verify', method: RequestMethod.PUT },
         { path: 'v1/auth/:token/refresh', method: RequestMethod.PUT },
         { path: 'v1/auth/:unique/recovery', method: RequestMethod.PUT },
         { path: 'v1/auth/reset', method: RequestMethod.POST },
         { path: 'v1/services', method: RequestMethod.GET },
         { path: 'v1/services/:id', method: RequestMethod.GET },
+        { path: 'v1/services/category/:categoryId', method: RequestMethod.GET },
         { path: 'v1/categories', method: RequestMethod.GET },
         { path: 'v1/categories/:id', method: RequestMethod.GET },
       )
