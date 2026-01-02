@@ -41,7 +41,7 @@ enum BookingStatus {
   STARTED
   COMPLETED
   CANCELED
-  ACEPTED
+  ACCEPTED
   REJECTED
 }
 
@@ -203,9 +203,7 @@ model ServiceTemplate {
   bannerUrl        String?
   isNegotiable     Boolean        @default(false)
   requiresApproval Boolean        @default(false)
-  basePrice        Int
-  minPrice         Int?
-  maxPrice         Int?
+  price        Int
   priceType        ServicePriceType
   currency         String         @default("AOA")
   duration         Int
@@ -260,6 +258,10 @@ model Booking {
   totalAmount      Int
   createdAt        DateTime        @default(now())
   updatedAt        DateTime        @updatedAt
+  canceledAt  DateTime?
+  cancelReason  DateTime?
+  startedAt  DateTime?
+  completedAt  DateTime?
   client           User            @relation("ClientBookings", fields: [clientId], references: [id], onDelete: Cascade)
   professional     Professional?   @relation("ProfessionalBookings", fields: [professionalId], references: [id], onDelete: SetNull)
   service          ServiceTemplate @relation(fields: [serviceId], references: [id], onDelete: Cascade)

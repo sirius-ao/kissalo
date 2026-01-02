@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { ThemeProvider } from "@/context/themeContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -14,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Sellify",
+  title: "Kissalo",
   description: "Seu negócio na palma da sua mão",
 };
 
@@ -26,17 +25,10 @@ export default function RootLayout({
   return (
     <html lang="pt" suppressHydrationWarning>
       <body
+        
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {" "}
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          {children}
-        </ThemeProvider>
+        {children}
       </body>
     </html>
   );

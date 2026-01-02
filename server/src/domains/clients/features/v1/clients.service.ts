@@ -4,23 +4,23 @@ import PrismaService from '@infra/database/prisma.service';
 import { GetclientUseCase } from './usecases/getUseCase';
 import { CreateclientUseCase } from './usecases/createUseCase';
 import { BcryptService } from '@core/shared/utils/services/CryptoService/crypto.service';
-import { EmailService } from '@core/shared/utils/services/EmailService/Email.service';
 import { JwtService } from '@nestjs/jwt';
+import CacheService from '@infra/cache/cahe.service';
 
 @Injectable()
 export class ClientsService {
   constructor(
     private readonly database: PrismaService,
     private readonly encript: BcryptService,
-    private readonly emailService: EmailService,
     private readonly jwt: JwtService,
+    private readonly cache: CacheService,
   ) {}
 
   public async create(createClientDto: CreateClientDto) {
     const facede = new CreateclientUseCase(
       this.database,
       this.encript,
-      this.emailService,
+      this.cache,
       this.jwt,
     );
     return await facede.create(createClientDto);

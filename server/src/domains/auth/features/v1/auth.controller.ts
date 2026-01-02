@@ -14,6 +14,14 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  @Post('/me')
+  @ApiOperation({
+    summary: 'Ge me',
+  })
+  me(@currentUser() userId: number) {
+    return this.authService.me(userId);
+  }
+
   @Post('/login')
   @ApiOperation({
     summary: 'Login',
@@ -43,7 +51,7 @@ export class AuthController {
     summary: 'profile update',
   })
   profile(@currentUser() userId: number, @Body() data: UpdateProfileDto) {
-    console.log(userId)
+    console.log(userId);
     return this.authService.update(data, userId);
   }
 

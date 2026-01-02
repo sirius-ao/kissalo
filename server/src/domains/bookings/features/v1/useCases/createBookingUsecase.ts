@@ -1,136 +1,391 @@
 import PrismaService from '@infra/database/prisma.service';
 import { CreateBookingDto } from '../dto/create-booking.dto';
-import { User } from '@prisma/client';
+import { NotificationType, User } from '@prisma/client';
 import {
   AdminNotFoundExistExecption,
   UserNotFoundExecption,
 } from '@core/http/erros/user.error';
-import {
-  ProfissionalNotFoundExecption,
-  ProfissionalNotVerifiedExecption,
-} from '@core/http/erros/profissional.error';
+import { ProfissionalNotFoundExecption } from '@core/http/erros/profissional.error';
 import { ServicesService } from '@domains/services/features/v1/services.service';
-import { NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  BadRequestException,
+  NotFoundException,
+  Injectable,
+} from '@nestjs/common';
 import { NotificationFactory } from '@core/shared/utils/services/Notification/notification.factory';
-import { NotifyBookingObservers } from '../booking.observers';
-import { ClientsService } from '@domains/clients/features/v1/clients.service';
 
+@Injectable()
 export class CreateBookingUseFacade {
-  protected notiefer: NotifyBookingObservers;
   constructor(
     private readonly database: PrismaService,
-    private readonly notification: NotificationFactory,
+    private readonly notifier: NotificationFactory,
     private readonly services: ServicesService,
-  ) {
-    this.notiefer = new NotifyBookingObservers(this.notification);
-  }
+  ) {}
 
   public async create(data: CreateBookingDto, userId: number) {
-    let user:  any = undefined;
     const [admin, service, client] = await Promise.all([
       this.database.user.findFirst({
-        where: {
-          role: 'ADMIN',
-        },
+        where: { role: 'ADMIN' },
       }),
       this.services.findOne(data.serviceId),
       this.database.user.findFirst({
-        where: {
-          id: userId,
-        },
+        where: { id: userId },
       }),
     ]);
+
     if (!client) {
       throw new UserNotFoundExecption();
     }
+
     if (!service) {
       throw new NotFoundException('Serviço não encontrado');
     }
+
     if (!admin) {
       throw new AdminNotFoundExistExecption();
     }
-    const serviceAssociatedUsers: User[] = service.requests.map((item) => {
-      return {
-        ...item?.professional?.user,
-      };
+
+    await this.validateTimeConflict(userId, data);
+
+    const booking = await this.database.$transaction(async (prisma) => {
+      const booking = await prisma.booking.create({
+        data: {
+          address: JSON.stringify(data.address),
+          endTime: data.endTime,
+          scheduleDate: data.scheduleDate,
+          location: data.location,
+          startTime: data.startTime,
+          priority: data.priority,
+          totalAmount: service.price,
+          serviceId: data.serviceId,
+          status: 'PENDING',
+          clientId: userId,
+        },
+      });
+
+      await this.createBookingNotifications(
+        prisma,
+        booking,
+        client,
+        admin,
+        service,
+      );
+
+      return booking;
     });
 
-    if (data.professionalId) {
-      const isAnUser = await this.database.professional.findFirst({
+    await this.sendBookingNotifications(booking, client, null, admin, service);
+
+    return {
+      message: 'Pedido de serviço criado com sucesso',
+      id: booking.id,
+    };
+  }
+
+  public async anexProfessional(bookingId: number, professionalUserId: number) {
+    if (!bookingId || !professionalUserId) {
+      throw new BadRequestException('Parâmetros inválidos');
+    }
+
+    return await this.database.$transaction(async (prisma) => {
+      const booking = await prisma.booking.findFirst({
+        where: { id: bookingId },
+      });
+
+      if (!booking) {
+        throw new NotFoundException('Agendamento não encontrado');
+      }
+
+      const professionalUser = await prisma.user.findFirst({
         where: {
-          userId: data.professionalId,
+          id: professionalUserId,
+          role: 'PROFESSIONAL',
         },
         include: {
-          user: true,
+          professional: {
+            include: {
+              serviceRequests: {
+                where: {
+                  serviceId: booking.serviceId,
+                  status: 'APPROVED',
+                },
+              },
+            },
+          },
         },
       });
-      if (!isAnUser) {
-        throw new ProfissionalNotFoundExecption(
-          `${user.firstName + ' ' + user.lastName}`,
+
+      if (!professionalUser || !professionalUser.professional) {
+        throw new ProfissionalNotFoundExecption('');
+      }
+
+      const canBeAdded =
+        professionalUser.professional.serviceRequests.length > 0;
+
+      if (!canBeAdded) {
+        throw new BadRequestException(
+          'O profissional não pode ser anexado, pois não está aprovado para este serviço',
         );
       }
-      if (isAnUser.user.status == 'INACTIVE') {
-        throw new ProfissionalNotVerifiedExecption(
-          `${user.firstName + ' ' + user.lastName}`,
+
+      if (booking.professionalId) {
+        throw new ConflictException(
+          'Já existe um profissional atribuído a este agendamento',
         );
       }
-      user = isAnUser;
-    }
-    if (user) {
-      const booking = await this.database.booking.create({
+
+      if (booking.status !== 'PENDING') {
+        throw new BadRequestException(
+          `Não é possível anexar profissional ao agendamento com status "${booking.status}"`,
+        );
+      }
+
+      await this.validateProfessionalTimeConflict(
+        professionalUser.professional.id,
+        booking,
+      );
+
+      const updatedBooking = await prisma.booking.update({
+        where: { id: bookingId },
         data: {
-          address: JSON.stringify(data.address),
-          endTime: data.endTime,
-          scheduleDate: data.scheduleDate,
-          location: data.location,
-          startTime: data.startTime,
-          priority: data.priority,
-          professionalId: user.id,
-          totalAmount: service.basePrice,
-          serviceId: data.serviceId,
-          status: 'PENDING',
-          clientId: userId,
+          professionalId: professionalUser.professional.id,
+          status: 'CONFIRMED',
         },
       });
-      await this.notiefer.notify(
-        [user],
-        admin,
-        booking,
-        'Novo pedido de serviço para si',
-        'Novo pedido de serviço',
-        'Foste escolhido para este serviço , clique em ver detalhes',
+
+      const [service, client] = await Promise.all([
+        this.services.findOne(booking.serviceId),
+        prisma.user.findFirst({
+          where: { id: booking.clientId },
+        }),
+      ]);
+
+      if (!client) {
+        throw new UserNotFoundExecption();
+      }
+
+      if (!service) {
+        throw new NotFoundException('Serviço não encontrado');
+      }
+
+      await this.createProfessionalAssignmentNotifications(
+        prisma,
+        updatedBooking,
+        client,
+        professionalUser,
+        service,
       );
-      return {
-        message: 'Pedido de serviço criado com sucesso ',
-        id: booking.id,
-      };
-    } else {
-      const booking = await this.database.booking.create({
-        data: {
-          address: JSON.stringify(data.address),
-          endTime: data.endTime,
-          scheduleDate: data.scheduleDate,
-          location: data.location,
-          startTime: data.startTime,
-          priority: data.priority,
-          totalAmount: service.basePrice,
-          serviceId: data.serviceId,
-          status: 'PENDING',
-          clientId: userId,
-        },
-      });
-      await this.notiefer.notify(
-        serviceAssociatedUsers,
-        admin,
-        booking,
-        'Novo pedido de serviço',
-        'Novo pedido de serviço',
-        'Aproveite a oportunidade e seje o primeiro a garantir esta oportunidade',
+
+      await this.sendProfessionalAssignmentNotifications(
+        updatedBooking,
+        client,
+        professionalUser,
+        service,
       );
+
       return {
-        message: 'Pedido de serviço criado com sucesso ',
-        id: booking.id,
+        message: 'Profissional anexado com sucesso',
+        id: updatedBooking.id,
       };
+    });
+  }
+
+  private async validateTimeConflict(clientId: number, data: CreateBookingDto) {
+    const conflictingBooking = await this.database.booking.findFirst({
+      where: {
+        clientId,
+        scheduleDate: data.scheduleDate,
+        status: { notIn: ['CANCELED', 'REJECTED', 'COMPLETED'] },
+        OR: [
+          {
+            startTime: { lte: data.startTime },
+            endTime: { gt: data.startTime },
+          },
+          {
+            startTime: { lt: data.endTime },
+            endTime: { gte: data.endTime },
+          },
+          {
+            startTime: { gte: data.startTime },
+            endTime: { lte: data.endTime },
+          },
+        ],
+      },
+    });
+
+    if (conflictingBooking) {
+      throw new ConflictException('Você já tem um agendamento neste horário');
     }
+  }
+
+  private async validateProfessionalTimeConflict(
+    professionalId: number,
+    booking: any,
+  ) {
+    const conflictingBooking = await this.database.booking.findFirst({
+      where: {
+        professionalId,
+        scheduleDate: booking.scheduleDate,
+        status: { notIn: ['CANCELED', 'REJECTED', 'COMPLETED'] },
+        OR: [
+          {
+            startTime: { lte: booking.startTime },
+            endTime: { gt: booking.startTime },
+          },
+          {
+            startTime: { lt: booking.endTime },
+            endTime: { gte: booking.endTime },
+          },
+        ],
+      },
+    });
+
+    if (conflictingBooking) {
+      throw new ConflictException(
+        'O profissional já tem um agendamento neste horário',
+      );
+    }
+  }
+
+  private async createBookingNotifications(
+    prisma: any,
+    booking: any,
+    client: User,
+    admin: User,
+    service: any,
+  ) {
+    const notifications = [
+      {
+        title: 'Novo agendamento',
+        message: `O agendamento do serviço "${service.title}", no valor de ${service.price.toFixed(2)} Kz, foi criado com sucesso.`,
+        type: 'BOOKING' as NotificationType,
+        isRead: false,
+        userId: client.id,
+        createdAt: new Date(),
+        deepLink: `/bookings/${booking.id}`,
+      },
+      {
+        title: 'Novo agendamento',
+        message: `Um novo agendamento para o serviço "${service.title}" foi criado pelo cliente ${client.firstName} ${client.lastName}.`,
+        type: 'SYSTEM' as NotificationType,
+        isRead: false,
+        userId: admin.id,
+        createdAt: new Date(),
+        deepLink: `/admin/bookings/${booking.id}`,
+      },
+    ];
+
+    await prisma.notification.createMany({
+      data: notifications,
+    });
+  }
+
+  private async sendBookingNotifications(
+    booking: any,
+    client: User,
+    professional: User | null,
+    admin: User,
+    service: any,
+  ) {
+    const pushNotifier = this.notifier.send('PUSH');
+    const emailNotifier = this.notifier.send('EMAIL');
+
+    const clientNotification = {
+      title: 'Novo agendamento',
+      message: `O agendamento do serviço "${service.title}", no valor de ${service.price.toFixed(2)} Kz, foi criado com sucesso.`,
+      type: 'BOOKING' as NotificationType,
+      isRead: false,
+      userId: client.id,
+      createdAt: new Date(),
+      deepLink: `/bookings/${booking.id}`,
+    };
+
+    const adminNotification = {
+      title: 'Novo agendamento',
+      message: `Um novo agendamento para o serviço "${service.title}" foi criado pelo cliente ${client.firstName} ${client.lastName}.`,
+      type: 'SYSTEM' as NotificationType,
+      isRead: false,
+      userId: admin.id,
+      createdAt: new Date(),
+      deepLink: `/admin/bookings/${booking.id}`,
+    };
+
+    await Promise.all([
+      pushNotifier.send(clientNotification, client),
+      emailNotifier.send(clientNotification, client),
+      pushNotifier.send(adminNotification, admin),
+      emailNotifier.send(adminNotification, admin),
+    ]);
+  }
+
+  private async createProfessionalAssignmentNotifications(
+    prisma: any,
+    booking: any,
+    client: User,
+    professional: User,
+    service: any,
+  ) {
+    const notifications = [
+      {
+        title: 'Prestador atribuído',
+        message: `O agendamento do serviço "${service.title}" foi atribuído ao prestador ${professional.firstName} ${professional.lastName}.`,
+        type: 'BOOKING' as NotificationType,
+        isRead: false,
+        userId: client.id,
+        createdAt: new Date(),
+        deepLink: `/bookings/${booking.id}`,
+      },
+      {
+        title: 'Novo agendamento atribuído',
+        message: `Você foi atribuído ao agendamento do serviço "${service.title}".`,
+        type: 'BOOKING' as NotificationType,
+        isRead: false,
+        userId: professional.id,
+        createdAt: new Date(),
+        deepLink: `/bookings/${booking.id}`,
+      },
+    ];
+
+    await prisma.notification.createMany({
+      data: notifications,
+    });
+  }
+
+  private async sendProfessionalAssignmentNotifications(
+    booking: any,
+    client: User,
+    professional: User,
+    service: any,
+  ) {
+    const pushNotifier = this.notifier.send('PUSH');
+    const emailNotifier = this.notifier.send('EMAIL');
+
+    const clientNotification = {
+      title: 'Prestador atribuído',
+      message: `O agendamento do serviço "${service.title}" foi atribuído ao prestador ${professional.firstName} ${professional.lastName}.`,
+      type: 'BOOKING' as NotificationType,
+      isRead: false,
+      userId: client.id,
+      createdAt: new Date(),
+      deepLink: `/bookings/${booking.id}`,
+    };
+
+    const professionalNotification = {
+      title: 'Novo agendamento atribuído',
+      message: `Você foi atribuído ao agendamento do serviço "${service.title}".`,
+      type: 'BOOKING' as NotificationType,
+      isRead: false,
+      userId: professional.id,
+      createdAt: new Date(),
+      deepLink: `/bookings/${booking.id}`,
+    };
+
+    await Promise.all([
+      pushNotifier.send(clientNotification, client),
+      emailNotifier.send(clientNotification, client),
+      pushNotifier.send(professionalNotification, professional),
+      emailNotifier.send(professionalNotification, professional),
+    ]);
   }
 }

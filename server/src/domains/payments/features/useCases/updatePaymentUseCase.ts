@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  NotFoundException,
-  ForbiddenException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import PrismaService from '@infra/database/prisma.service';
 import { NotificationFactory } from '@core/shared/utils/services/Notification/notification.factory';
 import { BookingStatus, NotificationType } from '@prisma/client';
@@ -139,7 +135,6 @@ export class UpdatePaymentUseCase {
         status: updateData.status == 'PAID' ? 'PAID' : 'REFUNDED',
         refundedAt: updateData.status == 'PAID' ? null : new Date(),
         paidAt: updateData.status == 'REFUNDED' ? null : new Date(),
-        
       },
     });
     return updatedPayment;

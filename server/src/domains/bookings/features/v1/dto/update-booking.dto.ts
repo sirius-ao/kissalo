@@ -13,38 +13,28 @@ import {
 export class UpdateBookingDto extends PartialType(CreateBookingDto) {}
 
 export enum UpdateBookinSatatusProfisionalEnum {
-  'ACEPTED' = 'ACEPTED',
+  'ACCEPTED' = 'ACCEPTED',
   'REJECTED' = 'REJECTED',
+  'STARTED' = 'STARTED',
+  'COMPLETED' = 'COMPLETED',
+  'CANCELED' = 'CANCELED',
 }
 
-export class UpdateBookinSatatusProfisional {
-  @IsInt()
-  @IsNotEmpty()
-  @ApiProperty()
-  bookingId: number;
-  @IsEmpty()
-  @ApiHideProperty()
-  userId: number;
+export class UpdateBookinStatus {
   @IsEnum(UpdateBookinSatatusProfisionalEnum)
   @IsNotEmpty()
   @ApiProperty({
     enum: UpdateBookinSatatusProfisionalEnum,
   })
-  status: 'ACEPTED' | 'REJECTED';
-
+  status: UpdateBookinSatatusProfisionalEnum;
   @ApiProperty({
     description: 'Mensagem ',
-    example: 5,
-    nullable: true,
   })
   @IsString()
   @IsOptional()
   notes: string;
-
   @ApiProperty({
     description: 'Anexos ',
-    example: 5,
-    nullable: true,
   })
   @IsArray()
   files: string[];

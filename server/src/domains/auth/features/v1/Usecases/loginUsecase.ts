@@ -39,7 +39,7 @@ export class LoginUseCase {
     if (!user) {
       throw new UserNotFoundExecption();
     }
-    if (!user.isEmailVerified) {
+    if (!user.isEmailVerified && user.role !== 'CUSTOMER') {
       const requestActivation = new RequestActivation(
         this.database,
         this.emailService,
@@ -76,11 +76,12 @@ export class LoginUseCase {
         },
       ),
     ];
+
+    const { password, ...userPublicData } = user;
     await Promise.all([
-      this.cache.set(`userProfile-${user.id}`, user, 60 * 60 * 1),
+      this.cache.set(`userProfile-${user.id}`, userPublicData, 60 * 60),
       this.cache.set(`userRefreshToken-${user.id}`, refreshToken, TWO_WEEKS),
     ]);
-    const { password, ...userPublicData } = user;
     return {
       user: userPublicData,
       acessToken,

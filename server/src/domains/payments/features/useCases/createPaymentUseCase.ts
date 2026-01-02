@@ -53,7 +53,7 @@ export class CreatePaymentUseCase {
         clientId: booking.clientId,
         professionalId: booking.professionalId ?? dto.professionalId ?? null,
         fileUrl: dto.fileUrl,
-        amount: booking.service.basePrice,
+        amount: booking.service.price,
         currency: booking.service.currency,
         method: dto.method,
         status: PaymentStatus.PENDING,
