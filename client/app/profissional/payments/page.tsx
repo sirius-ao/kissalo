@@ -32,12 +32,12 @@ import {
 import { useEffect, useState } from "react";
 import constants from "@/constants";
 import { Loader } from "@/components/Loader";
-import { mockPayments } from "@/mocks/payments";
+import { paymentsMock } from "@/mocks/payments";
 import { IStats, StarsCard } from "@/components/StatsCard";
 import { verifyArrayDisponiblity } from "@/lib/utils";
 export default function Payments() {
   const [isLoading, setIsLoading] = useState(true);
-  const [payments, setpayments] = useState<IPayment[]>(mockPayments);
+  const [payments, setpayments] = useState<IPayment[]>(paymentsMock);
   const stats: IStats[] = [
     {
       isCoin: false,

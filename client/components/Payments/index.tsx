@@ -43,12 +43,12 @@ export function PaymentAvatar({ user }: { user: IUser }) {
       <Avatar className="h-8 w-8">
         <AvatarImage src={user?.avatarUrl} />
         <AvatarFallback>
-          {user.firstName[0]}
-          {user.lastName[0]}
+          {user?.firstName[0]}
+          {user?.lastName[0]}
         </AvatarFallback>
       </Avatar>
       <span className="text-sm">
-        {user.firstName} {user.lastName}
+        {user?.firstName} {user?.lastName}
       </span>
     </div>
   );

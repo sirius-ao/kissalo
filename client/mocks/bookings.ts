@@ -1,99 +1,259 @@
-
-
 import {
   BookingPriority,
   BookingStatus,
   PaymentStatus,
   ServiceLocation,
 } from "@/types/enum";
-import { IBooking } from "@/types/interfaces";
-import { faker } from "@faker-js/faker";
+import { IBooking, IBookingSteps } from "@/types/interfaces";
+export const bookingStepsMock: IBookingSteps[][] = [
+  [
+    {
+      id: 1,
+      bookingId: 1,
+      senderId: 1,
+      notes: "Cliente enviou requisitos iniciais.",
+      files: ["https://example.com/file1.pdf"],
+      createdAt: new Date("2026-01-01T09:00:00"),
+      booking: undefined as any,
+      user: undefined as any,
+    },
+  ],
+  [
+    {
+      id: 2,
+      bookingId: 2,
+      senderId: 2,
+      notes: "Profissional confirmou disponibilidade.",
+      files: [],
+      createdAt: new Date("2026-01-01T10:00:00"),
+      booking: undefined as any,
+      user: undefined as any,
+    },
+  ],
+  [
+    {
+      id: 3,
+      bookingId: 3,
+      senderId: 3,
+      notes: "Documentos enviados pelo cliente.",
+      files: ["https://example.com/file2.pdf", "https://example.com/file3.pdf"],
+      createdAt: new Date("2026-01-01T11:00:00"),
+      booking: undefined as any,
+      user: undefined as any,
+    },
+  ],
+  [
+    {
+      id: 4,
+      bookingId: 4,
+      senderId: 4,
+      notes: "Profissional respondeu com dúvidas.",
+      files: [],
+      createdAt: new Date("2026-01-01T12:00:00"),
+      booking: undefined as any,
+      user: undefined as any,
+    },
+  ],
+  [
+    {
+      id: 5,
+      bookingId: 5,
+      senderId: 5,
+      notes: "Cliente aprovou proposta final.",
+      files: ["https://example.com/file4.pdf"],
+      createdAt: new Date("2026-01-01T13:00:00"),
+      booking: undefined as any,
+      user: undefined as any,
+    },
+  ],
+];
 
-export const bookingsMock: IBooking[] = Array.from({ length: 10 }).map(
-  (_, i) => {
-    const scheduleDate = new Date();
-    const startTime = new Date();
-    const endTime = new Date(startTime);
-
-    const statuses = Object.values(BookingStatus);
-    const payments = Object.values(PaymentStatus);
-    const priorities = Object.values(BookingPriority);
-    const locations = Object.values(ServiceLocation);
-
-    return {
-      id: i + 1,
-      clientId: faker.number.int(),
-      professionalId: faker.number.int(),
-      serviceId: 1,
-      canEnd: faker.datatype.boolean(),
-      scheduleDate,
-      startTime,
-      endTime,
-      location: faker.helpers.arrayElement(locations),
-      address: {
-        city: "Luanda",
-        district: "Viana",
+export const bookingsMock: IBooking[] = [
+  {
+    id: 1,
+    clientId: 1,
+    professionalId: 2,
+    serviceId: 1,
+    canEnd: true,
+    scheduleDate: new Date("2026-01-03T10:00:00"),
+    startTime: new Date("2026-01-03T10:00:00"),
+    endTime: new Date("2026-01-03T12:00:00"),
+    location: ServiceLocation.CLIENT_HOME,
+    address: { city: "Luanda", district: "Viana" },
+    priority: BookingPriority.MEDIUM,
+    status: BookingStatus.ACCEPTED,
+    paymentStatus: PaymentStatus.PAID,
+    totalAmount: 300,
+    createdAt: new Date("2026-01-01T08:00:00"),
+    updatedAt: new Date("2026-01-02T08:00:00"),
+    canceledAt: undefined,
+    cancelReason: undefined,
+    completedAt: new Date("2026-01-03T12:00:00"),
+    client: {
+      firstName: "Francisco",
+      lastName: "Diakomas",
+      email: "francisco@example.com",
+      avatarUrl: "https://example.com/avatar1.jpg",
+    } as any,
+    professional: {
+      user: {
+        firstName: "Maria",
+        lastName: "Silva",
+        email: "maria@example.com",
+        avatarUrl: "https://example.com/avatar2.jpg",
       },
-      priority: faker.helpers.arrayElement(priorities),
-      status: faker.helpers.arrayElement(statuses),
-      paymentStatus: faker.helpers.arrayElement(payments),
-      totalAmount: faker.number.int({ min: 1000 }),
-      createdAt: faker.date.past(),
-      updatedAt: faker.date.recent(),
-      canceledAt: undefined,
-      cancelReason: undefined,
-      completedAt:
-        faker.datatype.boolean() &&
-        faker.helpers.arrayElement([
-          BookingStatus.COMPLETED,
-          BookingStatus.CONFIRMED,
-        ])
-          ? new Date(scheduleDate)
-          : undefined,
-      client: {
-        firstName: faker.internet.username(),
-        lastName: faker.internet.username(),
-        email: faker.internet.email(),
-        avatarUrl: faker.image.avatar(),
-      } as any,
-      professional: {
-        firstName: faker.internet.username(),
-        lastName: faker.internet.username(),
-        email: faker.internet.email(),
-        avatarUrl: faker.image.avatar(),
-      } as any,
-      service: {
-        title: faker.helpers.arrayElement([
-          "Criação de sites",
-          "Design Gráfico",
-          "Marketing Digital",
-          "Consultoria Empresarial",
-          "Desenvolvimento de App",
-          "Fotografia Profissional",
-        ]),
-      } as any,
-      steps: [],
-    };
-  }
-);
-
-import { IBookingSteps } from "@/types/interfaces";
-
-export function generateBookingSteps(
-  bookingId: number,
-  userId: number
-): IBookingSteps[] {
-  const stepsCount = faker.number.int({ min: 1, max: 5 });
-
-  return Array.from({ length: stepsCount }, (_, i) => ({
-    id: faker.number.int(),
-    bookingId,
-    senderId: userId,
-    notes: faker.lorem.sentences(2),
-    files: faker.datatype.boolean() ? [faker.internet.url()] : [],
-    createdAt: faker.date.recent(),
-
-    booking: undefined as any,
-    user: undefined as any,
-  }));
-}
+    } as any,
+    service: {
+      title: "Criação de sites",
+    } as any,
+    steps: bookingStepsMock[0],
+  },
+  {
+    id: 2,
+    clientId: 3,
+    professionalId: 4,
+    serviceId: 2,
+    canEnd: false,
+    scheduleDate: new Date("2026-01-04T14:00:00"),
+    startTime: new Date("2026-01-04T14:00:00"),
+    endTime: new Date("2026-01-04T16:00:00"),
+    location: ServiceLocation.PROFESSIONAL_HOME,
+    address: { city: "Luanda", district: "Talatona" },
+    priority: BookingPriority.HIGH,
+    status: BookingStatus.PENDING,
+    paymentStatus: PaymentStatus.PENDING,
+    totalAmount: 450,
+    createdAt: new Date("2026-01-02T09:00:00"),
+    updatedAt: new Date("2026-01-02T12:00:00"),
+    canceledAt: undefined,
+    cancelReason: undefined,
+    completedAt: undefined,
+    client: {
+      firstName: "Carlos",
+      lastName: "Pereira",
+      email: "carlos@example.com",
+      avatarUrl: "https://example.com/avatar3.jpg",
+    } as any,
+    professional: {
+      firstName: "Ana",
+      lastName: "Costa",
+      email: "ana@example.com",
+      avatarUrl: "https://example.com/avatar4.jpg",
+    } as any,
+    service: {
+      title: "Design Gráfico",
+    } as any,
+    steps: bookingStepsMock[1],
+  },
+  {
+    id: 3,
+    clientId: 5,
+    professionalId: 6,
+    serviceId: 3,
+    canEnd: true,
+    scheduleDate: new Date("2026-01-05T09:00:00"),
+    startTime: new Date("2026-01-05T09:00:00"),
+    endTime: new Date("2026-01-05T11:00:00"),
+    location: ServiceLocation.CLIENT_HOME,
+    address: { city: "Luanda", district: "Ingombota" },
+    priority: BookingPriority.LOW,
+    status: BookingStatus.CONFIRMED,
+    paymentStatus: PaymentStatus.PAID,
+    totalAmount: 200,
+    createdAt: new Date("2026-01-02T10:00:00"),
+    updatedAt: new Date("2026-01-02T15:00:00"),
+    canceledAt: undefined,
+    cancelReason: undefined,
+    completedAt: new Date("2026-01-05T11:00:00"),
+    client: {
+      firstName: "Sofia",
+      lastName: "Martins",
+      email: "sofia@example.com",
+      avatarUrl: "https://example.com/avatar5.jpg",
+    } as any,
+    professional: {
+      firstName: "Pedro",
+      lastName: "Almeida",
+      email: "pedro@example.com",
+      avatarUrl: "https://example.com/avatar6.jpg",
+    } as any,
+    service: {
+      title: "Marketing Digital",
+    } as any,
+    steps: bookingStepsMock[2],
+  },
+  {
+    id: 4,
+    clientId: 7,
+    professionalId: 8,
+    serviceId: 4,
+    canEnd: false,
+    scheduleDate: new Date("2026-01-06T15:00:00"),
+    startTime: new Date("2026-01-06T15:00:00"),
+    endTime: new Date("2026-01-06T17:00:00"),
+    location: ServiceLocation.PROFESSIONAL_HOME,
+    address: { city: "Luanda", district: "Sambizanga" },
+    priority: BookingPriority.MEDIUM,
+    status: BookingStatus.PENDING,
+    paymentStatus: PaymentStatus.PENDING,
+    totalAmount: 350,
+    createdAt: new Date("2026-01-03T09:00:00"),
+    updatedAt: new Date("2026-01-03T12:00:00"),
+    canceledAt: undefined,
+    cancelReason: undefined,
+    completedAt: undefined,
+    client: {
+      firstName: "Rita",
+      lastName: "Fernandes",
+      email: "rita@example.com",
+      avatarUrl: "https://example.com/avatar7.jpg",
+    } as any,
+    professional: {
+      firstName: "Lucas",
+      lastName: "Mendes",
+      email: "lucas@example.com",
+      avatarUrl: "https://example.com/avatar8.jpg",
+    } as any,
+    service: {
+      title: "Consultoria Empresarial",
+    } as any,
+    steps: bookingStepsMock[3],
+  },
+  {
+    id: 5,
+    clientId: 9,
+    professionalId: 10,
+    serviceId: 5,
+    canEnd: true,
+    scheduleDate: new Date("2026-01-07T10:00:00"),
+    startTime: new Date("2026-01-07T10:00:00"),
+    endTime: new Date("2026-01-07T12:00:00"),
+    location: ServiceLocation.CLIENT_HOME,
+    address: { city: "Luanda", district: "Talatona" },
+    priority: BookingPriority.HIGH,
+    status: BookingStatus.ACCEPTED,
+    paymentStatus: PaymentStatus.PAID,
+    totalAmount: 500,
+    createdAt: new Date("2026-01-04T08:00:00"),
+    updatedAt: new Date("2026-01-05T08:00:00"),
+    canceledAt: undefined,
+    cancelReason: undefined,
+    completedAt: new Date("2026-01-07T12:00:00"),
+    client: {
+      firstName: "João",
+      lastName: "Carvalho",
+      email: "joao@example.com",
+      avatarUrl: "https://example.com/avatar9.jpg",
+    } as any,
+    professional: {
+      firstName: "Beatriz",
+      lastName: "Ramos",
+      email: "beatriz@example.com",
+      avatarUrl: "https://example.com/avatar10.jpg",
+    } as any,
+    service: {
+      title: "Desenvolvimento de App",
+    } as any,
+    steps: bookingStepsMock[4],
+  },
+];

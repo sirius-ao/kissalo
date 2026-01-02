@@ -2,12 +2,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PaymentAvatar, PaymentStatusBadge } from "@/components/Payments";
 import { Separator } from "@/components/ui/separator";
 import { CheckCircle, File } from "lucide-react";
-import { mockPayments } from "@/mocks/payments";
+import { paymentsMock } from "@/mocks/payments";
 import { Button } from "@/components/ui/button";
 import { WalletCard } from "@/components/Wallets";
 
 export default function PaymentDetails() {
-  const payment = mockPayments[0];
+  const payment = paymentsMock[0];
   const service = payment?.booking?.service;
   const wallet = payment?.conclidation?.wallet;
 

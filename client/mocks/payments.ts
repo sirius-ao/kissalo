@@ -1,54 +1,142 @@
-
-
 import { PaymentStatus } from "@/types/enum";
 import { IPayment } from "@/types/interfaces";
-import { faker } from "@faker-js/faker";
-import { mockUser } from "./users";
 import { bookingsMock } from "./bookings";
 import { walletsMock } from "./wallets";
 
-export const mockPayment = (bookingId?: number): IPayment => {
-  const status = faker.helpers.enumValue(PaymentStatus);
-
-  return {
-    id: faker.number.int(),
-    bookingId: bookingId ?? faker.number.int(),
-
-    amount: faker.number.float({ min: 5000, max: 50000 }),
-    currency: "AOA",
-
-    method: faker.string.alphanumeric(12).toUpperCase(),
-    status,
-
-    paidAt: status === PaymentStatus.PAID ? faker.date.recent() : undefined,
-    refundedAt:
-      status === PaymentStatus.REFUNDED ? faker.date.recent() : undefined,
-
-    createdAt: faker.date.past(),
-    updatedAt: faker.date.recent(),
+export const paymentsMock: IPayment[] = [
+  {
+    id: 1,
+    bookingId: bookingsMock[0].id,
+    clientId: bookingsMock[0].clientId,
+    professionalId: bookingsMock[0].professionalId,
+    amount: 300,
+    currency: "USD",
+    method: "CREDIT_CARD",
+    status: PaymentStatus.PAID,
+    paidAt: new Date("2026-01-02T09:00:00"),
+    refundedAt: undefined,
+    createdAt: new Date("2026-01-01T08:00:00"),
+    updatedAt: new Date("2026-01-02T08:00:00"),
     booking: bookingsMock[0],
-    client: {
-      firstName: faker.internet.username(),
-      lastName: faker.internet.username(),
-      email: faker.internet.email(),
-      avatarUrl: faker.image.avatar(),
-    } as any,
-    professional: {
-      user: {
-        firstName: faker.internet.username(),
-        lastName: faker.internet.username(),
-        email: faker.internet.email(),
-        avatarUrl: faker.image.avatar(),
-      },
-    } as any,
-    clientId: faker.number.int(),
-    professionalId: faker.number.int(),
+    client: bookingsMock[0].client,
+    professional: bookingsMock[0].professional,
     conclidation: {
+      id: 3,
+      paymentId: 5,
+      userId: bookingsMock[4].clientId,
+      waaletId: walletsMock[0].id,
+      fileUrl: "https://example.com/concl3.pdf",
+      payment: undefined as any,
+      profissional: bookingsMock[4].client,
       wallet: walletsMock[0],
-    } as any,
-  };
-};
-
-export const mockPayments = Array.from({ length: 10 }).map((item, idx) => {
-  return mockPayment(idx);
-});
+    },
+  },
+  {
+    id: 2,
+    bookingId: bookingsMock[1].id,
+    clientId: bookingsMock[1].clientId,
+    professionalId: bookingsMock[1].professionalId,
+    amount: 450,
+    currency: "USD",
+    method: "BANK_TRANSFER",
+    status: PaymentStatus.PENDING,
+    paidAt: undefined,
+    refundedAt: undefined,
+    createdAt: new Date("2026-01-02T09:30:00"),
+    updatedAt: new Date("2026-01-02T10:00:00"),
+    booking: bookingsMock[1],
+    client: bookingsMock[1].client,
+    professional: bookingsMock[1].professional,
+    conclidation: {
+      id: 3,
+      paymentId: 5,
+      userId: bookingsMock[4].clientId,
+      waaletId: walletsMock[0].id,
+      fileUrl: "https://example.com/concl3.pdf",
+      payment: undefined as any,
+      profissional: bookingsMock[4].client,
+      wallet: walletsMock[0],
+    },
+  },
+  {
+    id: 3,
+    bookingId: bookingsMock[2].id,
+    clientId: bookingsMock[2].clientId,
+    professionalId: bookingsMock[2].professionalId,
+    amount: 200,
+    currency: "USD",
+    method: "PAYPAL",
+    status: PaymentStatus.PAID,
+    paidAt: new Date("2026-01-04T11:00:00"),
+    refundedAt: undefined,
+    createdAt: new Date("2026-01-03T08:00:00"),
+    updatedAt: new Date("2026-01-04T09:00:00"),
+    booking: bookingsMock[2],
+    client: bookingsMock[2].client,
+    professional: bookingsMock[2].professional,
+    conclidation: {
+      id: 3,
+      paymentId: 5,
+      userId: bookingsMock[4].clientId,
+      waaletId: walletsMock[0].id,
+      fileUrl: "https://example.com/concl3.pdf",
+      payment: undefined as any,
+      profissional: bookingsMock[4].client,
+      wallet: walletsMock[0],
+    },
+  },
+  {
+    id: 4,
+    bookingId: bookingsMock[3].id,
+    clientId: bookingsMock[3].clientId,
+    professionalId: bookingsMock[3].professionalId,
+    amount: 350,
+    currency: "USD",
+    method: "CASH",
+    status: PaymentStatus.PENDING,
+    paidAt: undefined,
+    refundedAt: undefined,
+    createdAt: new Date("2026-01-03T10:00:00"),
+    updatedAt: new Date("2026-01-03T11:00:00"),
+    booking: bookingsMock[3],
+    client: bookingsMock[3].client,
+    professional: bookingsMock[3].professional,
+    conclidation: {
+      id: 3,
+      paymentId: 5,
+      userId: bookingsMock[4].clientId,
+      waaletId: walletsMock[0].id,
+      fileUrl: "https://example.com/concl3.pdf",
+      payment: undefined as any,
+      profissional: bookingsMock[4].client,
+      wallet: walletsMock[0],
+    },
+  },
+  {
+    id: 5,
+    bookingId: bookingsMock[4].id,
+    clientId: bookingsMock[4].clientId,
+    professionalId: bookingsMock[4].professionalId,
+    amount: 500,
+    currency: "USD",
+    method: "CREDIT_CARD",
+    status: PaymentStatus.PAID,
+    paidAt: new Date("2026-01-06T10:00:00"),
+    refundedAt: undefined,
+    createdAt: new Date("2026-01-05T08:00:00"),
+    updatedAt: new Date("2026-01-06T09:00:00"),
+    booking: bookingsMock[4],
+    client: bookingsMock[4].client,
+    professional: bookingsMock[4].professional,
+    conclidation: {
+      id: 3,
+      paymentId: 5,
+      userId: bookingsMock[4].clientId,
+      waaletId: walletsMock[0].id,
+      fileUrl: "https://example.com/concl3.pdf",
+      payment: undefined as any,
+      profissional: bookingsMock[4].client,
+      wallet: walletsMock[0],
+    },
+  },
+];
