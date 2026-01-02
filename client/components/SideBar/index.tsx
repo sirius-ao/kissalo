@@ -134,8 +134,6 @@ export function SideBar() {
               )}
             >
               {item.icon}
-              {item.title?.slice(0, 7)}
-              {item.title?.length > 7 && "..."}
             </Link>
           ))}
       </footer>
