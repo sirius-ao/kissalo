@@ -209,7 +209,7 @@ export default function DashBoardProfissional() {
                 />
               ))}
 
-              <ChartLegend content={<ChartLegendContent payload={""} />} />
+              <ChartLegend content={<ChartLegendContent payload={[]} />} />
             </AreaChart>
           </ChartContainer>
         </CardContent>

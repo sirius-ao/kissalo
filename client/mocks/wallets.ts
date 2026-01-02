@@ -19,3 +19,4 @@ export const walletsMock: IWallet[] = Array.from({ length: 5 }).map((_, i) => ({
   professional: null as any, // geralmente vem via backend
   conclidation: [],
 }));
+

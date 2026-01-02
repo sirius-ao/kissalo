@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 const fakeImage = () =>
   `https://picsum.photos/seed/${faker.string.uuid()}/800/600`;
 import { faker } from "@faker-js/faker";
