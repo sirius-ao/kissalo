@@ -93,7 +93,7 @@ export default function WalletsPage() {
             {verifyArrayDisponiblity(stats) &&
               stats.map((item, idx) => <StarsCard data={item} key={idx} />)}
           </span>
-          <form className="grid md:grid-cols-3 ">
+          <form className="grid md:grid-cols-3 gap-4 ">
             <Dialog>
               <DialogTrigger asChild>
                 <Button type="button" variant={"outline"} className="w-40">

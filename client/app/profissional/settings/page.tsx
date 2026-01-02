@@ -15,7 +15,7 @@ export default function SettingsPage() {
       <h1 className="text-2xl font-bold mb-6">⚙️ Configurações</h1>
 
       <Tabs defaultValue="personal" className="flex gap-6">
-        <TabsList className="ld:flex grid grid-cols-2 w-full gap-3 ">
+        <TabsList className="ld:flex grid grid-cols-2 w-full gap-3 md:pb-0 pb-20 ">
           <TabsTrigger value="personal" className="justify-start gap-2">
             <User size={16} /> Perfil pessoal
           </TabsTrigger>
