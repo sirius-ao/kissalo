@@ -123,7 +123,7 @@ export default function ServiceProfissionalPage() {
       ) : (
         <>
           {" "}
-          <span className="flex justify-between gap-3 pt-4">
+          <span className="flex md:flex-row flex-col-reverse justify-between gap-3 pt-4">
             <form action="" className="lg:w-[30%]">
               <InputGroup>
                 <InputGroupInput placeholder="Buscar por serviços ..." />
@@ -158,7 +158,7 @@ export default function ServiceProfissionalPage() {
               </InputGroup>
             </form>
             <div></div>
-            <span className="flex">
+            <span className="flex md:w-auto w-full">
               <Tabs defaultValue="confirmated" className="w-full">
                 <TabsList className="w-full  bg-gray-100/1 border border-neutral-500/10">
                   {tabs.map((item, idx) => (
