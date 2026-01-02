@@ -11,11 +11,11 @@ import LogoutTab from "./tabs/Logout";
 
 export default function SettingsPage() {
   return (
-    <div className="p-6">
+    <div>
       <h1 className="text-2xl font-bold mb-6">⚙️ Configurações</h1>
 
       <Tabs defaultValue="personal" className="flex gap-6">
-        <TabsList className="flex ">
+        <TabsList className="ld:flex grid grid-cols-2 w-full gap-3 ">
           <TabsTrigger value="personal" className="justify-start gap-2">
             <User size={16} /> Perfil pessoal
           </TabsTrigger>
