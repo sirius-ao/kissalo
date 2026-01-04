@@ -65,12 +65,8 @@ export class ProfissionalsService {
     const update = new UpdateProfissionalUseCase(this.database);
     return await update.update(data, userId);
   }
-  public async findAll(
-    page: number,
-    limit: number,
-    isVerified: boolean | undefined,
-  ) {
-    return await this.userGetter.getAlls(page, limit, isVerified);
+  public async findAll(page: number, limit: number) {
+    return await this.userGetter.getAlls(page, limit);
   }
   public async findOne(id: number) {
     return await this.userGetter.getOne(id);

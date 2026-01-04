@@ -1,12 +1,4 @@
-import {
-  Controller,
-  Post,
-  Body,
-  Param,
-  Delete,
-  Put,
-  Patch,
-} from '@nestjs/common';
+import { Controller, Post, Body, Param, Delete, Put } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import {
   CreateAuthDto,
@@ -21,6 +13,14 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 @Controller('v1/auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
+
+  @Post('/me')
+  @ApiOperation({
+    summary: 'Ge me',
+  })
+  me(@currentUser() userId: number) {
+    return this.authService.me(userId);
+  }
 
   @Post('/login')
   @ApiOperation({
@@ -51,6 +51,7 @@ export class AuthController {
     summary: 'profile update',
   })
   profile(@currentUser() userId: number, @Body() data: UpdateProfileDto) {
+    console.log(userId);
     return this.authService.update(data, userId);
   }
 

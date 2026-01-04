@@ -1,8 +1,14 @@
 import PrismaService from '@infra/database/prisma.service';
 import CacheService from '@infra/cache/cahe.service';
-import { ForbiddenException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  ForbiddenException,
+  NotFoundException,
+} from '@nestjs/common';
 import { BookingWithRelations } from '@core/shared/types';
-import { UpdateBookinSatatusProfisional } from '../dto/update-booking.dto';
+import { ProfissionalNotFoundExecption } from '@core/http/erros/profissional.error';
+import { CreateStepsDto } from '../dto/create-booking.dto';
 
 export class CreateBookingStepUseCase {
   constructor(
@@ -10,12 +16,11 @@ export class CreateBookingStepUseCase {
     private readonly cache: CacheService,
   ) {}
 
-  async execute({
-    bookingId,
-    userId,
-    notes,
-    files,
-  }: UpdateBookinSatatusProfisional) {
+  async execute(
+    { notes, files }: CreateStepsDto,
+    userId: number,
+    bookingId: number,
+  ) {
     const booking = await this.database.booking.findUnique({
       where: { id: bookingId },
       include: {
@@ -30,6 +35,10 @@ export class CreateBookingStepUseCase {
     }
     if (booking.status == 'CANCELED' || booking.status == 'REJECTED') {
       throw new ForbiddenException('Agendamento cancelado');
+    }
+
+    if (booking.status == 'PENDING') {
+      throw new BadRequestException('Aguarde a aceitação');
     }
     const isClient = booking.clientId === userId;
     const isProfessional = booking.professional?.userId === userId;
