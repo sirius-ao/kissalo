@@ -30,7 +30,11 @@ import { IBooking } from "@/types/interfaces";
 import constants from "@/constants";
 import { Loader } from "@/components/Loader";
 import { bookingsMock } from "@/mocks/bookings";
-import { KanbanView, ListView, TableView } from "./views";
+import {
+  KanbanView,
+  ListView,
+  TableView,
+} from "@/app/profissional/bookings/views";
 
 export default function Apoitments() {
   const [bookings, setBookings] = useState<IBooking[]>(bookingsMock);
