@@ -1,10 +1,18 @@
 "use client";
 
+import { useUserRole } from "@/hooks/use-UserRole";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Bell } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 export function DshBoardHeader() {
+  const { role } = useUserRole();
+  const href =
+    role == "PROFISSIONAL"
+      ? "/profissional/notifications"
+      : role == "ADMIN"
+      ? "/admin/notifications"
+      : "/costumer/notifications";
   const [hasUnRead, setHasUnread] = useState(true);
   const user = {
     fisrtName: "Francico",
@@ -16,7 +24,7 @@ export function DshBoardHeader() {
 
   return (
     <header className="fixed top-0 p-3 items-center gap-3 flex justify-end lg:w-[85%] w-full bg-white z-20  right-0 border-b  ">
-      <Link href={``} className="flex  relative">
+      <Link href={href} className="flex  relative">
         {hasUnRead && (
           <div className="h-2 w-2 bg-orange-500 rounded-full absolute"></div>
         )}

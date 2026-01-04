@@ -22,7 +22,7 @@ import {
   getStatusBadgeClass,
   getStatusIcon,
   priorityColorMap,
-} from "../page";
+} from "@/app/profissional/page";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useUserRole } from "@/hooks/use-UserRole";

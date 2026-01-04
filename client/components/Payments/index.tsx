@@ -42,7 +42,7 @@ export function PaymentAvatar({ user }: { user: IUser }) {
     <div className="flex items-center gap-2">
       <Avatar className="h-8 w-8">
         <AvatarImage src={user?.avatarUrl} />
-        <AvatarFallback>
+        <AvatarFallback className="text-sm font-bold">
           {user?.firstName[0]}
           {user?.lastName[0]}
         </AvatarFallback>

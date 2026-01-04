@@ -36,7 +36,28 @@ export const navigations: Record<string, INavItem[]> = {
       icon: <Settings size={17} />,
     },
   ],
-  CUSTOMER: [],
+  CUSTOMER: [
+    {
+      title: "Serviços",
+      to: "/costumer",
+      icon: <LayoutGrid size={17} />,
+    },
+    {
+      title: "Agendamentos",
+      to: "/costumer/bookings",
+      icon: <CalendarCog size={17} />,
+    },
+    {
+      title: "Pagamentos",
+      to: "/costumer/payments",
+      icon: <CircleDollarSign size={17} />,
+    },
+    {
+      title: "Perfil",
+      to: "/costumer/settings",
+      icon: <Settings size={17} />,
+    },
+  ],
 };
 
 export interface INavItem {

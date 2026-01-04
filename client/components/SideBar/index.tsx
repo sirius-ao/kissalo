@@ -1,33 +1,35 @@
 "use client";
 
 import { IconLogout } from "@tabler/icons-react";
-import { Search, UserPen } from "lucide-react";
+import { UserPen } from "lucide-react";
 import { navigations } from "@/constants/navigations";
 import { useUserRole } from "@/hooks/use-UserRole";
 import { Logo } from "../Logo";
 import { verifyArrayDisponiblity } from "@/lib/utils";
 import { Button } from "../ui/button";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import clsx from "clsx";
 import Link from "next/link";
 import { Separator } from "../ui/separator";
 import {
   Card,
-  CardAction,
   CardContent,
   CardDescription,
-  CardFooter,
-  CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-import { Tooltip, TooltipTrigger } from "../ui/tooltip";
-import { TooltipContent } from "@radix-ui/react-tooltip";
+import { usePathname } from "next/navigation";
 
 export function SideBar() {
   const { role } = useUserRole();
   const nav = navigations[role] ?? [];
-  const [active, setActive] = useState(0);
+  const urlParms = usePathname();
+  const defaultActived = nav.findIndex((item) => {
+    return item.to?.endsWith(urlParms);
+  });
+  const [active, setActive] = useState(
+    defaultActived == -1 ? 0 : defaultActived
+  );
   const user = {
     fisrtName: "Francico",
     lastName: "Diakomas",
@@ -45,13 +47,26 @@ export function SideBar() {
             "Aceite ou começe agora executando as tarefas que lhe foi atribuido",
           btnLabel: "Agendamentos",
         }
-      : {};
+      : {
+          title: "Seja bemvindo novamente",
+          to: "",
+          active: 2,
+          message: "Desamos lhe um bom dia e deixe o restante com a Kissalo",
+          btnLabel: "Bemvindo",
+        };
+
+  useEffect(() => {
+    const defaultActived = nav.findIndex((item) => {
+      return item.to?.endsWith(urlParms);
+    });
+    setActive(defaultActived == -1 ? 0 : defaultActived);
+  }, [urlParms]);
 
   return (
     <>
       {" "}
       <aside className="fixed lg:flex hidden left-0 top-0 p-4 h-screen bg-white z-12 border-l border  flex-col gap-7 lg:w-[15%]">
-        <Logo /> <Separator />
+        <Logo to={nav[0].to} /> <Separator />
         <ul className="flex flex-col gap-5">
           {verifyArrayDisponiblity(nav) &&
             nav.map((item, idx) => (
@@ -99,9 +114,10 @@ export function SideBar() {
                   user.lastName.charAt(0).toUpperCase()}
               </AvatarFallback>
             </Avatar>
-            <span className="flex flex-col text-sm">
+            <span className="flex flex-col text-sm gap-2">
               <h1>{user.fisrtName + " " + user.lastName}</h1>
               <small>{user.email}</small>
+              <small>{role == "CUSTOMER" ? "CLIENTE" : role}</small>
             </span>
             <Button
               variant={"ghost"}
@@ -114,7 +130,7 @@ export function SideBar() {
         </span>
       </aside>
       <div className="z-300 lg:hidden flex fixed top-2 left-2">
-        <Logo />
+        <Logo to={nav[0].to} />
       </div>
       <footer className="fixed lg:hidden bottom-0 z-100 w-full left-0 flex bg-white justify-between p-3 shadow border-t">
         {verifyArrayDisponiblity(nav) &&

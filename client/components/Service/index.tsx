@@ -29,33 +29,54 @@ import Link from "next/link";
 export function UnJoinedServiceCard({
   service,
   role,
+  autoHigth = false,
 }: {
   service: IServiceTemplate;
   role: UserRole;
+  autoHigth?: boolean;
 }) {
   return (
     <Card className="shadow-none relative  rounded-sm transition-all duration-300">
-      <span className="absolute flex left-[92%] bg-white shadow-2xl rounded-md p-1 text-sm top-3 items-center gap-1">
+      <span className="absolute flex right-0 bg-white shadow-2xl rounded-md p-1 text-sm top-3 items-center gap-1">
         <Star className="text-amber-500" size={12} />
-        {service.bookings.length}
+        {service?.bookings?.length ?? 0}
       </span>
       <CardHeader className="px-3 py-0">
-        <span className="grid grid-cols-2 gap-2">
-          <img
-            className="h-70 rounded-sm bg-gray-500/10 object-fill"
-            src={service.gallery[2] ?? service.bannerUrl}
-          />
-          <div className="flex  justify-between flex-col w-full">
+        {!autoHigth ? (
+          <span className="grid grid-cols-2 mb-4 gap-2">
             <img
-              className="h-34 rounded-sm bg-gray-500/10 object-fill"
-              src={service.gallery[1]}
+              className="h-84 md:h-90 md:max-h-100 rounded-sm w-full bg-gray-500/10 object-cover"
+              src={service?.bannerUrl}
             />
+            <div className="flex  justify-between gap-2 flex-col w-full">
+              <img
+                className="h-40 md:h-43  md:max-h-100 rounded-sm w-full bg-gray-500/10 object-cover"
+                src={service?.gallery[1]}
+              />
+              <img
+                className="h-40 md:h-43  md:max-h-100  rounded-sm w-full bg-gray-500/10 object-cover"
+                src={service?.gallery[0]}
+              />
+            </div>
+          </span>
+        ) : (
+          <span className="flex flex-col mb-4 gap-2">
+            <div className="grid grid-cols-2  gap-4">
+              <img
+                className="h-40 md:h-60  md:max-h-100 rounded-sm w-full bg-gray-500/10 object-cover"
+                src={service?.gallery[1]}
+              />
+              <img
+                className="h-40 md:h-60  md:max-h-100  rounded-sm w-full bg-gray-500/10 object-cover"
+                src={service?.gallery[0]}
+              />
+            </div>
             <img
-              className="h-34  rounded-sm bg-gray-500/10 object-fill"
-              src={service.gallery[0]}
+              className="h-84 md:h-90 md:max-h-100 rounded-sm w-full bg-gray-500/10 object-cover"
+              src={service?.bannerUrl}
             />
-          </div>
-        </span>
+          </span>
+        )}
         <CardTitle>{service.title}</CardTitle>
         <CardDescription>{service.description}</CardDescription>
         <small>{service.shortDescription}</small>
@@ -77,67 +98,53 @@ export function UnJoinedServiceCard({
         <div className="w-full">
           <span className="flex md:flex-row justify-between gap-1">
             <Button>{Number(service.price).toLocaleString("pt")},00 Kz</Button>
-
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant={"outline"}>
-                  Detalhes
-                  <EllipsisVertical />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56" align="start">
-                <DropdownMenuGroup>
-                  <Link href={`/services/${service.id}`} prefetch>
-                    <DropdownMenuItem>
-                      Detalhes
-                      <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
-                    </DropdownMenuItem>
-                  </Link>
-                  {role === UserRole.PROFESSIONAL && (
-                    <DropdownMenuItem>
-                      Anexar Serviço
-                      <DropdownMenuShortcut>⇧⌘A</DropdownMenuShortcut>
-                    </DropdownMenuItem>
+            {!autoHigth && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant={"outline"}>
+                    Detalhes
+                    <EllipsisVertical />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56" align="start">
+                  <DropdownMenuGroup>
+                    <Link href={`/services/${service.id}`} prefetch>
+                      <DropdownMenuItem>
+                        Detalhes
+                        <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
+                      </DropdownMenuItem>
+                    </Link>
+                    {role === UserRole.PROFESSIONAL && (
+                      <DropdownMenuItem>
+                        Anexar Serviço
+                        <DropdownMenuShortcut>⇧⌘A</DropdownMenuShortcut>
+                      </DropdownMenuItem>
+                    )}
+                    {role == UserRole.CUSTOMER && (
+                      <DropdownMenuItem>
+                        Agendar Serviço
+                        <DropdownMenuShortcut>⇧⌘N</DropdownMenuShortcut>
+                      </DropdownMenuItem>
+                    )}
+                  </DropdownMenuGroup>
+                  {role === UserRole.ADMIN && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem>
+                        Adicionar Profissional
+                        <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem>
+                        Remover Serviço
+                        <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
+                      </DropdownMenuItem>
+                    </>
                   )}
-                  {role == UserRole.CUSTOMER && (
-                    <DropdownMenuItem>
-                      Agendar Serviço
-                      <DropdownMenuShortcut>⇧⌘N</DropdownMenuShortcut>
-                    </DropdownMenuItem>
-                  )}
-                </DropdownMenuGroup>
-                {role === UserRole.ADMIN && (
-                  <>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem>
-                      Adicionar Profissional
-                      <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem>
-                      Remover Serviço
-                      <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
-                    </DropdownMenuItem>
-                  </>
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </span>
-          <div className=" gap-2 flex items-center ">
-            <DropdownMenu>
-              <DropdownMenuContent>
-                <DropdownMenuLabel>Ações</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>
-                  <Eye />
-                  Detalhes
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <PaintRoller /> Ser anexado
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
         </div>
       </CardFooter>
     </Card>

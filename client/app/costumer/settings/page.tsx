@@ -4,7 +4,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { User, Lock, Briefcase, Star, LogOut } from "lucide-react";
 
 import PersonalProfile from "./tabs/PersonalProfile";
-import ProfessionalProfile from "./tabs/ProfessionalProfile";
 import Security from "./tabs/Security";
 import Reviews from "./tabs/Reviews";
 import LogoutTab from "./tabs/Logout";
@@ -20,16 +19,8 @@ export default function SettingsPage() {
             <User size={16} /> Perfil pessoal
           </TabsTrigger>
 
-          <TabsTrigger value="professional" className="justify-start gap-2 ">
-            <Briefcase size={16} /> Perfil profissional
-          </TabsTrigger>
-
           <TabsTrigger value="security" className="justify-start gap-2 ">
             <Lock size={16} /> Segurança
-          </TabsTrigger>
-
-          <TabsTrigger value="reviews" className="justify-start gap-2 ">
-            <Star size={16} /> Avaliações
           </TabsTrigger>
 
           <TabsTrigger value="logout" className="justify-start gap-2">
@@ -42,16 +33,8 @@ export default function SettingsPage() {
             <PersonalProfile />
           </TabsContent>
 
-          <TabsContent value="professional">
-            <ProfessionalProfile />
-          </TabsContent>
-
           <TabsContent value="security">
             <Security />
-          </TabsContent>
-
-          <TabsContent value="reviews">
-            <Reviews />
           </TabsContent>
 
           <TabsContent value="logout">
