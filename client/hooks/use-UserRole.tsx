@@ -5,7 +5,7 @@ import { UserRole } from "@/types/enum";
 import { useEffect } from "react";
 
 export function useUserRole() {
-  let role: keyof typeof navigations = "CUSTOMER";
+  let role: keyof typeof navigations = "PROFESSIONAL";
   useEffect(() => {
     const storedRole = localStorage.getItem("x-user-role") as
       | UserRole
