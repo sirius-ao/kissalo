@@ -13,8 +13,76 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Kissalo",
-  description: "Seu negócio na palma da sua mão",
+  metadataBase: new URL("https://kissalo.onrender.com"),
+
+  title: {
+    default: "Kissalo – Encontre e Contrate Profissionais Qualificados",
+    template: "%s | Kissalo",
+  },
+
+  description:
+    "Kissalo é uma plataforma digital para encontrar, comparar e contratar profissionais qualificados de forma rápida, segura e eficiente.",
+
+  keywords: [
+    "Kissalo",
+    "profissionais qualificados",
+    "contratar profissionais",
+    "serviços profissionais",
+    "freelancers",
+    "prestadores de serviços",
+    "plataforma de serviços",
+  ],
+
+  authors: [{ name: "Kissalo" }],
+  creator: "Kissalo",
+  publisher: "Kissalo",
+
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
+
+  openGraph: {
+    type: "website",
+    locale: "pt_PT",
+    url: "https://kissalo.onrender.com",
+    siteName: "Kissalo",
+    title: "Kissalo – Encontre e Contrate Profissionais Qualificados",
+    description:
+      "Descubra profissionais altamente qualificados em diversas áreas e contrate com confiança através da plataforma Kissalo.",
+    images: [
+      {
+        url: "/Group 39737.png", // ideal: 1200x630
+        width: 1200,
+        height: 630,
+        alt: "Kissalo – Plataforma de Profissionais Qualificados",
+      },
+    ],
+  },
+
+  twitter: {
+    card: "summary_large_image",
+    title: "Kissalo – Encontre Profissionais Qualificados",
+    description:
+      "A plataforma ideal para encontrar, comparar e contratar profissionais qualificados online.",
+    images: ["/Group 39737.png"],
+    creator: "@kissalo", // se ainda não tiver, pode remover
+  },
+
+  icons: {
+    icon: "/favicon.ico",
+    shortcut: "/Group 39737.png",
+    apple: "/apple-touch-icon.png",
+  },
+
+  category: "technology",
 };
 
 export default function RootLayout({
