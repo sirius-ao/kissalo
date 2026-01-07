@@ -349,7 +349,7 @@ export default function CreateBookingPage() {
           >
             <span
               className={clsx(
-                "bg-gray-400 transition-all text-white rounded-full w-8 h-8 justify-center items-center flex font-bold",
+                "bg-gray-400 transition-all text-white rounded-full md:w-8 md:h-8 h-6 w-6 text-sm justify-center items-center flex font-bold",
                 {
                   "bg-orange-500": idx === currentStep,
                 }
@@ -357,7 +357,7 @@ export default function CreateBookingPage() {
             >
               {idx + 1}
             </span>
-            <h1 className="font-medium">{item.title}</h1>
+            <h1 className="md:font-medium text-sm">{item.title}</h1>
             <small className="text-gray-500 md:flex hidden">
               {item.description}
             </small>
@@ -661,110 +661,89 @@ export default function CreateBookingPage() {
             <h1 className="text-center font-bold text-3xl text-pretty">
               {service.price.toLocaleString("pt-BR")},00 {service.currency}
             </h1>
-
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="iban">IBAN para transferência</Label>
-                <InputGroup>
-                  <InputGroupInput
-                    id="iban"
-                    value={"AO06004000008826114110144"}
-                    disabled
+            <Label htmlFor="iban">IBAN para transferência</Label>
+            <InputGroup>
+              <InputGroupInput id="iban" value={"AO0600400000882"} disabled />
+              <InputGroupAddon
+                className="bg-black text-white flex justify-center items-center p-2 rounded-sm hover:bg-gray-800 cursor-pointer transition-colors"
+                onClick={() => {
+                  navigator.clipboard.writeText("AO0600400000882");
+                  toast.success("IBAN copiado");
+                }}
+                align="inline-end"
+              >
+                <Copy size={16} /> Copiar
+              </InputGroupAddon>
+            </InputGroup>
+            <Label htmlFor="express">Express</Label>
+            <InputGroup>
+              <InputGroupInput id="express" value={"9355555000"} disabled />
+              <InputGroupAddon
+                className="bg-black text-white flex justify-center items-center p-2 rounded-sm hover:bg-gray-800 cursor-pointer transition-colors"
+                onClick={() => {
+                  navigator.clipboard.writeText("9355555000");
+                  toast.success("Express copiado");
+                }}
+                align="inline-end"
+              >
+                <Copy size={16} /> Copiar
+              </InputGroupAddon>
+            </InputGroup>
+            <Label htmlFor="proof">Comprovativo de pagamento *</Label>
+            <InputGroup>
+              <InputGroupAddon>
+                <File size={16} />
+              </InputGroupAddon>
+              <InputGroupInput
+                id="proof"
+                type="file"
+                accept=".pdf,.jpg,.jpeg,.png"
+                onChange={(e) => {
+                  const file = e.target.files?.[0] || null;
+                  setProofFile(file);
+                  if (file) {
+                    toast.success("Comprovativo anexado");
+                  }
+                }}
+                required
+              />
+            </InputGroup>
+            <small className="text-gray-500">
+              Aceito: PDF, JPG, PNG (máx. 5MB)
+            </small>
+            <Label>Método de pagamento utilizado *</Label>
+            <div className="grid lg:grid-cols-3 grid-cols-2 gap-4 mt-2">
+              {paymentMethodConstats.map((item, idx) => (
+                <div
+                  className={clsx(
+                    "flex flex-col justify-center transition-all items-center border p-3 rounded-lg cursor-pointer hover:bg-accent/50",
+                    {
+                      "border-gray-300 bg-accent": idx === paymentMethod.index,
+                      "border-gray-200": idx !== paymentMethod.index,
+                    }
+                  )}
+                  key={idx}
+                  onClick={() => {
+                    setPaymentMethod({
+                      index: idx,
+                      title: item.title,
+                    });
+                  }}
+                >
+                  <img
+                    src={item.icon || "/placeholder-icon.png"}
+                    className="h-12 w-10 object-contain rounded-sm"
+                    alt={item.title}
                   />
-                  <InputGroupAddon
-                    className="bg-black text-white flex justify-center items-center p-2 rounded-sm hover:bg-gray-800 cursor-pointer transition-colors"
-                    onClick={() => {
-                      navigator.clipboard.writeText(
-                        "AO06004000008826114110144"
-                      );
-                      toast.success("IBAN copiado");
-                    }}
-                    align="inline-end"
-                  >
-                    <Copy size={16} /> Copiar
-                  </InputGroupAddon>
-                </InputGroup>
-              </div>
-
-              <div>
-                <Label htmlFor="express">Express (USD)</Label>
-                <InputGroup>
-                  <InputGroupInput id="express" value={"9355555000"} disabled />
-                  <InputGroupAddon
-                    className="bg-black text-white flex justify-center items-center p-2 rounded-sm hover:bg-gray-800 cursor-pointer transition-colors"
-                    onClick={() => {
-                      navigator.clipboard.writeText("9355555000");
-                      toast.success("Express copiado");
-                    }}
-                    align="inline-end"
-                  >
-                    <Copy size={16} /> Copiar
-                  </InputGroupAddon>
-                </InputGroup>
-              </div>
-
-              <div>
-                <Label htmlFor="proof">Comprovativo de pagamento *</Label>
-                <InputGroup>
-                  <InputGroupAddon>
-                    <File size={16} />
-                  </InputGroupAddon>
-                  <InputGroupInput
-                    id="proof"
-                    type="file"
-                    accept=".pdf,.jpg,.jpeg,.png"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0] || null;
-                      setProofFile(file);
-                      if (file) {
-                        toast.success("Comprovativo anexado");
-                      }
-                    }}
-                    required
-                  />
-                </InputGroup>
-                <small className="text-gray-500">
-                  Aceito: PDF, JPG, PNG (máx. 5MB)
-                </small>
-              </div>
-
-              <div>
-                <Label>Método de pagamento utilizado *</Label>
-                <div className="grid lg:grid-cols-3 grid-cols-2 gap-4 mt-2">
-                  {paymentMethodConstats.map((item, idx) => (
-                    <div
-                      className={clsx(
-                        "flex flex-col justify-center transition-all items-center border p-3 rounded-lg cursor-pointer hover:bg-accent/50",
-                        {
-                          "border-gray-300 bg-accent":
-                            idx === paymentMethod.index,
-                          "border-gray-200": idx !== paymentMethod.index,
-                        }
-                      )}
-                      key={idx}
-                      onClick={() => {
-                        setPaymentMethod({
-                          index: idx,
-                          title: item.title,
-                        });
-                      }}
-                    >
-                      <img
-                        src={item.icon || "/placeholder-icon.png"}
-                        className="h-12 w-10 object-contain rounded-sm"
-                        alt={item.title}
-                      />
-                      <small className="mt-2">{item.title}</small>
-                    </div>
-                  ))}
+                  <small className="mt-2">{item.title}</small>
                 </div>
-              </div>
+              ))}
             </div>
           </>
         )}
 
-        <div className="flex gap-3 mt-4">
-          <div className="flex gap-2">
+        <div className="flex md:flex-row flex-col gap-3 mt-4">
+          <div className="grid grid-cols-2 md:w-auto w-full gap-2">
             <Button
               disabled={currentStep === 0}
               onClick={() => setCurrentStep((prev) => prev - 1)}
@@ -787,7 +766,7 @@ export default function CreateBookingPage() {
             </Button>
           </div>
           <Button className="flex-1" type="submit">
-            {currentStep < steps.length - 1 ? "Continuar" : "Finalizar Reserva"}
+            {currentStep < steps.length - 1 ? "Continuar" : "Finalizar"}
           </Button>
         </div>
       </form>

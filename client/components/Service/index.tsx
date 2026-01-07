@@ -115,7 +115,7 @@ export function UnJoinedServiceCard({
                 <DropdownMenuTrigger asChild>
                   <Button variant={"outline"}>
                     <ShoppingCart />
-                    Agendas
+                    Agendar
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-56 " align="start">

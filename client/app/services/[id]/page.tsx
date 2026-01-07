@@ -70,7 +70,7 @@ export default function ServiceDetailsPublicPage() {
               />
               <span className="grid grid-cols-2 gap-4">
                 <Button asChild>
-                  <Link href={`/services/apointement/${id}`}>
+                  <Link href={`/costumer/apointment/${id}`}>
                     <ShoppingCart /> Agendar agora
                   </Link>
                 </Button>

@@ -1,6 +1,6 @@
 import { IBooking, IBookingSteps } from "@/types/interfaces";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, MapPin, User, Camera } from "lucide-react";
+import { Calendar, Clock, MapPin, User, Camera, Star, Eye } from "lucide-react";
 import { columnStyles } from "@/app/profissional/bookings/views";
 import { Button } from "../ui/button";
 import {
@@ -17,6 +17,7 @@ import {
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
 } from "@/components/ui/dropdown-menu";
+
 import Link from "next/link";
 import { useUserRole } from "@/hooks/use-UserRole";
 import { verifyArrayDisponiblity } from "@/lib/utils";
@@ -26,16 +27,32 @@ import { format } from "date-fns";
 import { useState } from "react";
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
+  DialogFooter,
+  DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "../ui/dialog";
 import clsx from "clsx";
 import { PaymentStatus, ServiceLocation, UserRole } from "@/types/enum";
+import { Label } from "../ui/label";
+import { Input } from "../ui/input";
+import { Textarea } from "../ui/textarea";
 
 export function BookingCard({ booking }: { booking: IBooking }) {
   const { role } = useUserRole() as { role: any };
+
+  const [rating, setRating] = useState(0);
+  const [images, setImages] = useState<string[]>([]);
+
+  const handleImageUpload = (e: any) => {};
+
+  const removeImage = (index: number) => {
+    const newImages = images.filter((_, i) => i !== index);
+    setImages(newImages);
+  };
   const href =
     role == "PROFISSIONAL"
       ? "/profissional/bookings"
@@ -115,18 +132,84 @@ export function BookingCard({ booking }: { booking: IBooking }) {
                     <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
                   </DropdownMenuItem>
                 )}
+                <Dialog>
+                  <form>
+                    <DialogTrigger asChild>
+                      <Button variant="outline" className="w-full">
+                        <Star className="text-amber-500" />
+                        Avaliar
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-[425px]">
+                      <DialogHeader>
+                        <DialogTitle>Avaliar Serviço</DialogTitle>
+                        <DialogDescription>
+                          Compartilhe sua experiência. Sua avaliação ajuda
+                          outros usuários.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="grid gap-4 py-4">
+                        <div className="grid gap-3">
+                          <Label htmlFor="rating">Avaliação</Label>
+                          <div className="grid grid-cols-5 gap-2">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <button
+                                key={star}
+                                type="button"
+                                onClick={() => setRating(star)}
+                              >
+                                {star <= rating ? (
+                                  <Star
+                                    className="fill-amber-500 text-amber-500"
+                                    size={33}
+                                  />
+                                ) : (
+                                  <Star
+                                    className="text-gray-300  text-3xl"
+                                    size={33}
+                                  />
+                                )}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
 
-                {booking.payment?.status != PaymentStatus.PAID && (
-                  <Link href={`${href}/${booking.id}/pay`}>
-                    <DropdownMenuItem>
-                      Pagar
-                      <DropdownMenuShortcut>⌘P</DropdownMenuShortcut>
-                    </DropdownMenuItem>
-                  </Link>
-                )}
+                        <div className="grid gap-3">
+                          <Label htmlFor="comment">Comentário</Label>
+                          <Textarea
+                            id="comment"
+                            name="comment"
+                            rows={4}
+                            className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-none"
+                            placeholder="Conte mais sobre sua experiência..."
+                            maxLength={500}
+                          />
+                          <div className="text-xs text-gray-500 text-right">
+                            Máximo de 500 caracteres
+                          </div>
+                        </div>
+                      </div>
+                      <DialogFooter>
+                        <DialogClose asChild>
+                          <Button type="button" variant="outline">
+                            Cancelar
+                          </Button>
+                        </DialogClose>
+                        <Button
+                          type="submit"
+                          className="bg-amber-500 hover:bg-amber-600"
+                        >
+                          <Star className="h-4 w-4 mr-2" />
+                          Publicar Avaliação
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </form>
+                </Dialog>
 
                 <Link href={`${href}/${booking.id}`}>
                   <DropdownMenuItem>
+                    <Eye />
                     Detalhes
                     <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
                   </DropdownMenuItem>
@@ -138,7 +221,10 @@ export function BookingCard({ booking }: { booking: IBooking }) {
 
                   <DropdownMenuGroup>
                     <DropdownMenuSub>
-                      <DropdownMenuSubTrigger>Prestador</DropdownMenuSubTrigger>
+                      <DropdownMenuSubTrigger>
+                        <User />
+                        Profissional
+                      </DropdownMenuSubTrigger>
                       <DropdownMenuPortal>
                         <DropdownMenuSubContent>
                           <DropdownMenuItem>
