@@ -167,10 +167,6 @@ export default function ServiceProfissionalPage() {
                         setActiveTab(idx);
                         router.push(`/profissional/services?tab=${item.value}`);
                       }}
-                      className={clsx("border-none transition-all", {
-                        "bg-linear-to-r from-[#f7a60ed1] to-[#ec4d03e3] text-white":
-                          idx == activeTab,
-                      })}
                       key={idx}
                       value={item.value}
                     >

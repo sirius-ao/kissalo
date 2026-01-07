@@ -1,5 +1,4 @@
 "use client";
-
 import { IconLogout } from "@tabler/icons-react";
 import { UserPen } from "lucide-react";
 import { navigations } from "@/constants/navigations";
@@ -23,6 +22,9 @@ import { usePathname } from "next/navigation";
 export function SideBar() {
   const { role } = useUserRole();
   const nav = navigations[role] ?? [];
+  if (nav.length == 0) {
+    return null;
+  }
   const urlParms = usePathname();
   const defaultActived = nav.findIndex((item) => {
     return item.to?.endsWith(urlParms);
@@ -142,7 +144,7 @@ export function SideBar() {
               }}
               key={idx}
               className={clsx(
-                "flex relative flex-col w-full justify-center  items-center hover:bg-gray-50/50 cursor-pointer rounded-sm gap-2 p-2  ",
+                "flex relative w-full justify-center  items-center hover:bg-gray-50/50 cursor-pointer rounded-sm gap-2 p-2",
                 {
                   "bg-linear-to-r from-[#f7a60ed1] to-[#ec4d03e3] text-white":
                     idx == active,
@@ -150,6 +152,15 @@ export function SideBar() {
               )}
             >
               {item.icon}
+              {role == "CUSTOMER" && active == idx && (
+                <p
+                  className={clsx("opacity-0 transition-all", {
+                    "opacity-100": idx == active,
+                  })}
+                >
+                  {item.title}
+                </p>
+              )}
             </Link>
           ))}
       </footer>

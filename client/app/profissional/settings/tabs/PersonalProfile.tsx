@@ -18,7 +18,7 @@ export default function PersonalProfile() {
           <Button variant="outline">Alterar foto</Button>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid md:grid-cols-2 gap-4">
           <Input placeholder="Nome" />
           <Input placeholder="Sobrenome" />
           <Input placeholder="Email" />

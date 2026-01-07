@@ -1,5 +1,5 @@
 import { PaymentStatus } from "@/types/enum";
-import { IPayment } from "@/types/interfaces";
+import { IPayment, IPaymentMethod } from "@/types/interfaces";
 import { bookingsMock } from "./bookings";
 import { walletsMock } from "./wallets";
 
@@ -138,5 +138,20 @@ export const paymentsMock: IPayment[] = [
       profissional: bookingsMock[4].client,
       wallet: walletsMock[0],
     },
+  },
+];
+
+export const paymentMethodConstats: IPaymentMethod[] = [
+  {
+    title: "Express",
+    icon: "https://imgs.search.brave.com/Ynn-InUQ6u0uBD0xPP_xHWohS41gY1IezhJ9eRkZ1oI/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9kbC5t/ZW11cGxheS5jb20v/bmV3X21hcmtldC9p/bWcvY29tLnNpYnNp/bnQubWN4d2FsbGV0/Lmljb24uMjAyNC0w/Ny0xMS0xOC0xNC0y/Ny5wbmc",
+  },
+  {
+    title: "PayPay",
+    icon: "https://portal.paypayafrica.com/dist/ed99c559a1512b731bdc45083fda5798.png",
+  },
+  {
+    title: "Tranferência",
+    icon: "https://noticiasangola.free.nf/wp-content/uploads/2025/04/REFNew.png",
   },
 ];

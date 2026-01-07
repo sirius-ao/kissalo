@@ -1,3 +1,4 @@
+import { IconChecklist, IconHome } from "@tabler/icons-react";
 import {
   CalendarCog,
   CircleDollarSign,
@@ -5,6 +6,7 @@ import {
   LayoutGrid,
   PaintRoller,
   Settings,
+  User2,
 } from "lucide-react";
 import { ReactNode } from "react";
 
@@ -38,24 +40,19 @@ export const navigations: Record<string, INavItem[]> = {
   ],
   CUSTOMER: [
     {
-      title: "Serviços",
+      title: "Inicial",
       to: "/costumer",
-      icon: <LayoutGrid size={17} />,
+      icon: <IconHome size={17} />,
     },
     {
-      title: "Agendamentos",
-      to: "/costumer/bookings",
-      icon: <CalendarCog size={17} />,
-    },
-    {
-      title: "Pagamentos",
-      to: "/costumer/payments",
-      icon: <CircleDollarSign size={17} />,
+      title: "Históricos",
+      to: "/costumer/history",
+      icon: <IconChecklist size={17} />,
     },
     {
       title: "Perfil",
       to: "/costumer/settings",
-      icon: <Settings size={17} />,
+      icon: <User2 size={17} />,
     },
   ],
 };

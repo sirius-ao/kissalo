@@ -52,7 +52,7 @@ export default function BookingDetails() {
 
   useEffect(() => {
     setTimeout(() => {
-      setIsLoading(false);
+      setIsLoading(false);  <></>;
     }, constants.TIMEOUT.LOADER);
   }, []);
 
@@ -178,7 +178,7 @@ export default function BookingDetails() {
                 </span>
                 <div className="lg:hidden flex flex-col gap-4">
                   <strong className="textx">Informações</strong>
-                  <span className="grid md:grid-cols-2 gap-4">
+                  <span className="grid grid-cols-2 gap-4">
                     <span className="flex flex-col gap-3">
                       <strong>Cliente</strong>
                       <PaymentAvatar user={booking?.client} />
@@ -191,13 +191,11 @@ export default function BookingDetails() {
                     </span>
                   </span>
                   <Separator />
-                  <strong>Agendamento</strong>
-                  <BookingCard booking={booking} />
                 </div>
               </div>
             </aside>
           )}
-        </>
+        </> 
       )}
     </section>
   );

@@ -160,9 +160,9 @@ export const bookingsMock: IBooking[] = [
     } as any,
     professional: {
       user: {
-        firstName: "Maria",
-        lastName: "Silva",
-        email: "maria@example.com",
+        firstName: "Silva",
+        lastName: "Pedro",
+        email: "pedro@example.com",
         avatarUrl: "https://example.com/avatar2.jpg",
       },
     } as any,
@@ -197,9 +197,9 @@ export const bookingsMock: IBooking[] = [
     } as any,
     professional: {
       user: {
-        firstName: "Maria",
-        lastName: "Silva",
-        email: "maria@example.com",
+        firstName: "Miguel",
+        lastName: "Da costa",
+        email: "costa@example.com",
         avatarUrl: "https://example.com/avatar2.jpg",
       },
     } as any,
@@ -234,9 +234,9 @@ export const bookingsMock: IBooking[] = [
     } as any,
     professional: {
       user: {
-        firstName: "Maria",
-        lastName: "Silva",
-        email: "maria@example.com",
+        firstName: "Francisca",
+        lastName: "Diakomas",
+        email: "franciany@example.com",
         avatarUrl: "https://example.com/avatar2.jpg",
       },
     } as any,

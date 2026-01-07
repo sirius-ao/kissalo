@@ -32,26 +32,31 @@ import {
   DialogTrigger,
 } from "../ui/dialog";
 import clsx from "clsx";
+import { PaymentStatus, ServiceLocation, UserRole } from "@/types/enum";
 
 export function BookingCard({ booking }: { booking: IBooking }) {
-  const { role } = useUserRole();
+  const { role } = useUserRole() as { role: any };
   const href =
     role == "PROFISSIONAL"
       ? "/profissional/bookings"
       : role == "ADMIN"
       ? "/admin/bookings"
-      : "/costumer/bookings";
+      : "/costumer/booking";
 
+  const locationMap: Record<ServiceLocation, string> = {
+    CLIENT_HOME: "Estabelecimento do cliente",
+    PROFESSIONAL_HOME: "Casa do profissional",
+    PROFESSIONAL_SPACE: "Estabelecimento do Profissional",
+  };
   const style = columnStyles[booking.status];
   return (
     <div className="flex flex-col gap-3 border rounded-md p-3 shadow-sm bg-background hover:shadow-md transition">
       <div className="flex justify-between items-start">
-        <div>
+        <div className="flex flex-col gap-3">
           <p className="font-semibold leading-tight">{booking.service.title}</p>
-          <p className="text-xs text-muted-foreground flex items-center gap-1">
-            <User size={12} />
-            {booking.client.firstName}
-          </p>
+          {role != "CUSTOMER" && (
+            <PaymentAvatar user={booking?.client} notColl={false} />
+          )}
         </div>
 
         <Badge variant="outline" className="flex items-center gap-1">
@@ -80,7 +85,11 @@ export function BookingCard({ booking }: { booking: IBooking }) {
 
         <span className="flex items-center gap-1">
           <MapPin size={12} />
-          {booking.location}
+          {locationMap[booking.location]}
+        </span>
+        <span className="flex items-center gap-1">
+          <MapPin size={12} />
+          {booking?.address?.city} / {booking?.address?.district}
         </span>
       </div>
 
@@ -92,55 +101,97 @@ export function BookingCard({ booking }: { booking: IBooking }) {
             {booking.canEnd ? "Liberado" : "..."}
           </Badge>
         </div>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button>Acções</Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-56" align="start">
-            <DropdownMenuRadioGroup>
-              <DropdownMenuItem>
-                Liberar
-                <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                Pagar
-                <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
-              </DropdownMenuItem>
+        {JSON.stringify(booking.payment, null, 2)}
+        {role == "CUSTOMER" && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button>Acções</Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56" align="start">
+              <DropdownMenuRadioGroup>
+                {!booking.canEnd && (
+                  <DropdownMenuItem>
+                    Liberar
+                    <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
+                  </DropdownMenuItem>
+                )}
 
-              <Link href={`${href}/${booking.id}`}>
-                <DropdownMenuItem>
-                  Detalhes
-                  <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
-                </DropdownMenuItem>
-              </Link>
-            </DropdownMenuRadioGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuSub>
-                <DropdownMenuSubTrigger>Prestador</DropdownMenuSubTrigger>
-                <DropdownMenuPortal>
-                  <DropdownMenuSubContent>
-                    <DropdownMenuItem>Email</DropdownMenuItem>
-                    <DropdownMenuItem>Message</DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem>More...</DropdownMenuItem>
-                  </DropdownMenuSubContent>
-                </DropdownMenuPortal>
-              </DropdownMenuSub>
-              <DropdownMenuSub>
-                <DropdownMenuSubTrigger>Cliente</DropdownMenuSubTrigger>
-                <DropdownMenuPortal>
-                  <DropdownMenuSubContent>
-                    <DropdownMenuItem>Email</DropdownMenuItem>
-                    <DropdownMenuItem>Message</DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem>More...</DropdownMenuItem>
-                  </DropdownMenuSubContent>
-                </DropdownMenuPortal>
-              </DropdownMenuSub>
-            </DropdownMenuGroup>
-          </DropdownMenuContent>
-        </DropdownMenu>
+                {booking.payment?.status != PaymentStatus.PAID && (
+                  <Link href={`${href}/${booking.id}/pay`}>
+                    <DropdownMenuItem>
+                      Pagar
+                      <DropdownMenuShortcut>⌘P</DropdownMenuShortcut>
+                    </DropdownMenuItem>
+                  </Link>
+                )}
+
+                <Link href={`${href}/${booking.id}`}>
+                  <DropdownMenuItem>
+                    Detalhes
+                    <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
+                  </DropdownMenuItem>
+                </Link>
+              </DropdownMenuRadioGroup>
+              {booking?.professional?.user && (
+                <>
+                  <DropdownMenuSeparator />
+
+                  <DropdownMenuGroup>
+                    <DropdownMenuSub>
+                      <DropdownMenuSubTrigger>Prestador</DropdownMenuSubTrigger>
+                      <DropdownMenuPortal>
+                        <DropdownMenuSubContent>
+                          <DropdownMenuItem>
+                            <PaymentAvatar
+                              notColl={false}
+                              user={booking.professional.user}
+                            />
+                          </DropdownMenuItem>
+                        </DropdownMenuSubContent>
+                      </DropdownMenuPortal>
+                    </DropdownMenuSub>
+                  </DropdownMenuGroup>
+                </>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
+
+        {role == "PROFISSIONAL" && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button>Acções</Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56" align="start">
+              <DropdownMenuRadioGroup>
+                <Link href={`${href}/${booking.id}`}>
+                  <DropdownMenuItem>
+                    Detalhes
+                    <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
+                  </DropdownMenuItem>
+                </Link>
+              </DropdownMenuRadioGroup>
+              <DropdownMenuSeparator />
+              <DropdownMenuGroup>
+                <DropdownMenuSub>
+                  <DropdownMenuSubTrigger>Cliente</DropdownMenuSubTrigger>
+                  <DropdownMenuPortal>
+                    <DropdownMenuSubContent>
+                      <DropdownMenuItem>
+                        {booking.client && (
+                          <PaymentAvatar
+                            notColl={false}
+                            user={booking.client}
+                          />
+                        )}
+                      </DropdownMenuItem>
+                    </DropdownMenuSubContent>
+                  </DropdownMenuPortal>
+                </DropdownMenuSub>
+              </DropdownMenuGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
       </div>
     </div>
   );

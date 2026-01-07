@@ -1,12 +1,11 @@
 "use client";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { User, Lock, Briefcase, Star, LogOut } from "lucide-react";
+import { User, Lock, LogOut } from "lucide-react";
 
-import PersonalProfile from "./tabs/PersonalProfile";
-import Security from "./tabs/Security";
-import Reviews from "./tabs/Reviews";
-import LogoutTab from "./tabs/Logout";
+import PersonalProfile from "@/app/profissional/settings/tabs/PersonalProfile";
+import Security from "@/app/profissional/settings/tabs/Security";
+import LogoutTab from "@/app/profissional/settings/tabs/Logout";
 
 export default function SettingsPage() {
   return (

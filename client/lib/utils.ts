@@ -8,3 +8,4 @@ export function verifyArrayDisponiblity(data: any[]): boolean {
   return Array.isArray(data) && data.length > 0;
 }
 
+

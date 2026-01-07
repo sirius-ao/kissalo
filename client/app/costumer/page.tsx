@@ -15,7 +15,7 @@ import {
 import { verifyArrayDisponiblity } from "@/lib/utils";
 import { categoriesMock } from "@/mocks/categories";
 import { servicesMock } from "@/mocks/services";
-
+import { FloatingDock } from "@/components/ui/floating-dock";
 import { CheckCheck, Search, ShieldAlert } from "lucide-react";
 import { useEffect, useState } from "react";
 import constants from "@/constants";
@@ -23,6 +23,7 @@ import { Loader } from "@/components/Loader";
 import { UnJoinedServiceCard } from "@/components/Service";
 import { UserRole } from "@/types/enum";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 export default function ServiceProfissionalPage() {
   const [categoryFilter, setCategoryFilter] = useState<undefined | number>(
@@ -53,23 +54,16 @@ export default function ServiceProfissionalPage() {
           })
         : [];
 
+      if (filtred.length == 0) {
+        toast.info("Busca não encontrada");
+        setServices(servicesMock);
+        return;
+      }
       setServices(filtred);
-      return;
     }
   }, [categoryFilter]);
 
   if (!mounted) return null;
-  const getStatusIcon = (status: boolean) => {
-    switch (status) {
-      case true:
-        return <CheckCheck />;
-      case false:
-        return <ShieldAlert />;
-      default:
-        return <ShieldAlert />;
-    }
-  };
-  const filtredServices = [...services];
 
   return (
     <section>
@@ -77,9 +71,8 @@ export default function ServiceProfissionalPage() {
         <Loader />
       ) : (
         <>
-          {" "}
-          <span className="flex md:flex-row flex-col-reverse justify-between gap-3 pt-4">
-            <form action="" className="lg:w-[30%]">
+          <span className="flex flex-col  justify-between gap-10 pt-4">
+            <form action="" className="lg:w-[30%] w-full">
               <InputGroup>
                 <InputGroupInput placeholder="Buscar por serviços ..." />
                 <InputGroupAddon>
@@ -112,15 +105,14 @@ export default function ServiceProfissionalPage() {
                 </InputGroupAddon>
               </InputGroup>
             </form>
-            <div></div>
-            <div></div>
           </span>
-          {verifyArrayDisponiblity(filtredServices) ? (
+
+          {verifyArrayDisponiblity(services) ? (
             <article className="flex flex-col gap-4 mt-10">
               <aside className="grid lg:grid-cols-3 md:grid-cols-2 gap-4">
                 {services.map((item, idx) => (
                   <UnJoinedServiceCard
-                    role={UserRole.PROFESSIONAL}
+                    role={UserRole.CUSTOMER}
                     service={item}
                     key={idx}
                   />

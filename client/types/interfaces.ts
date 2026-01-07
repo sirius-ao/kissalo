@@ -1,3 +1,4 @@
+import { ReactNode } from "react";
 import {
   ApprovalStatus,
   BookingPriority,
@@ -277,4 +278,9 @@ export interface INotification {
   createdAt: Date;
 
   user: IUser;
+}
+
+export interface IPaymentMethod {
+  title: string;
+  icon: string;
 }

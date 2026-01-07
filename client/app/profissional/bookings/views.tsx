@@ -150,7 +150,7 @@ export function ListView({ bookings }: { bookings: IBooking[] }) {
 }
 
 export function TableView({ bookings }: { bookings: IBooking[] }) {
-  const { role } = useUserRole();
+  const { role } = useUserRole() as any;
   const href =
     role == "PROFISSIONAL"
       ? "/profissional/bookings"
