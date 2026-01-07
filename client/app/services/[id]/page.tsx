@@ -13,11 +13,19 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
-import { ArrowLeft, Box, ShoppingCart } from "lucide-react";
+import {
+  ArrowLeft,
+  Box,
+  Check,
+  Key,
+  ShieldAlert,
+  ShoppingCart,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UnJoinedServiceCard } from "@/components/Service";
 import { UserRole } from "@/types/enum";
 import Link from "next/link";
+import { Badge } from "@/components/ui/badge";
 export default function ServiceDetailsPublicPage() {
   const { id } = useParams();
   const router = useRouter();
@@ -34,7 +42,7 @@ export default function ServiceDetailsPublicPage() {
   })[0];
 
   return (
-    <section>
+    <section className="flex flex-col justify-center ">
       {isLoading ? (
         <Loader />
       ) : (
@@ -62,12 +70,31 @@ export default function ServiceDetailsPublicPage() {
               </EmptyContent>
             </Empty>
           ) : (
-            <section className="flex flex-col p-4 gap-3">
-              <UnJoinedServiceCard
-                service={service}
-                role={UserRole.CUSTOMER}
-                autoHigth={true}
-              />
+            <section className="flex lg:w-[50%] place-self-center w-full flex-col p-3 gap-5">
+              <UnJoinedServiceCard service={service} role={UserRole.CUSTOMER} />
+              <span className="flex gap-4 flex-col">
+                <span className="flex items-center gap-2">
+                  <ShieldAlert className="text-blue-400" />
+                  <strong>O que está Incluído</strong>
+                </span>
+                <ol>
+                  {service.requirements.map((item, idx) => (
+                    <li className="flex items-center gap-2" key={idx}>
+                      <Check className="text-green-600" size={14} />
+                      {item}
+                    </li>
+                  ))}
+                </ol>
+              </span>
+
+              <span className="flex flex-wrap gap-2">
+                {service.keywords.map((item, idx) => (
+                  <Badge variant={"outline"} key={idx}>
+                    <Key />
+                    {item}
+                  </Badge>
+                ))}
+              </span>
               <span className="grid grid-cols-2 gap-4">
                 <Button asChild>
                   <Link href={`/costumer/apointment/${id}`}>

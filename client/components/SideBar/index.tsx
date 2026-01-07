@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { usePathname } from "next/navigation";
+import { UserRole } from "@/types/enum";
 
 export function SideBar() {
   const { role } = useUserRole();
@@ -40,7 +41,7 @@ export function SideBar() {
     email: "franciscodiakoma@gmail.com",
   };
   const message =
-    role == "PROFISSIONAL"
+    role == UserRole.PROFESSIONAL
       ? {
           title: "Gerencie seus agendamentos",
           to: "",
@@ -93,20 +94,22 @@ export function SideBar() {
         </ul>
         <Separator />
         <span className="w-full flex flex-col gap-5 ">
-          <Card className="rounded-sm px-2 py-4 gap-3 shadow-none border-none">
-            <CardTitle>{message.title}</CardTitle>
-            <CardContent className="p-0">
-              <CardDescription>{message.message}</CardDescription>
-            </CardContent>
+          {role != UserRole.ADMIN && (
+            <Card className="rounded-sm px-2 py-4 gap-3 shadow-none border-none">
+              <CardTitle>{message.title}</CardTitle>
+              <CardContent className="p-0">
+                <CardDescription>{message.message}</CardDescription>
+              </CardContent>
 
-            <Button
-              size={"lg"}
-              className="bg-linear-to-r shadow-2xl from-[#161615f2] to-[#434242f5] text-white"
-            >
-              {message.btnLabel}
-              <UserPen />
-            </Button>
-          </Card>
+              <Button
+                size={"lg"}
+                className="bg-linear-to-r shadow-2xl from-[#161615f2] to-[#434242f5] text-white"
+              >
+                {message.btnLabel}
+                <UserPen />
+              </Button>
+            </Card>
+          )}
 
           <div className="flex bottom-10 left-2 absolute gap-2 p-2 rounded-sm border-black/4   items-center border">
             <Avatar>

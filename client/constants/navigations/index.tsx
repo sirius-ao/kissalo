@@ -1,17 +1,20 @@
-import { IconChecklist, IconHome } from "@tabler/icons-react";
+import { UserRole } from "@/types/enum";
+import { IconChecklist } from "@tabler/icons-react";
 import {
   CalendarCog,
   CircleDollarSign,
   CreditCard,
+  GitBranch,
   LayoutGrid,
   PaintRoller,
   Settings,
   User2,
+  Users,
 } from "lucide-react";
 import { ReactNode } from "react";
 
-export const navigations: Record<string, INavItem[]> = {
-  PROFISSIONAL: [
+export const navigations: Record<UserRole, INavItem[]> = {
+  PROFESSIONAL: [
     {
       title: "Inicial",
       to: "/profissional",
@@ -42,7 +45,7 @@ export const navigations: Record<string, INavItem[]> = {
     {
       title: "Inicial",
       to: "/costumer",
-      icon: <IconHome size={17} />,
+      icon: <LayoutGrid size={17} />,
     },
     {
       title: "Históricos",
@@ -53,6 +56,38 @@ export const navigations: Record<string, INavItem[]> = {
       title: "Perfil",
       to: "/costumer/settings",
       icon: <User2 size={17} />,
+    },
+  ],
+  ADMIN: [
+    {
+      title: "Inicial",
+      to: "/admin",
+      icon: <LayoutGrid size={17} />,
+    },
+    {
+      title: "Agendamentos",
+      to: "/admin/bookings",
+      icon: <PaintRoller size={17} />,
+    },
+    {
+      title: "Usuários",
+      to: "/admin/users",
+      icon: <Users size={17} />,
+    },
+    {
+      title: "Pagamentos",
+      to: "/admin/payments",
+      icon: <CreditCard size={17} />,
+    },
+    {
+      title: "Serviços",
+      to: "/admin/services",
+      icon: <GitBranch size={17} />,
+    },
+    {
+      title: "Configurações",
+      to: "/admin/settings",
+      icon: <Settings size={17} />,
     },
   ],
 };

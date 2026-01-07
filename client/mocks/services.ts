@@ -1,6 +1,6 @@
 import { IServiceTemplate } from "@/types/interfaces";
 import { categoriesMock } from "./categories";
-import { ServicePriceType } from "@/types/enum";
+import { ApprovalStatus, ServicePriceType } from "@/types/enum";
 
 export const servicesMock: IServiceTemplate[] = [
   {
@@ -37,7 +37,28 @@ export const servicesMock: IServiceTemplate[] = [
     createdAt: new Date("2026-01-01T10:00:00"),
     updatedAt: new Date("2026-01-02T12:00:00"),
     category: categoriesMock[0],
-    requests: [],
+    requests: [
+      {
+        professional: {
+          user: {
+            id: 1,
+            firstName: "Pedro",
+            lastName: "Rodri",
+          },
+        },
+        status: ApprovalStatus.APPROVED,
+      } as any,
+      {
+        professional: {
+          user: {
+            id: 132,
+            firstName: "Miguel",
+            lastName: "Jojo",
+          },
+        },
+        status: ApprovalStatus.APPROVED,
+      } as any,
+    ],
     bookings: [],
     priceType: ServicePriceType.FIXED,
   },
@@ -71,7 +92,29 @@ export const servicesMock: IServiceTemplate[] = [
     createdAt: new Date("2026-01-02T09:00:00"),
     updatedAt: new Date("2026-01-03T11:00:00"),
     category: categoriesMock[0],
-    requests: [],
+    requests: [
+      {
+        professional: {
+          user: {
+            id: 1,
+            firstName: "Pedro",
+            lastName: "Rodri",
+            email: "rodri@gmail.com",
+          },
+        },
+        status: ApprovalStatus.APPROVED,
+      } as any,
+      {
+        professional: {
+          user: {
+            id: 132,
+            firstName: "Miguel",
+            lastName: "Jojo",
+          },
+        },
+        status: ApprovalStatus.APPROVED,
+      } as any,
+    ],
     bookings: [],
     priceType: ServicePriceType.FIXED,
   },
@@ -105,7 +148,28 @@ export const servicesMock: IServiceTemplate[] = [
     createdAt: new Date("2026-01-03T10:00:00"),
     updatedAt: new Date("2026-01-04T12:00:00"),
     category: categoriesMock[1],
-    requests: [],
+    requests: [
+      {
+        professional: {
+          user: {
+            id: 1,
+            firstName: "Pedro",
+            lastName: "Rodri",
+          },
+        },
+        status: ApprovalStatus.APPROVED,
+      } as any,
+      {
+        professional: {
+          user: {
+            id: 132,
+            firstName: "Miguel",
+            lastName: "Jojo",
+          },
+        },
+        status: ApprovalStatus.APPROVED,
+      } as any,
+    ],
     bookings: [],
     priceType: ServicePriceType.FIXED,
   },
@@ -139,7 +203,28 @@ export const servicesMock: IServiceTemplate[] = [
     createdAt: new Date("2026-01-04T10:00:00"),
     updatedAt: new Date("2026-01-05T12:00:00"),
     category: categoriesMock[1],
-    requests: [],
+    requests: [
+      {
+        professional: {
+          user: {
+            id: 1,
+            firstName: "Pedro",
+            lastName: "Rodri",
+          },
+        },
+        status: ApprovalStatus.APPROVED,
+      } as any,
+      {
+        professional: {
+          user: {
+            id: 132,
+            firstName: "Miguel",
+            lastName: "Jojo",
+          },
+        },
+        status: ApprovalStatus.APPROVED,
+      } as any,
+    ],
     bookings: [],
     priceType: ServicePriceType.FIXED,
   },
@@ -173,7 +258,28 @@ export const servicesMock: IServiceTemplate[] = [
     createdAt: new Date("2026-01-05T10:00:00"),
     updatedAt: new Date("2026-01-06T12:00:00"),
     category: categoriesMock[2],
-    requests: [],
+    requests: [
+      {
+        professional: {
+          user: {
+            id: 1,
+            firstName: "Pedro",
+            lastName: "Rodri",
+          },
+        },
+        status: ApprovalStatus.APPROVED,
+      } as any,
+      {
+        professional: {
+          user: {
+            id: 132,
+            firstName: "Miguel",
+            lastName: "Jojo",
+          },
+        },
+        status: ApprovalStatus.APPROVED,
+      } as any,
+    ],
     bookings: [],
     priceType: ServicePriceType.FIXED,
   },

@@ -1,7 +1,23 @@
-import { IBooking } from "@/types/interfaces";
+import { IBooking, IUser } from "@/types/interfaces";
 import { Badge } from "@/components/ui/badge";
-import { BookingStatus } from "@/types/enum";
+import { ApprovalStatus, BookingStatus, UserRole } from "@/types/enum";
 
+import { CheckIcon, ChevronsUpDownIcon } from "lucide-react";
+
+import { cn } from "@/lib/utils";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { format } from "date-fns";
 import {
   Table,
@@ -11,7 +27,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { ReactNode } from "react";
+import { ReactNode, useState } from "react";
 import { Loader2, CheckCircle, PlayCircle, XCircle, Ban } from "lucide-react";
 import { verifyArrayDisponiblity } from "@/lib/utils";
 import { BookingCard } from "@/components/Booking";
@@ -31,17 +47,19 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
-  DropdownMenuGroup,
-  DropdownMenuPortal,
   DropdownMenuRadioGroup,
   DropdownMenuShortcut,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
 } from "@/components/ui/dropdown-menu";
 
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 const columns: BookingStatus[] = [
   BookingStatus.PENDING,
   BookingStatus.ACCEPTED,
@@ -150,13 +168,45 @@ export function ListView({ bookings }: { bookings: IBooking[] }) {
 }
 
 export function TableView({ bookings }: { bookings: IBooking[] }) {
-  const { role } = useUserRole() as any;
+  const frameworks = [
+    {
+      value: "next.js",
+      label: "Next.js",
+    },
+    {
+      value: "sveltekit",
+      label: "SvelteKit",
+    },
+    {
+      value: "nuxt.js",
+      label: "Nuxt.js",
+    },
+    {
+      value: "remix",
+      label: "Remix",
+    },
+    {
+      value: "astro",
+      label: "Astro",
+    },
+  ];
+  const [open, setOpen] = useState(false);
+  const [value, setValue] = useState({
+    id: 0,
+    name: "",
+  });
+
+  const [currentServiceUserList, setCurrentServiceUsersList] = useState<
+    IUser[]
+  >([]);
+  const { role } = useUserRole();
   const href =
-    role == "PROFISSIONAL"
+    role == UserRole.PROFESSIONAL
       ? "/profissional/bookings"
-      : role == "ADMIN"
+      : role == UserRole.ADMIN
       ? "/admin/bookings"
       : "/costumer/bookings";
+
   return (
     <Table>
       <TableHeader>
@@ -165,6 +215,7 @@ export function TableView({ bookings }: { bookings: IBooking[] }) {
             <Checkbox />
           </TableHead>
           <TableHead>Cliente</TableHead>
+          {role == UserRole.ADMIN && <TableHead>Profissional</TableHead>}
           <TableHead>Serviço</TableHead>
           <TableHead>Data / Horário</TableHead>
           <TableHead>Status</TableHead>
@@ -196,13 +247,49 @@ export function TableView({ bookings }: { bookings: IBooking[] }) {
                 </span>
               </span>
             </TableCell>
+            {role == UserRole.ADMIN && (
+              <TableCell>
+                {booking?.professionalId ? (
+                  <span className="flex items-center gap-2">
+                    <Avatar>
+                      <AvatarImage
+                        src={booking.professional?.user?.avatarUrl}
+                      />
+                      <AvatarFallback className="bg-black text-white">
+                        {(booking.professional?.user?.firstName?.charAt(0) ??
+                          "") +
+                          (booking.professional?.user?.lastName?.charAt(0) ??
+                            "")}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="flex flex-col gap-1">
+                      <p>
+                        {booking.professional?.user.firstName +
+                          " " +
+                          booking.professional?.user.lastName}
+                      </p>
+                      <small>{booking?.professional?.user.email}</small>
+                    </span>
+                  </span>
+                ) : (
+                  <p className="text-xs text-red-500">Nenhum profissional anexado</p>
+                )}
+              </TableCell>
+            )}
             <TableCell>
-              <span className="flex items-center gap-2">
-                <h1>{booking.service?.title}</h1>
-                <small>
-                  {booking.service.description?.length > 0 &&
-                    booking?.service?.description?.slice(0, 30) + "  ..."}
-                </small>
+              <span className="flex gap-2">
+                <img
+                  src={booking?.service?.bannerUrl}
+                  alt="ServiceImage"
+                  className="h-10 w-10 rounded-sm object-contain"
+                />
+                <div className="flex flex-col gap-2">
+                  <h1>{booking.service?.title}</h1>
+                  <small>
+                    {booking.service.description?.length > 0 &&
+                      booking?.service?.description?.slice(0, 30) + "  ..."}
+                  </small>
+                </div>
               </span>
             </TableCell>
             <TableCell>
@@ -244,48 +331,165 @@ export function TableView({ bookings }: { bookings: IBooking[] }) {
                   <Button variant={"outline"}>Acções</Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-56" align="start">
-                  <DropdownMenuRadioGroup>
-                    <DropdownMenuItem>
-                      Liberar
-                      <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      Pagar
-                      <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
-                    </DropdownMenuItem>
+                  {role == UserRole.ADMIN && (
+                    <>
+                      <DropdownMenuRadioGroup>
+                        <DropdownMenuItem>
+                          Cancelar
+                          <DropdownMenuShortcut>⇧⌘C</DropdownMenuShortcut>
+                        </DropdownMenuItem>
 
-                    <Link href={`${href}/${booking.id}`}>
-                      <DropdownMenuItem>
-                        Detalhes
-                        <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
-                      </DropdownMenuItem>
-                    </Link>
-                  </DropdownMenuRadioGroup>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuGroup>
-                    <DropdownMenuSub>
-                      <DropdownMenuSubTrigger>Prestador</DropdownMenuSubTrigger>
-                      <DropdownMenuPortal>
-                        <DropdownMenuSubContent>
-                          <DropdownMenuItem>Email</DropdownMenuItem>
-                          <DropdownMenuItem>Message</DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem>More...</DropdownMenuItem>
-                        </DropdownMenuSubContent>
-                      </DropdownMenuPortal>
-                    </DropdownMenuSub>
-                    <DropdownMenuSub>
-                      <DropdownMenuSubTrigger>Cliente</DropdownMenuSubTrigger>
-                      <DropdownMenuPortal>
-                        <DropdownMenuSubContent>
-                          <DropdownMenuItem>Email</DropdownMenuItem>
-                          <DropdownMenuItem>Message</DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem>More...</DropdownMenuItem>
-                        </DropdownMenuSubContent>
-                      </DropdownMenuPortal>
-                    </DropdownMenuSub>
-                  </DropdownMenuGroup>
+                        <Link href={`${href}/${booking.id}`}>
+                          <DropdownMenuItem>
+                            Detalhes
+                            <DropdownMenuShortcut>⌘D</DropdownMenuShortcut>
+                          </DropdownMenuItem>
+                        </Link>
+
+                        {!booking?.professionalId && (
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <Button
+                                className="w-full mt-3"
+                                variant={"outline"}
+                              >
+                                Anexar profissional
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent>
+                              <DialogHeader>
+                                <DialogTitle>
+                                  Anexe profissional a este pedido
+                                </DialogTitle>
+                                <DialogDescription>
+                                  Caso o agendamento já possui um profissional
+                                  anexado o mesmo não poderá ser alterado ou
+                                  removido, portanto certifique se de escolher o
+                                  profissional ideial para o mesmo agndamento.
+                                </DialogDescription>
+                              </DialogHeader>
+
+                              <Popover
+                                open={open}
+                                onOpenChange={(e) => {
+                                  if (e) {
+                                    const users: IUser[] =
+                                      booking.service?.requests
+                                        .filter((item) => {
+                                          return (
+                                            item.status ==
+                                            ApprovalStatus.APPROVED
+                                          );
+                                        })
+                                        .map((item) => {
+                                          return item?.professional?.user;
+                                        });
+                                    setCurrentServiceUsersList(users);
+                                  }
+                                  setOpen(e);
+                                }}
+                              >
+                                <PopoverTrigger asChild>
+                                  <Button
+                                    variant="outline"
+                                    role="combobox"
+                                    aria-expanded={open}
+                                    className="w-full justify-between"
+                                  >
+                                    {value?.name
+                                      ? currentServiceUserList.find(
+                                          (user) => user.id === value.id
+                                        )?.firstName +
+                                        " " +
+                                        currentServiceUserList.find(
+                                          (user) => user.id === value.id
+                                        )?.lastName
+                                      : "Selecione um profissional..."}
+                                    <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                  </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-full p-0">
+                                  <Command className="p-2">
+                                    <CommandInput placeholder="Selecione um profissional..." />
+                                    <CommandList>
+                                      <CommandEmpty>
+                                        Nenhum profissonal anexado a este
+                                        serviço
+                                      </CommandEmpty>
+                                      <CommandGroup>
+                                        {currentServiceUserList.map(
+                                          (user, idx) => (
+                                            <CommandItem
+                                              key={idx}
+                                              value={
+                                                user?.firstName +
+                                                " " +
+                                                user?.lastName
+                                              }
+                                              onSelect={(currentValue) => {
+                                                setValue({
+                                                  id: user.id,
+                                                  name:
+                                                    user.firstName +
+                                                    " " +
+                                                    user.lastName,
+                                                });
+                                                setOpen(false);
+                                              }}
+                                              className=""
+                                            >
+                                              <CheckIcon
+                                                className={cn(
+                                                  "mr-2 h-4 w-4",
+                                                  value?.id === user.id
+                                                    ? "opacity-100"
+                                                    : "opacity-0"
+                                                )}
+                                              />
+                                              <Avatar>
+                                                <AvatarImage
+                                                  src={user?.avatarUrl}
+                                                />
+                                                <AvatarFallback className="bg-black text-white">
+                                                  {(user?.firstName?.charAt(
+                                                    0
+                                                  ) ?? "") +
+                                                    (user?.lastName?.charAt(
+                                                      0
+                                                    ) ?? "")}
+                                                </AvatarFallback>
+                                              </Avatar>
+                                              {user.firstName +
+                                                " " +
+                                                user.lastName}
+                                            </CommandItem>
+                                          )
+                                        )}
+                                      </CommandGroup>
+                                    </CommandList>
+                                  </Command>
+                                </PopoverContent>
+                              </Popover>
+                              <Button>Anexar profissional</Button>
+                            </DialogContent>
+                          </Dialog>
+                        )}
+                      </DropdownMenuRadioGroup>
+                    </>
+                  )}
+
+                  {role == UserRole.PROFESSIONAL && (
+                    <>
+                      <DropdownMenuRadioGroup>
+                        <Link href={`${href}/${booking.id}`}>
+                          <DropdownMenuItem>
+                            Detalhes
+                            <DropdownMenuShortcut>⌘D</DropdownMenuShortcut>
+                          </DropdownMenuItem>
+                        </Link>
+                      </DropdownMenuRadioGroup>
+                    </>
+                  )}
                 </DropdownMenuContent>
               </DropdownMenu>
             </TableCell>

@@ -98,7 +98,6 @@ export const bookingsMock: IBooking[] = [
   {
     id: 1,
     clientId: 1,
-    professionalId: 2,
     serviceId: 1,
     canEnd: true,
     scheduleDate: new Date("2026-01-03T10:00:00"),
