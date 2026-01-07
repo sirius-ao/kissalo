@@ -132,80 +132,6 @@ export function BookingCard({ booking }: { booking: IBooking }) {
                     <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
                   </DropdownMenuItem>
                 )}
-                <Dialog>
-                  <form>
-                    <DialogTrigger asChild>
-                      <Button variant="outline" className="w-full">
-                        <Star className="text-amber-500" />
-                        Avaliar
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-[425px]">
-                      <DialogHeader>
-                        <DialogTitle>Avaliar Serviço</DialogTitle>
-                        <DialogDescription>
-                          Compartilhe sua experiência. Sua avaliação ajuda
-                          outros usuários.
-                        </DialogDescription>
-                      </DialogHeader>
-                      <div className="grid gap-4 py-4">
-                        <div className="grid gap-3">
-                          <Label htmlFor="rating">Avaliação</Label>
-                          <div className="grid grid-cols-5 gap-2">
-                            {[1, 2, 3, 4, 5].map((star) => (
-                              <button
-                                key={star}
-                                type="button"
-                                onClick={() => setRating(star)}
-                              >
-                                {star <= rating ? (
-                                  <Star
-                                    className="fill-amber-500 text-amber-500"
-                                    size={33}
-                                  />
-                                ) : (
-                                  <Star
-                                    className="text-gray-300  text-3xl"
-                                    size={33}
-                                  />
-                                )}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-
-                        <div className="grid gap-3">
-                          <Label htmlFor="comment">Comentário</Label>
-                          <Textarea
-                            id="comment"
-                            name="comment"
-                            rows={4}
-                            className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-none"
-                            placeholder="Conte mais sobre sua experiência..."
-                            maxLength={500}
-                          />
-                          <div className="text-xs text-gray-500 text-right">
-                            Máximo de 500 caracteres
-                          </div>
-                        </div>
-                      </div>
-                      <DialogFooter>
-                        <DialogClose asChild>
-                          <Button type="button" variant="outline">
-                            Cancelar
-                          </Button>
-                        </DialogClose>
-                        <Button
-                          type="submit"
-                          className="bg-amber-500 hover:bg-amber-600"
-                        >
-                          <Star className="h-4 w-4 mr-2" />
-                          Publicar Avaliação
-                        </Button>
-                      </DialogFooter>
-                    </DialogContent>
-                  </form>
-                </Dialog>
 
                 <Link href={`${href}/${booking.id}`}>
                   <DropdownMenuItem>
@@ -239,6 +165,80 @@ export function BookingCard({ booking }: { booking: IBooking }) {
                   </DropdownMenuGroup>
                 </>
               )}
+              <Dialog>
+                <form>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" className="w-full mt-5">
+                      <Star className="text-amber-500" />
+                      Avaliar
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                      <DialogTitle>Avaliar Serviço</DialogTitle>
+                      <DialogDescription>
+                        Compartilhe sua experiência. Sua avaliação ajuda outros
+                        usuários.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4">
+                      <div className="grid gap-3">
+                        <Label htmlFor="rating">Avaliação</Label>
+                        <div className="grid grid-cols-5 gap-2">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <button
+                              key={star}
+                              type="button"
+                              onClick={() => setRating(star)}
+                            >
+                              {star <= rating ? (
+                                <Star
+                                  className="fill-amber-500 text-amber-500"
+                                  size={33}
+                                />
+                              ) : (
+                                <Star
+                                  className="text-gray-300  text-3xl"
+                                  size={33}
+                                />
+                              )}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="grid gap-3">
+                        <Label htmlFor="comment">Comentário</Label>
+                        <Textarea
+                          id="comment"
+                          name="comment"
+                          rows={4}
+                          className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-none"
+                          placeholder="Conte mais sobre sua experiência..."
+                          maxLength={500}
+                        />
+                        <div className="text-xs text-gray-500 text-right">
+                          Máximo de 500 caracteres
+                        </div>
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <DialogClose asChild>
+                        <Button type="button" variant="outline">
+                          Cancelar
+                        </Button>
+                      </DialogClose>
+                      <Button
+                        type="submit"
+                        className="bg-amber-500 hover:bg-amber-600"
+                      >
+                        <Star className="h-4 w-4 mr-2" />
+                        Publicar Avaliação
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </form>
+              </Dialog>
             </DropdownMenuContent>
           </DropdownMenu>
         )}
