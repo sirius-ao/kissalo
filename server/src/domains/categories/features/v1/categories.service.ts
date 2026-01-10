@@ -40,6 +40,9 @@ export class CategoriesService {
         id: id,
         isActive: true,
       },
+      include: {
+        services: true,
+      },
     });
     return category;
   }
@@ -47,13 +50,17 @@ export class CategoriesService {
   async findBySlug(slug: string) {
     const category = await this.database.category.findUnique({
       where: {
-        slug: slug,
+        slug,
         isActive: true,
       },
     });
     return category;
   }
   async update(id: number, updateCategoryDto: UpdateCategoryDto) {
+    const slug = await this.slugService.gen(
+      updateCategoryDto.title,
+      'category',
+    );
     const category = await this.database.category.findFirst({
       where: { id },
     });
@@ -67,6 +74,7 @@ export class CategoriesService {
       },
       data: {
         ...updateCategoryDto,
+        slug,
       },
     });
     return updated;

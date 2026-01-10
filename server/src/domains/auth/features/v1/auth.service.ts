@@ -17,6 +17,7 @@ import { RefreshTokenUseCase } from './Usecases/refreshTokenUsecase';
 import { VerifyAcountUseCase } from './Usecases/verifyAcountUsecase';
 import { UpdateProfileUseCase } from './Usecases/updateProfileUseCase';
 import { NotificationFactory } from '@core/shared/utils/services/Notification/notification.factory';
+import { MeUseCase } from './Usecases/meUseCase';
 
 @Injectable()
 export class AuthService {
@@ -31,6 +32,10 @@ export class AuthService {
     private readonly notifier: NotificationFactory,
   ) {}
 
+  public async me(userId: number) {
+    const useCase = new MeUseCase(this.database, this.cache);
+    return await useCase.getMe(userId);
+  }
   public async login(data: CreateAuthDto) {
     const useCase = new LoginUseCase(
       this.database,

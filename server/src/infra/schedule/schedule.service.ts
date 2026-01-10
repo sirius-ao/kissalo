@@ -11,11 +11,13 @@ export class ScheduleService implements OnModuleInit {
     const data = await this.database.booking.updateMany({
       where: {
         endTime: {
-          gte: new Date(),
+          lt: new Date(),
         },
         status: {
-          notIn: ['ACEPTED', 'CONFIRMED', 'STARTED'],
+          notIn: ['CONFIRMED', 'STARTED', 'CANCELED', 'COMPLETED'],
         },
+        payment: null,
+        professionalId: null,
       },
       data: {
         status: 'CANCELED',
@@ -23,22 +25,23 @@ export class ScheduleService implements OnModuleInit {
     });
     this.logger.debug(`${data.count} Agendamentos Cancelados`);
   }
-
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
   public async removeIsFeature() {
-    const treeDays = new Date();
-    treeDays.setDate(treeDays.getDate() + 3);
+    const threeDaysAgo = new Date();
+    threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+
     const data = await this.database.serviceTemplate.updateMany({
       where: {
+        isFeatured: true,
         createdAt: {
-          gte: treeDays,
+          lt: threeDaysAgo,
         },
       },
       data: {
         isFeatured: false,
       },
     });
-    this.logger.debug(`${data.count} Agendamentos Cancelados`);
+    this.logger.debug(`${data.count} Serviços removidos como featured`);
   }
   onModuleInit() {
     this.logger.debug(`✅ Cron job iniciado`);

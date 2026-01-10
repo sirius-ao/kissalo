@@ -104,12 +104,11 @@ export class UpdateProfileUseCase {
         },
       }),
     ]);
-
     if (!user) {
       throw new UserNotFoundExecption();
     }
 
-    if (alreadyExist) {
+    if (alreadyExist && alreadyExist.id != userId) {
       throw new UserAlreadyExistExecption();
     }
     await Promise.all([

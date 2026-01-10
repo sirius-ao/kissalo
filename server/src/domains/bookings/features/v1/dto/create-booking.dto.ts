@@ -15,14 +15,6 @@ import { Type } from 'class-transformer';
 import { IAddress } from '@core/shared/types';
 
 export class CreateBookingDto {
-  @ApiPropertyOptional({
-    description: 'ID do profissional (opcional)',
-    example: 12,
-  })
-  @IsInt()
-  @IsOptional()
-  professionalId?: number;
-
   @ApiProperty({
     description: 'ID do serviço',
     example: 5,
@@ -62,7 +54,6 @@ export class CreateBookingDto {
 
   @ApiProperty({
     description: 'Endereço do serviço',
-    type: Object,
     example: {
       street: 'Rua Principal',
       city: 'Luanda',
@@ -70,8 +61,6 @@ export class CreateBookingDto {
     },
   })
   @IsObject()
-  @ValidateNested()
-  @Type(() => Object)
   address: IAddress;
 
   @IsEnum(BookingPriority)
@@ -80,4 +69,15 @@ export class CreateBookingDto {
     enum: BookingPriority,
   })
   priority: BookingPriority;
+}
+
+export class CreateStepsDto {
+  @IsString()
+  @IsOptional()
+  notes: string;
+  @ApiProperty({
+    description: 'Anexos ',
+  })
+  @IsArray()
+  files: string[];
 }

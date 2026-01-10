@@ -24,6 +24,7 @@ import { IsClientGuard } from '@core/http/guards/isClient.guard';
 import { currentUser } from '@core/http/decorators/currentUser.decorator';
 import { IsAdminGuard } from '@core/http/guards/isAdmin.guard';
 import { IsEmailVerifiedGuard } from '@core/http/guards/isEmailVerifiedGuard';
+import { UpdatePaymentDto } from './dto/update-payment.dto';
 
 @ApiTags('Payments V1')
 @ApiBearerAuth()
@@ -65,25 +66,24 @@ export class PaymentsController {
     @currentUser() userId: number,
     @Param('id', ParseIntPipe) id: number,
     @Param('walletId', ParseIntPipe) walletId: number,
-    @Param('file', ParseIntPipe) file: string,
+    @Param('file') file: string,
   ) {
     return this.paymentsService.consolidate(id, walletId, file);
   }
 
-  @Patch(':id')
+  @Patch(':id/toogle')
   @UseGuards(IsAdminGuard)
   @ApiOperation({
     summary: 'Atualizar um pagamento',
     description: 'Permite atualizar dados de um pagamento status',
   })
   @ApiParam({ name: 'id', example: 1 })
-  @ApiBody({ type: CreatePaymentDto })
   update(
-    @Body() createPaymentDto: CreatePaymentDto,
+    @Body() UpdatePaymentDto: UpdatePaymentDto,
     @currentUser() userId: number,
     @Param('id', ParseIntPipe) id: number,
   ) {
-    return this.paymentsService.update(createPaymentDto, userId, id);
+    return this.paymentsService.update(UpdatePaymentDto, userId, id);
   }
 
   @Get()

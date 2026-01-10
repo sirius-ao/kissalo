@@ -13,6 +13,7 @@ export class NotificationsService {
       this.database.notification.findMany({
         where: {
           userId,
+          channel: 'PUSH',
         },
         take: limit,
         skip,
@@ -20,12 +21,14 @@ export class NotificationsService {
       this.database.notification.count({
         where: {
           userId,
+          channel: 'PUSH',
         },
       }),
       this.database.notification.count({
         where: {
           userId,
           isRead: false,
+          channel: 'PUSH',
         },
       }),
     ]);
@@ -52,6 +55,7 @@ export class NotificationsService {
         id: {
           lte: to,
         },
+        channel: 'PUSH',
       },
       data: {
         isRead: true,

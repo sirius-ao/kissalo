@@ -94,7 +94,7 @@ export class VerifyAcountUseCase {
                         font-weight:bold;
                         display:inline-block;
                       ">
-                      Activar Conta
+                      Acessar Conta
                     </a>
                   </div>
                   <p style="color:#aaa;font-size:12px;margin-top:30px;">

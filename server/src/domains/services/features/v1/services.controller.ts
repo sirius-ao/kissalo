@@ -7,14 +7,19 @@ import {
   Param,
   Delete,
   UseGuards,
+  ParseIntPipe,
+  ParseBoolPipe,
 } from '@nestjs/common';
 import { ServicesService } from './services.service';
 import { CreateServiceTemplateDto } from '@domains/services/dto/create-service.dto';
 import { IsAdminGuard } from '@core/http/guards/isAdmin.guard';
 import { UpdateServiceTemplateDto } from '@domains/services/dto/update-service.dto';
-import { IsEmailVerifiedGuard } from '@core/http/guards/isEmailVerifiedGuard';
 import { ApiTags } from '@nestjs/swagger';
+import { currentUser } from '@core/http/decorators/currentUser.decorator';
+import { ProfessionalServiceRequestDto } from '@domains/services/dto/professional-service-request.dto';
+import { IsProfissionalGuard } from '@core/http/guards/isProfissional.guard';
 
+@Controller('v1/services')
 @Controller('v1/services')
 @ApiTags('Services V1')
 export class ServicesController {
@@ -54,5 +59,27 @@ export class ServicesController {
   @Get('category/:categoryId')
   async findByCategory(@Param('categoryId') categoryId: string) {
     return await this.servicesService.findByCategory(+categoryId);
+  }
+
+  @UseGuards(IsProfissionalGuard)
+  @Post('professional/:serviceId')
+  async professionalServicesRequest(
+    @Param('serviceId', ParseIntPipe) serviceId: number,
+    @currentUser() userId: number,
+  ) {
+    return await this.servicesService.professionalServicesRequest(
+      +serviceId,
+      +userId,
+    );
+  }
+
+  @UseGuards(IsAdminGuard)
+  @Post('professional/:serviceId/:status/:userid/toggle')
+  async toogle(
+    @Param('serviceId', ParseIntPipe) serviceId: number,
+    @Param('status') status: boolean,
+    @Param('userid') userId: number,
+  ) {
+    return await this.servicesService.toogleStatus(+serviceId, +userId, status);
   }
 }
