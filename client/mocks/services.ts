@@ -14,7 +14,7 @@ export const servicesMock: IServiceTemplate[] = [
       "Desenvolvimento completo de sites modernos e responsivos.",
     description:
       "Oferecemos desenvolvimento web completo utilizando HTML, CSS, JavaScript e backend em Node.js. Inclui otimização SEO básica e integração com redes sociais.",
-    deliverables: "Website funcional, documentação, suporte inicial",
+    deliverables: ["Website funcional, documentação, suporte inicial"],
     slug: "criacao-website-profissional",
     keywords: ["web", "site", "desenvolvimento"],
     requirements: ["Briefing do cliente", "Conteúdo e imagens"],

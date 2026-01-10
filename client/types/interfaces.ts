@@ -93,7 +93,7 @@ export interface IServiceTemplate {
   title: string;
   shortDescription?: string;
   description: string;
-  deliverables: string[];
+  deliverables: any;
   slug: string;
   keywords: string[];
   requirements: string[];

@@ -92,7 +92,7 @@ export const serviceRequestsMock: IProfessionalServiceRequest[] = [
       category: {} as any,
       requests: [],
       bookings: [],
-    },
+    } as any,
   },
 
   // ============================
@@ -180,7 +180,7 @@ export const serviceRequestsMock: IProfessionalServiceRequest[] = [
       category: {} as any,
       requests: [],
       bookings: [],
-    },
+    } as any,
   },
 
   // ============================
@@ -269,6 +269,6 @@ export const serviceRequestsMock: IProfessionalServiceRequest[] = [
       category: {} as any,
       requests: [],
       bookings: [],
-    },
+    } as any,
   })),
 ];
