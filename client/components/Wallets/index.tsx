@@ -17,7 +17,7 @@ interface Props {
 }
 
 export function WalletCard({ wallet, showElips = true }: Props) {
-  const lastDigits = wallet.accountNumber.slice(-4);
+  const lastDigits = wallet?.accountNumber.slice(-4);
 
   return (
     <div
@@ -25,7 +25,7 @@ export function WalletCard({ wallet, showElips = true }: Props) {
         relative  w-full rounded-2xl p-5 text-white shadow-xl
         bg-linear-to-br
         ${
-          wallet.isVerified
+          wallet?.isVerified
             ? "from-orange-500 to-amber-400"
             : "from-gray-500 to-gray-700"
         }
@@ -33,9 +33,9 @@ export function WalletCard({ wallet, showElips = true }: Props) {
     >
       <div className="flex justify-between items-start">
         <div>
-          <p className="text-sm opacity-80">{wallet.bankName}</p>
+          <p className="text-sm opacity-80">{wallet?.bankName}</p>
           <p className="text-xs opacity-60">
-            {wallet.isActive ? "Conta ativa" : "Conta inativa"}
+            {wallet?.isActive ? "Conta ativa" : "Conta inativa"}
           </p>
         </div>
 
@@ -45,7 +45,7 @@ export function WalletCard({ wallet, showElips = true }: Props) {
               <Ellipsis size={14} />
             </DropdownMenuTrigger>
             <DropdownMenuContent>
-              <DropdownMenuLabel>{wallet.bankName}</DropdownMenuLabel>
+              <DropdownMenuLabel>{wallet?.bankName}</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem>
                 Editar
@@ -71,14 +71,14 @@ export function WalletCard({ wallet, showElips = true }: Props) {
       </div>
       <div className="mt-10">
         <p className="text-xs opacity-70">Titular</p>
-        <h2 className="text-lg font-semibold ">{wallet.accountHolder}</h2>
+        <h2 className="text-lg font-semibold ">{wallet?.accountHolder}</h2>
       </div>
 
       <div className="flex justify-between text-xs opacity-80">
         <span>
-          {wallet.isVerified ? "✔ Conta verificada" : "⏳ Em verificação"}
+          {wallet?.isVerified ? "✔ Conta verificada" : "⏳ Em verificação"}
         </span>
-        <span>{wallet.bankName}</span>
+        <span>{wallet?.bankName}</span>
       </div>
     </div>
   );

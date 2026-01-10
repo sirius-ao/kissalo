@@ -49,6 +49,7 @@ import {
 } from "@/components/ui/empty";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
 
 export default function CreateService() {
   const [currentStep, setCurrentStep] = useState(0);
@@ -329,6 +330,12 @@ export default function CreateService() {
                   type="number"
                   name="min"
                   placeholder="Duração em minutos"
+                />{" "}
+                <Label>Descrição</Label>
+                <Textarea
+                  placeholder="descrição"
+                  className="resize-none"
+                  required
                 />
               </>
             )}
@@ -372,7 +379,7 @@ export default function CreateService() {
                               }}
                               src={item}
                               className={clsx(
-                                "h-40 bg-gray-100 animate-pulse rounded-sm",
+                                "h-40 bg-gray-100 w-full object-cover rounded-sm",
                                 {
                                   "border-2 border-green-500":
                                     selectImages.findIndex((image) => {

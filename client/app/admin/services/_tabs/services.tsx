@@ -130,14 +130,14 @@ export function TableViewServices({
                       <DropdownMenuShortcut>⇧⌘D</DropdownMenuShortcut>
                     </DropdownMenuItem>
 
-                    <Link href={`admin/services/${service.id}/edit`}>
+                    <Link href={`/admin/services/${service.id}/edit`}>
                       <DropdownMenuItem>
                         <Pencil />
                         Editar
                         <DropdownMenuShortcut>⇧⌘E</DropdownMenuShortcut>
                       </DropdownMenuItem>
                     </Link>
-                    <Link href={`admin/services/${service.id}`}>
+                    <Link href={`/services/${service.id}`}>
                       <DropdownMenuItem>
                         <Eye />
                         Detalhes

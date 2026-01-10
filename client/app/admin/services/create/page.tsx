@@ -379,7 +379,7 @@ export default function CreateService() {
                               }}
                               src={item}
                               className={clsx(
-                                "h-40 bg-gray-100 animate-pulse rounded-sm",
+                                "h-40 bg-gray-100 w-full object-cover rounded-sm",
                                 {
                                   "border-2 border-green-500":
                                     selectImages.findIndex((image) => {

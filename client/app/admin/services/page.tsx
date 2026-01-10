@@ -15,6 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   ArrowLeft,
   ArrowRight,
+  ClipboardList,
   Files,
   Paintbrush,
   Plus,
@@ -26,7 +27,11 @@ import {
   InputGroupInput,
 } from "@/components/ui/input-group";
 import { Button } from "@/components/ui/button";
-import { ICategory, IServiceTemplate } from "@/types/interfaces";
+import {
+  ICategory,
+  IProfessionalServiceRequest,
+  IServiceTemplate,
+} from "@/types/interfaces";
 import { servicesMock } from "@/mocks/services";
 import { categoriesMock } from "@/mocks/categories";
 import { TableViewServices } from "./_tabs/services";
@@ -35,6 +40,8 @@ import Link from "next/link";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
+import { TableViewServiceRequests } from "./_tabs/service-requests";
+import { serviceRequestsMock } from "@/mocks/service-requests";
 
 export default function ServicesPage() {
   const [stats, setStats] = useState<IStats[]>([
@@ -67,6 +74,9 @@ export default function ServicesPage() {
   const [categories, setCategories] = useState<ICategory[]>([
     ...categoriesMock,
   ]);
+  const [serviceRequests, setServiceRequests] = useState<
+    IProfessionalServiceRequest[]
+  >([...serviceRequestsMock]);
 
   const [loading, setIsLoading] = useState(true);
 
@@ -111,6 +121,14 @@ export default function ServicesPage() {
                 >
                   <Files size={16} /> Categorias
                 </TabsTrigger>
+                <TabsTrigger
+                  onClick={() => setCurrentTab(2)}
+                  value="requests"
+                  className="justify-start gap-2 "
+                >
+                  <ClipboardList size={16} />
+                  Solicitações
+                </TabsTrigger>
               </div>
               <form
                 action=""
@@ -130,7 +148,7 @@ export default function ServicesPage() {
                       <Plus /> Novo
                     </Link>
                   </Button>
-                ) : (
+                ) : currentTab == 1 ? (
                   <Dialog>
                     <DialogTrigger asChild>
                       <Button type="button">
@@ -162,7 +180,7 @@ export default function ServicesPage() {
                       </form>
                     </DialogContent>
                   </Dialog>
-                )}
+                ) : null}
               </form>
             </TabsList>
 
@@ -189,6 +207,23 @@ export default function ServicesPage() {
                   <span className="flex mt-5 justify-between items-center gap-3">
                     <div>1 de 10</div>
                     <span className="flex  gap-2">
+                      <Button variant={"outline"}>
+                        <ArrowLeft />
+                      </Button>
+                      <Button variant={"outline"}>
+                        <ArrowRight />
+                      </Button>
+                    </span>
+                  </span>
+                )}
+              </TabsContent>
+              <TabsContent value="requests">
+                <TableViewServiceRequests requests={serviceRequests} />
+
+                {verifyArrayDisponiblity(serviceRequests) && (
+                  <span className="flex mt-5 justify-between items-center gap-3">
+                    <div>1 de 10</div>
+                    <span className="flex gap-2">
                       <Button variant={"outline"}>
                         <ArrowLeft />
                       </Button>

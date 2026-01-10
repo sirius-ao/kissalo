@@ -1,4 +1,7 @@
-import { IServiceTemplate } from "@/types/interfaces";
+import {
+  IProfessionalServiceRequest,
+  IServiceTemplate,
+} from "@/types/interfaces";
 import { categoriesMock } from "./categories";
 import { ApprovalStatus, ServicePriceType } from "@/types/enum";
 

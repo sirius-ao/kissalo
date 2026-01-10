@@ -36,22 +36,9 @@ export interface IUser {
   bookings: IBooking[];
   reviews: IReview[];
   payments: IPayment[];
-  verifications: IVerification[];
+  verifications: any;
   bookingsteps: IBookingSteps[];
   conclidation: IConcliationPayment[];
-}
-
-export interface IVerification {
-  id: number;
-  userId: number;
-  type: VerificationType;
-  token: string;
-  isUsed: boolean;
-  metaData?: any;
-  createdAt: Date;
-  updatedAt: Date;
-
-  user: IUser;
 }
 
 export interface IProfessional {
@@ -83,19 +70,7 @@ export interface IProfessional {
   wallets: IWallet[];
   reviews: IReview[];
   payments: IPayment[];
-  docs: IProfessionalDocument[];
-}
-
-export interface IProfessionalDocument {
-  id: number;
-  professionalId: number;
-  files: string[];
-  status: ApprovalStatus;
-  notes?: string;
-  createdAt: Date;
-  updatedAt: Date;
-
-  professional: IProfessional;
+  docs: any[];
 }
 
 export interface ICategory {
@@ -118,7 +93,7 @@ export interface IServiceTemplate {
   title: string;
   shortDescription?: string;
   description: string;
-  deliverables?: string;
+  deliverables: string[];
   slug: string;
   keywords: string[];
   requirements: string[];
