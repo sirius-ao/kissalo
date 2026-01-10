@@ -59,7 +59,7 @@ export const metadata: Metadata = {
       "Descubra profissionais altamente qualificados em diversas áreas e contrate com confiança através da plataforma Kissalo.",
     images: [
       {
-        url: "/Group 39737.png", // ideal: 1200x630
+        url: "/Group 39737.png",
         width: 1200,
         height: 630,
         alt: "Kissalo – Plataforma de Profissionais Qualificados",
@@ -73,7 +73,7 @@ export const metadata: Metadata = {
     description:
       "A plataforma ideal para encontrar, comparar e contratar profissionais qualificados online.",
     images: ["/Group 39737.png"],
-    creator: "@kissalo", // se ainda não tiver, pode remover
+    creator: "@kissalo",
   },
 
   icons: {
@@ -93,7 +93,6 @@ export default function RootLayout({
   return (
     <html lang="pt" suppressHydrationWarning>
       <body
-        
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         {children}

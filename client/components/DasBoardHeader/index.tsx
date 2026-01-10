@@ -5,10 +5,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Bell } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { UserRole } from "@/types/enum";
 export function DshBoardHeader() {
   const { role } = useUserRole();
   const href =
-    role == "PROFISSIONAL"
+    role == UserRole.PROFESSIONAL
       ? "/profissional/notifications"
       : role == "ADMIN"
       ? "/admin/notifications"

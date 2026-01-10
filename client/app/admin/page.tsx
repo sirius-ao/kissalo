@@ -1,31 +1,8 @@
 "use client";
-
-import DashBoardProfissional from "@/components/Charts/dashchart";
 import { IStats, StarsCard } from "@/components/StatsCard";
 import { verifyArrayDisponiblity } from "@/lib/utils";
 import { useState } from "react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { IBooking } from "@/types/interfaces";
-import { bookingsMock } from "@/mocks/bookings";
 import { BookingPriority, BookingStatus, PaymentStatus } from "@/types/enum";
-import { format } from "date-fns";
-import {
-  Card,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
 import { useEffect } from "react";
 import {
   CheckCheck,
@@ -102,13 +79,9 @@ export const priorityColorMap: Record<BookingPriority, string> = {
 };
 
 export default function ProfissionalHomePage() {
-  const [bookings, setBookings] = useState<IBooking[]>(bookingsMock);
-
   const [mounted, setMounted] = useState(false);
-
   useEffect(() => {
     setMounted(true);
-    setBookings(bookingsMock);
   }, []);
 
   if (!mounted) return null;
@@ -116,45 +89,24 @@ export default function ProfissionalHomePage() {
   const stats: IStats[] = [
     {
       isCoin: false,
-      label: "Agendamentos recebidos na plataforma",
+      label: "total profissionais da plaforma",
       oldValue: 1000,
-      title: "Total agendamentos",
+      title: "Total profissionais",
       value: 100,
     },
     {
       isCoin: true,
-      label: "Total recebido na plaforma ",
+      label: "total clientes da plaforma ",
       oldValue: 1000,
-      title: "Total facturamento",
+      title: "Total clientes",
       value: 567100,
     },
     {
       isCoin: false,
-      label: "Serviços anexados ao seu perfil",
+      label: "total de usuários",
       oldValue: 1,
-      title: "Total servios",
+      title: "Total usuários",
       value: 10,
-    },
-    {
-      isCoin: false,
-      label: "carteiras registradas por você",
-      oldValue: 1,
-      title: "Total carteiras",
-      value: 10,
-    },
-    {
-      isCoin: false,
-      label: "Serviços prestados e anexados ao seu perfil de profissional",
-      oldValue: 1,
-      title: "Serviços Prestados",
-      value: 10,
-    },
-    {
-      isCoin: true,
-      label: "Valor retido na plaforma",
-      oldValue: 10023,
-      title: "Pagamentos Pendentes",
-      value: 5600,
     },
   ];
   return (
@@ -163,108 +115,6 @@ export default function ProfissionalHomePage() {
         {verifyArrayDisponiblity(stats) &&
           stats.map((item, idx) => <StarsCard data={item} key={idx} />)}
       </span>
-      <DashBoardProfissional />
-      {verifyArrayDisponiblity(bookings) && (
-        <Card className="rounded-sm">
-          <CardHeader>
-            <CardTitle>Últimos agendamentos</CardTitle>
-            <CardDescription>
-              {" "}
-              ( {bookings.length} ) Agendamentos recentes recebidos{" "}
-            </CardDescription>
-          </CardHeader>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>
-                  <Checkbox />
-                </TableHead>
-                <TableHead>Cliente</TableHead>
-                <TableHead>Serviço</TableHead>
-                <TableHead>Data / Horário</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Montante</TableHead>
-                <TableHead>Prioridade</TableHead>
-                <TableHead>Ações</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {bookings.map((booking, idx) => (
-                <TableRow key={idx}>
-                  <TableCell className="flex gap-2 items-center">
-                    <Checkbox />
-                  </TableCell>
-                  <TableCell>
-                    <span className="flex items-center gap-2">
-                      <Avatar>
-                        <AvatarImage src={booking.client?.avatarUrl} />
-                        <AvatarFallback className="bg-black text-white">
-                          {(booking.client?.firstName?.charAt(0) ?? "") +
-                            (booking.client?.lastName?.charAt(0) ?? "")}
-                        </AvatarFallback>
-                      </Avatar>
-                      <span className="flex flex-col gap-1">
-                        <p>
-                          {booking.client.firstName +
-                            " " +
-                            booking.client.lastName}
-                        </p>
-                        <small>{booking?.client.email}</small>
-                      </span>
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    <span className="flex items-center gap-2">
-                      <h1>{booking.service?.title}</h1>
-                      <small>
-                        {booking.service.description?.length > 0 &&
-                          booking?.service?.description?.slice(0, 30) + "  ..."}
-                      </small>
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    {format(booking.scheduleDate, "dd/MM/yyyy")}{" "}
-                    {format(booking.startTime, "HH:mm")} -{" "}
-                    {format(booking.endTime, "HH:mm")}
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      variant="outline"
-                      className={getStatusBadgeClass(booking.status)}
-                    >
-                      {getStatusIcon(booking.status)}
-                      {booking.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    {Number(booking.totalAmount).toLocaleString("pt")} kz
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      variant="outline"
-                      className={`bg-${
-                        priorityColorMap[booking.priority]
-                      }-500/10  border border-${
-                        priorityColorMap[booking.priority]
-                      }-500/50  text-${
-                        priorityColorMap[booking.priority]
-                      }-500 rounded-sm`}
-                    >
-                      {getPriorityIcon(booking.priority)}
-                      {getPriorityIconText(booking.priority)}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Button size="sm" variant="outline">
-                      Detalhes
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </Card>
-      )}
     </section>
   );
 }

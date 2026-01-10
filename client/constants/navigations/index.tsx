@@ -60,19 +60,14 @@ export const navigations: Record<UserRole, INavItem[]> = {
   ],
   ADMIN: [
     {
-      title: "Inicial",
+      title: "Usuários",
       to: "/admin",
-      icon: <LayoutGrid size={17} />,
+      icon: <Users size={17} />,
     },
     {
       title: "Agendamentos",
       to: "/admin/bookings",
       icon: <PaintRoller size={17} />,
-    },
-    {
-      title: "Usuários",
-      to: "/admin/users",
-      icon: <Users size={17} />,
     },
     {
       title: "Pagamentos",
