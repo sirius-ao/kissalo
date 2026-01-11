@@ -13,33 +13,18 @@ export class UsersService {
 
   public async get() {
     try {
-      const [profissionalRes, clientRes] = await Promise.all([
-        fetch(`${this.server}/${this.version}/profissionals`, {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${this.token}`,
-          },
-        }),
-        fetch(`${this.server}/${this.version}/clients`, {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${this.token}`,
-          },
-        }),
-      ]);
-
-      if (profissionalRes.status === 403 || clientRes.status === 403) {
+      const users = await fetch(`${this.server}/${this.version}/users`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${this.token}`,
+        },
+      });
+      if (users.status === 403) {
         return { logout: true };
       }
-
-      const [profissionals, clients] = await Promise.all([
-        profissionalRes.json(),
-        clientRes.json(),
-      ]);
-
+      const data = await users.json();
       return {
-        profissionals: profissionals?.data ?? [],
-        clients: clients?.data ?? [],
+        data: data?.data,
       };
     } catch (error) {
       return { logout: true };
@@ -144,6 +129,26 @@ export class UsersService {
       return {
         logout: false,
       };
+    }
+  }
+
+  public async getById(id: number) {
+    try {
+      const users = await fetch(`${this.server}/${this.version}/users/${id}`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${this.token}`,
+        },
+      });
+      if (users.status === 403) {
+        return { logout: true };
+      }
+      const data = await users.json();
+      return {
+        data: data?.data,
+      };
+    } catch (error) {
+      return { logout: true };
     }
   }
 }

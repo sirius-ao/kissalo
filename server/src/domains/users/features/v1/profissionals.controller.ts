@@ -21,8 +21,8 @@ import { currentUser } from '@core/http/decorators/currentUser.decorator';
 import { IsAdminGuard } from '@core/http/guards/isAdmin.guard';
 import { IsProfissionalGuard } from '@core/http/guards/isProfissional.guard';
 
-@ApiTags('Profissionals v1')
-@Controller('v1/profissionals')
+@ApiTags('Users v1')
+@Controller('v1/users')
 export class ProfissionalsController {
   constructor(private readonly profissionalsService: ProfissionalsService) {}
 

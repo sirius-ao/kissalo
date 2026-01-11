@@ -2,7 +2,7 @@
 import { IStats, StarsCard } from "@/components/StatsCard";
 import { verifyArrayDisponiblity } from "@/lib/utils";
 import { useState, useMemo, useEffect } from "react";
-import { IUser } from "@/types/interfaces";
+import { IProfessional, IUser } from "@/types/interfaces";
 import { usersCustomersMock, usersProfessionalsMock } from "@/mocks/users";
 import { Loader } from "@/components/Loader";
 import constants from "@/constants";
@@ -58,16 +58,15 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { UsersService } from "@/services/Users/index.service";
+import { useRouter } from "next/navigation";
 type UserTypeFilter = "ALL" | "CUSTOMER" | "PROFESSIONAL";
 
 export default function HomePage() {
+  const router = useRouter();
   const [load, setIsLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState<UserTypeFilter>("ALL");
-  const [users, setUsers] = useState<IUser[]>([
-    ...usersCustomersMock,
-    ...usersProfessionalsMock,
-  ]);
+  const [users, setUsers] = useState<IUser[]>([]);
   const [stats, setStats] = useState<IStats[]>([]);
 
   useEffect(() => {
@@ -78,25 +77,43 @@ export default function HomePage() {
 
       const data = await serviceApi.get();
 
-      if (data?.clients && data?.profissionals) {
+      if (data?.logout) {
+        router.push("/auth/login");
+        return;
+      }
+      if (verifyArrayDisponiblity(data?.data)) {
+        const profifionals = data?.data.filter((item: IUser) => {
+          return item.role == UserRole.PROFESSIONAL;
+        }).length;
+
+        const clients = data?.data.filter((item: IUser) => {
+          return item.role == UserRole.CUSTOMER;
+        }).length;
         setStats([
           {
             isCoin: false,
             label: "total profissionais da plaforma",
-            oldValue: data?.profissionals.length,
+            oldValue: profifionals,
             title: "Total profissionais",
-            value: data?.profissionals.length,
+            value: profifionals,
           },
           {
             isCoin: false,
             label: "total clientes da plaforma",
-            oldValue: data?.clients.length,
+            oldValue: clients,
             title: "Total clientes",
-            value: data?.clients.length,
+            value: clients,
+          },
+          {
+            isCoin: false,
+            label: "total Usuários da plaforma",
+            oldValue: clients + profifionals + 1,
+            title: "Total Usuários",
+            value: clients + profifionals + 1,
           },
         ]);
+        setUsers(data?.data);
       }
-      console.log(data);
       setTimeout(() => {
         setIsLoading(false);
       }, constants.TIMEOUT.LOADER);
@@ -145,7 +162,7 @@ export default function HomePage() {
           </span>
           <div className="space-y-4">
             {/* Filters */}
-            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div className="flex gap-3 md:flex-row md:items-center md:justify-between">
               <Input
                 placeholder="Pesquisar por nome ou email..."
                 value={search}
@@ -179,6 +196,7 @@ export default function HomePage() {
                     <TableHead>Tipo</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Saldo</TableHead>
+                    <TableHead>Criado</TableHead>
                     <TableHead>Verificado</TableHead>
                     <TableHead className="text-right">Ações</TableHead>
                   </TableRow>
@@ -241,6 +259,10 @@ export default function HomePage() {
                       <TableCell className="font-medium">
                         {user.amountAvaliable.toLocaleString()} Kz
                       </TableCell>
+                      {/* SALDO */}
+                      <TableCell className="font-medium">
+                        {new Date(user.createdAt).toLocaleString("pt")}
+                      </TableCell>
 
                       {/* EMAIL VERIFIED */}
                       <TableCell>
@@ -253,30 +275,12 @@ export default function HomePage() {
 
                       {/* ACTIONS */}
                       <TableCell className="text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant={"outline"} size="icon">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem asChild>
-                              <Link
-                                href={`/admin/users/${user.id}`}
-                                className="flex items-center"
-                              >
-                                <Eye className="mr-2 h-4 w-4" />
-                                Detalhes
-                              </Link>
-                            </DropdownMenuItem>
-
-                            <DropdownMenuItem className="text-destructive">
-                              <Trash className="mr-2 h-4 w-4 text-destructive" />
-                              Remover
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                        <Button variant={"outline"} asChild>
+                          <Link href={`/admin/users/${user.id}`}>
+                            <Eye />
+                            Detalhes
+                          </Link>
+                        </Button>
                       </TableCell>
                     </TableRow>
                   ))}

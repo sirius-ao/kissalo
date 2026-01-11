@@ -2,8 +2,19 @@
 
 import { useParams, useRouter } from "next/navigation";
 import { usersCustomersMock, usersProfessionalsMock } from "@/mocks/users";
-import { IUser } from "@/types/interfaces";
-import { UserRole, UserStatus } from "@/types/enum";
+import {
+  Briefcase,
+  ShieldCheck,
+  FileText,
+  IdCard,
+  Link as LinkIcon,
+} from "lucide-react";
+import {
+  IProfessionalServiceRequest,
+  IUser,
+  IWallet,
+} from "@/types/interfaces";
+import { ApprovalStatus, UserRole, UserStatus } from "@/types/enum";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -13,24 +24,38 @@ import { Mail, Phone, Calendar, Star, Wallet, ArrowLeft } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Loader } from "@/components/Loader";
 import constants from "@/constants";
+import { UsersService } from "@/services/Users/index.service";
+import { verify } from "crypto";
+import { verifyArrayDisponiblity } from "@/lib/utils";
 
 export default function UserDetailsPage() {
   const { id } = useParams();
   const router = useRouter();
-  const users: IUser[] = [...usersCustomersMock, ...usersProfessionalsMock];
+  const [user, setUser] = useState<IUser>({} as any);
   const [load, setIsLoading] = useState(true);
   const [isProfessional, setisProfessional] = useState(false);
-  const user = users.find((u) => {
-    return u.id === Number(id);
-  });
 
   useEffect(() => {
     if (user) {
       setisProfessional(user.role === UserRole.PROFESSIONAL);
     }
-    setTimeout(() => {
-      setIsLoading(false);
-    }, constants.TIMEOUT.LOADER);
+    async function get() {
+      const serviceApi = new UsersService(
+        localStorage.getItem("acess-x-token") as string
+      );
+      const data = await serviceApi.getById(Number(id));
+      if (data?.logout) {
+        router.push("/auth/login");
+        return;
+      }
+      if (data?.data) {
+        setUser(data?.data);
+      }
+      setTimeout(() => {
+        setIsLoading(false);
+      }, constants.TIMEOUT.LOADER);
+    }
+    get();
   }, [user]);
 
   return (
@@ -81,7 +106,7 @@ export default function UserDetailsPage() {
                       </span>
                       <span className="flex items-center gap-2">
                         <Calendar className="h-4 w-4" /> Criado em{" "}
-                        {user.createdAt.toLocaleDateString()}
+                        {new Date(user.createdAt).toLocaleDateString()}
                       </span>
                     </div>
                   </div>
@@ -97,10 +122,8 @@ export default function UserDetailsPage() {
                 </CardContent>
               </Card>
               {/* TABS */}
-              <Tabs defaultValue="profile">
+              <Tabs defaultValue={isProfessional ? "professional" : "bookings"}>
                 <TabsList>
-                  <TabsTrigger value="profile">Perfil</TabsTrigger>
-
                   {isProfessional ? (
                     <>
                       <TabsTrigger value="professional">
@@ -122,57 +145,100 @@ export default function UserDetailsPage() {
                   )}
                 </TabsList>
 
-                {/* PERFIL */}
-                <TabsContent value="profile">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Informações do perfil</CardTitle>
-                    </CardHeader>
-                    <CardContent className="grid gap-3">
-                      <p>
-                        <strong>Último login:</strong>{" "}
-                        {user.lastLoginAt
-                          ? user.lastLoginAt.toLocaleString()
-                          : "Nunca"}
-                      </p>
-                      <p>
-                        <strong>Total de pagamentos:</strong>{" "}
-                        {user.payments.length}
-                      </p>
-                      <p>
-                        <strong>Total de notificações:</strong>{" "}
-                        {user.notifications.length}
-                      </p>
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-
-                {/* PROFISSIONAL */}
                 {isProfessional && user.professional && (
                   <TabsContent value="professional">
                     <Card>
                       <CardHeader>
-                        <CardTitle>Dados profissionais</CardTitle>
+                        <CardTitle className="flex items-center gap-2">
+                          <Briefcase className="w-5 h-5 text-primary" />
+                          Dados profissionais
+                        </CardTitle>
                       </CardHeader>
-                      <CardContent className="space-y-2">
-                        <p>
-                          <strong>Título:</strong> {user.professional.title}
-                        </p>
-                        <p>
-                          <strong>Experiência:</strong>{" "}
-                          {user.professional.yearsExperience} anos
-                        </p>
-                        <p>
-                          <strong>Tipo:</strong> {user.professional.type}
-                        </p>
-                        <p>
-                          <strong>Status de verificação:</strong>{" "}
-                          <Badge>{user.professional.verificationStatus}</Badge>
-                        </p>
+
+                      <CardContent className="space-y-4 text-sm">
+                        {/* Título */}
+                        <div className="flex items-center gap-2">
+                          <Briefcase className="w-4 h-4 text-muted-foreground" />
+                          <span className="font-medium">Título:</span>
+                          <span>{user.professional.title}</span>
+                        </div>
+
+                        {/* Experiência */}
+                        <div className="flex items-center gap-2">
+                          <Calendar className="w-4 h-4 text-muted-foreground" />
+                          <span className="font-medium">Experiência:</span>
+                          <span>{user.professional.yearsExperience} anos</span>
+                        </div>
+
+                        {/* Tipo */}
+                        <div className="flex items-center gap-2">
+                          <Star className="w-4 h-4 text-muted-foreground" />
+                          <span className="font-medium">Tipo:</span>
+                          <Badge variant="secondary">
+                            {user.professional.type}
+                          </Badge>
+                        </div>
+
+                        {/* Verificação */}
+                        <div className="flex items-center gap-2">
+                          <ShieldCheck className="w-4 h-4 text-muted-foreground" />
+                          <span className="font-medium">Verificação:</span>
+                          <Badge
+                            variant={
+                              user.professional.verificationStatus ===
+                              ApprovalStatus.APPROVED
+                                ? "default"
+                                : "outline"
+                            }
+                          >
+                            {user.professional.verificationStatus}
+                          </Badge>
+                        </div>
+
+                        {/* Documento */}
+                        <div className="flex items-center gap-2">
+                          <IdCard className="w-4 h-4 text-muted-foreground" />
+                          <span className="font-medium">Documento:</span>
+                          <span>{user.professional.documentNumber}</span>
+                        </div>
+
+                        {/* CV */}
+                        {user.professional.cvUrl && (
+                          <div className="flex items-center gap-2">
+                            <FileText className="w-4 h-4 text-muted-foreground" />
+                            <span className="font-medium">CV:</span>
+                            <a
+                              href={user.professional.cvUrl}
+                              target="_blank"
+                              className="text-blue-500 hover:underline flex items-center gap-1"
+                            >
+                              Ver CV <LinkIcon size={12} />
+                            </a>
+                          </div>
+                        )}
+
+                        {/* Portfólio */}
+                        {user.professional.portfolioUrl && (
+                          <div className="flex items-center gap-2">
+                            <LinkIcon className="w-4 h-4 text-muted-foreground" />
+                            <span className="font-medium">Portfólio:</span>
+                            <a
+                              href={user.professional.portfolioUrl}
+                              target="_blank"
+                              className="text-blue-500 hover:underline"
+                            >
+                              Acessar
+                            </a>
+                          </div>
+                        )}
 
                         <div>
-                          <strong>Especialidades:</strong>
-                          <div className="mt-1 flex flex-wrap gap-2">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Star className="w-4 h-4 text-muted-foreground" />
+                            <span className="font-medium">Especialidades</span>
+                          </div>
+
+                          <div className="flex flex-wrap gap-2">
                             {user.professional.specialties.map((s) => (
                               <Badge key={s} variant="outline">
                                 {s}
@@ -185,32 +251,35 @@ export default function UserDetailsPage() {
                   </TabsContent>
                 )}
 
-                {/* SERVIÇOS PRESTADOS */}
-                {isProfessional && (
-                  <TabsContent value="services">
-                    <Card>
-                      <CardHeader>
-                        <CardTitle>Serviços anexados</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        {user.professional?.serviceRequests.length ? (
-                          <ul className="space-y-3">
-                            {user.professional.serviceRequests.map((s) => (
-                              <li key={s.id} className="flex justify-between">
-                                <span>{s.service.title}</span>
-                                <Badge>{s.status}</Badge>
-                              </li>
-                            ))}
-                          </ul>
-                        ) : (
-                          <p className="text-muted-foreground">
-                            Nenhum serviço anexado
-                          </p>
-                        )}
-                      </CardContent>
-                    </Card>
-                  </TabsContent>
-                )}
+                {isProfessional &&
+                  verifyArrayDisponiblity(
+                    user.professional
+                      ?.serviceRequests as IProfessionalServiceRequest[]
+                  ) && (
+                    <TabsContent value="services">
+                      <Card>
+                        <CardHeader>
+                          <CardTitle>Serviços anexados</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          {user.professional?.serviceRequests.length ? (
+                            <ul className="space-y-3">
+                              {user.professional.serviceRequests.map((s) => (
+                                <li key={s.id} className="flex justify-between">
+                                  <span>{s.service.title}</span>
+                                  <Badge>{s.status}</Badge>
+                                </li>
+                              ))}
+                            </ul>
+                          ) : (
+                            <p className="text-muted-foreground">
+                              Nenhum serviço anexado
+                            </p>
+                          )}
+                        </CardContent>
+                      </Card>
+                    </TabsContent>
+                  )}
 
                 {/* REVIEWS */}
                 <TabsContent value="reviews">
@@ -219,7 +288,8 @@ export default function UserDetailsPage() {
                       <CardTitle>Avaliações</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      {user.reviews.length ? (
+                      {verifyArrayDisponiblity(user.reviews) &&
+                      user.reviews.length ? (
                         <ul className="space-y-4">
                           {user.reviews.map((r) => (
                             <li key={r.id} className="rounded border p-3">
@@ -248,7 +318,9 @@ export default function UserDetailsPage() {
                         <CardTitle>Carteiras</CardTitle>
                       </CardHeader>
                       <CardContent>
-                        {user.professional?.wallets.length ? (
+                        {verifyArrayDisponiblity(
+                          user.professional?.wallets as IWallet[]
+                        ) && user.professional?.wallets.length ? (
                           <ul className="space-y-3">
                             {user.professional.wallets.map((w) => (
                               <li
@@ -281,7 +353,8 @@ export default function UserDetailsPage() {
                         <CardTitle>Serviços contratados</CardTitle>
                       </CardHeader>
                       <CardContent>
-                        {user.bookings.length ? (
+                        {verifyArrayDisponiblity(user.bookings) &&
+                        user.bookings.length ? (
                           <ul className="space-y-3">
                             {user.bookings.map((b) => (
                               <li key={b.id} className="flex justify-between">

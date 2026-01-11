@@ -5,18 +5,13 @@ import { Injectable } from '@nestjs/common';
 export class NotificationsService {
   constructor(private readonly database: PrismaService) {}
 
-  public async findAll(userId: number, page: number, limit: number) {
-    page = isNaN(page) || page == 0 ? 1 : page;
-    limit = isNaN(limit) || limit == 0 ? 10 : limit;
-    const skip = (page - 1) * limit;
+  public async findAll(userId: number) {
     const [notiications, total, notReaded] = await Promise.all([
       this.database.notification.findMany({
         where: {
           userId,
           channel: 'PUSH',
         },
-        take: limit,
-        skip,
       }),
       this.database.notification.count({
         where: {
@@ -32,18 +27,8 @@ export class NotificationsService {
         },
       }),
     ]);
-    const totalPages = Math.ceil(total / limit);
     return {
       data: notiications,
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages,
-        hasNextPage: page < totalPages,
-        hasPrevPage: page > 1,
-        lastPage: totalPages,
-      },
       notReaded,
     };
   }

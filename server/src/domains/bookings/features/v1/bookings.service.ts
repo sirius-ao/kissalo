@@ -4,11 +4,10 @@ import { UpdateBookinStatus, UpdateBookingDto } from './dto/update-booking.dto';
 import PrismaService from '@infra/database/prisma.service';
 import { NotificationFactory } from '@core/shared/utils/services/Notification/notification.factory';
 import { ServicesService } from '@domains/services/features/v1/services.service';
-import { ClientsService } from '@domains/clients/features/v1/clients.service';
 import { CreateBookingUseFacade } from './useCases/createBookingUsecase';
 import { Booking } from '@prisma/client';
 import { ToogleBookingUseCase } from './useCases/toggleStatusUsecase';
-import { ProfissionalsService } from '@domains/profissionals/features/v1/profissionals.service';
+import { ProfissionalsService } from '@domains/users/features/v1/profissionals.service';
 import { GetBookingFacede } from './useCases/getBookingUsacse';
 import CacheService from '@infra/cache/cahe.service';
 import { CreateBookingStepUseCase } from './useCases/CreateBookingStepUseCase';
@@ -53,12 +52,16 @@ export class BookingsService {
     );
     return await liberateFacede.liberate(bookingId, userId);
   }
-  public async toogle(data: UpdateBookinStatus, userId: number, bookingId : number) {
+  public async toogle(
+    data: UpdateBookinStatus,
+    userId: number,
+    bookingId: number,
+  ) {
     const toogleFacade = new ToogleBookingUseCase(
       this.database,
       this.notification,
     );
-    return await toogleFacade.toogle(data, userId , bookingId);
+    return await toogleFacade.toogle(data, userId, bookingId);
   }
   public async findAll(page: number, limit: number, userId: number) {
     const getBookingFacede = new GetBookingFacede(this.database, this.cache);

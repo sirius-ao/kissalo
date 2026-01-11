@@ -13,11 +13,10 @@ import { ServicesModule } from './domains/services/services.module';
 import { CategoriesModule } from './domains/categories/categories.module';
 import { ReviewsModule } from './domains/reviews/reviews.module';
 import { PaymentsModule } from './domains/payments/payments.module';
-import { ProfissionalsModule } from './domains/profissionals/profissionals.module';
+import { ProfissionalsModule } from './domains/users/profissionals.module';
 import { BookingsModule } from './domains/bookings/bookings.module';
 import { WalletsModule } from './domains/wallets/wallets.module';
 import { ConfigurationModule } from '@infra/config/config.module';
-import { ClientsModule } from './domains/clients/clients.module';
 import { UtilModule } from '@core/shared/utils/util.module';
 import { IsAuthenticatedMiddlware } from '@core/http/middlewares/isAuthenticated.middleware';
 import { NotificationsModule } from './domains/notifications/notifications.module';
@@ -49,7 +48,6 @@ import { LlmsModule } from './domains/llms/llms.module';
     BookingsModule,
     WalletsModule,
     ConfigurationModule,
-    ClientsModule,
     UtilModule,
     NotificationsModule,
     LlmsModule,
