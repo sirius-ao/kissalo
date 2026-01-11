@@ -26,8 +26,8 @@ export class ClientsService {
     return await facede.create(createClientDto);
   }
 
-  public async get(page: number, limit: number, userId: number) {
+  public async get(userId: number) {
     const facede = new GetclientUseCase(this.database);
-    return await facede.get(page, limit, userId);
+    return await facede.get(userId);
   }
 }

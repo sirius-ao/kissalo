@@ -101,15 +101,11 @@ export class ServicesService {
   }
 
   async update(id: number, data: UpdateServiceTemplateDto) {
-    const [category, slug] = await Promise.all([
-      this.database.category.findFirst({
-        where: {
-          id: data.categoryId,
-        },
-      }),
-      this.SlugService.gen(data.title, 'service'),
-    ]);
-
+    const category = this.database.category.findFirst({
+      where: {
+        id: data.categoryId,
+      },
+    });
     if (!category) {
       throw new BadRequestException('Category not found');
     }
@@ -119,11 +115,18 @@ export class ServicesService {
           id: id,
         },
         data: {
-          ...data,
-          slug,
+          title: data.title,
+          description: data.description,
+          shortDescription: data.shortDescription,
+          price: data.price,
+          duration: data.duration,
+          deliverables: data.deliverables,
+          requirements: data.requirements,
+          categoryId: data.categoryId,
         },
       });
     } catch (error) {
+      console.log(error);
       throw new NotFoundException('Serviço não encontrado');
     }
   }

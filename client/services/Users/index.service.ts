@@ -1,39 +1,59 @@
 import constants from "@/constants";
-import { IServiceCreate } from "@/types/interfaces";
 
-export class ServicesService {
+interface ICreateCtegory {
+  title: string;
+  description: string;
+  color: string;
+  order: number;
+}
+export class UsersService {
   private readonly server = constants.SERVER;
   private readonly version = "v1";
   constructor(private readonly token: string) {}
+
   public async get() {
     try {
-      const data = await fetch(`${this.server}/${this.version}/services`, {
-        headers: {
-          "Content-Type": "application/json",
-          authorization: `Bearer ${this.token}`,
-        },
-      });
+      const [profissionalRes, clientRes] = await Promise.all([
+        fetch(`${this.server}/${this.version}/profissionals`, {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${this.token}`,
+          },
+        }),
+        fetch(`${this.server}/${this.version}/clients`, {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${this.token}`,
+          },
+        }),
+      ]);
 
-      const res = await data.json();
-
-      if (res?.statusCode == 403) {
-        return {
-          logout: true,
-        };
+      if (profissionalRes.status === 403 || clientRes.status === 403) {
+        return { logout: true };
       }
+
+      const [profissionals, clients] = await Promise.all([
+        profissionalRes.json(),
+        clientRes.json(),
+      ]);
+
       return {
-        logout: false,
-        data: res?.data,
+        profissionals: profissionals?.data ?? [],
+        clients: clients?.data ?? [],
       };
     } catch (error) {
-      return {
-        logout: false,
-      };
+      return { logout: true };
     }
   }
-  public async create(body: IServiceCreate) {
+
+  public async create(body: ICreateCtegory) {
+    if (!body.color || !body.title || !body.description) {
+      return {
+        message: "Preenche todos os dados",
+      };
+    }
     try {
-      const data = await fetch(`${this.server}/${this.version}/services`, {
+      const data = await fetch(`${this.server}/${this.version}/categories`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -42,7 +62,6 @@ export class ServicesService {
         body: JSON.stringify(body),
       });
       const res = await data.json();
-
       if (res?.statusCode == 403) {
         return {
           logout: true,
@@ -62,7 +81,7 @@ export class ServicesService {
   public async remove(id: number) {
     try {
       const data = await fetch(
-        `${this.server}/${this.version}/services/${id}`,
+        `${this.server}/${this.version}/categories/${id}`,
         {
           method: "DELETE",
           headers: {
@@ -95,10 +114,15 @@ export class ServicesService {
       };
     }
   }
-  public async update(body: IServiceCreate, id: number) {
+  public async update(body: ICreateCtegory, id: number) {
+    if (!body.color || !body.title || !body.description) {
+      return {
+        message: "Preenche todos os dados",
+      };
+    }
     try {
       const data = await fetch(
-        `${this.server}/${this.version}/services/${id}`,
+        `${this.server}/${this.version}/categories/${id}`,
         {
           method: "PATCH",
           headers: {
@@ -108,32 +132,6 @@ export class ServicesService {
           body: JSON.stringify(body),
         }
       );
-      const res = await data.json();
-
-      if (res?.statusCode == 403) {
-        return {
-          logout: true,
-        };
-      }
-      return res;
-    } catch (error) {
-      return {
-        logout: false,
-      };
-    }
-  }
-  public async getById(id: number) {
-    try {
-      const data = await fetch(
-        `${this.server}/${this.version}/services/${id}`,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            authorization: `Bearer ${this.token}`,
-          },
-        }
-      );
-
       const res = await data.json();
 
       if (res?.statusCode == 403) {

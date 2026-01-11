@@ -1,452 +1,299 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import constants from "@/constants";
-import { categoriesMock } from "@/mocks/categories";
-import { ICategory } from "@/types/interfaces";
+import { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { toast } from "sonner";
 import clsx from "clsx";
-import {
-  ArrowLeft,
-  ArrowRight,
-  Box,
-  Check,
-  List,
-  Plus,
-  Trash,
-  X,
-} from "lucide-react";
-import { useState, useEffect } from "react";
-import {
-  Card,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+
+import { ICategory, IServiceCreate } from "@/types/interfaces";
+
+import { CategoriesService } from "@/services/Categories/index.service";
+import { ServicesService } from "@/services/Services/index.service";
+
+import constants from "@/constants";
+import { generateKeywords } from "@/lib/utils";
+
+import { Loader } from "@/components/Loader";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
 } from "@/components/ui/input-group";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { verifyArrayDisponiblity } from "@/lib/utils";
-import { Loader } from "@/components/Loader";
-import { servicesMock } from "@/mocks/services";
-import {
-  Empty,
-  EmptyDescription,
-  EmptyTitle,
-  EmptyMedia,
-  EmptyHeader,
-} from "@/components/ui/empty";
-import { toast } from "sonner";
-import { Badge } from "@/components/ui/badge";
-import { Textarea } from "@/components/ui/textarea";
+
+import { ArrowLeft, Check, List, Loader2, Plus, Trash } from "lucide-react";
 
 export default function CreateService() {
-  const [currentStep, setCurrentStep] = useState(0);
-  const [loading, setIsLoading] = useState(true);
-  const [loadImages, setLoadImages] = useState(false);
-  const [images, setImages] = useState<string[]>([
-    ...servicesMock.map((item) => {
-      return item.bannerUrl as string;
-    }),
-  ]);
-  const [selectImages, setSelectedImages] = useState<string[]>([]);
-  const [requimentsList, setRequirementsList] = useState<string[]>([]);
-  const [requiments, setRequirements] = useState<string>("");
-  const [resultList, setResultList] = useState<string[]>([]);
-  const [result, setResult] = useState<string>("");
+  const router = useRouter();
+  const { id } = useParams();
 
-  const [categories, setCategories] = useState<ICategory[]>([
-    ...categoriesMock,
-  ]);
+  const [loading, setLoading] = useState(true);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [serviceExists, setServiceExists] = useState(true);
 
-  const [] = useState();
-  const steps = [
-    {
-      title: "Dados",
-      description: "Dados do serviço",
-    },
-    {
-      title: "Imagem",
-      description: "Geração de imagem",
-    },
-  ];
+  const [categories, setCategories] = useState<ICategory[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<ICategory | null>(
+    null
+  );
 
+  const [title, setTitle] = useState("");
+  const [subtitle, setSubtitle] = useState("");
+  const [price, setPrice] = useState("");
+  const [duration, setDuration] = useState("");
+  const [description, setDescription] = useState("");
+  const [result, setResult] = useState("");
+
+  const [requiments, setRequirements] = useState("");
+  const [requirementsList, setRequirementsList] = useState<string[]>([]);
+  const [selectedImages, setSelectedImages] = useState<string[]>([]);
+
+  /* ---------------- FETCH ---------------- */
   useEffect(() => {
-    setTimeout(() => {
-      setIsLoading(false);
-    }, constants.TIMEOUT.LOADER);
-  }, []);
+    async function loadData() {
+      try {
+        const token = localStorage.getItem("acess-x-token") as string;
+        const categoriesApi = new CategoriesService(token);
+        const servicesApi = new ServicesService(token);
 
-  const validateCurrentStep = (): boolean => {
-    switch (currentStep) {
-      case 0:
-        return true;
+        const [cats, srv] = await Promise.all([
+          categoriesApi.get(),
+          servicesApi.getById(Number(id)),
+        ]);
 
-      case 1:
-        return true;
+        if (cats?.logout || srv?.logout) {
+          router.push("/auth/login");
+          toast.error("Sessão expirada");
+          return;
+        }
 
-      default:
-        return true;
+        setCategories(cats?.data ?? []);
+
+        if (!srv?.id) {
+          setServiceExists(false);
+          return;
+        }
+
+        setTitle(srv.title ?? "");
+        setSubtitle(srv.shortDescription ?? "");
+        setDescription(srv.description ?? "");
+        setResult(srv.deliverables ?? "");
+        setPrice(String(srv.price ?? ""));
+        setDuration(String(srv.duration ?? ""));
+        setRequirementsList(srv.requirements ?? []);
+        setSelectedImages([srv.bannerUrl, ...(srv.gallery ?? [])]);
+
+        const cat = cats.data.find((c: ICategory) => c.id === srv.categoryId);
+
+        setSelectedCategory(cat ?? cats.data[0] ?? null);
+      } catch {
+        toast.error("Erro ao carregar dados");
+      } finally {
+        setTimeout(() => setLoading(false), constants.TIMEOUT.LOADER);
+      }
     }
+
+    loadData();
+  }, [id, router]);
+
+  /* ---------------- VALIDATION ---------------- */
+  const validateStep = () => {
+    if (!selectedCategory) return toast.error("Selecione uma categoria"), false;
+    if (!selectedImages.length)
+      return toast.error("Selecione ao menos uma imagem"), false;
+    if (!title) return toast.error("Título obrigatório"), false;
+    if (!subtitle) return toast.error("Subtítulo obrigatório"), false;
+    if (!price) return toast.error("Preço obrigatório"), false;
+    if (!duration) return toast.error("Duração obrigatória"), false;
+    if (!description) return toast.error("Descrição obrigatória"), false;
+    if (!requirementsList.length)
+      return toast.error("Adicione ao menos 1 requisito"), false;
+
+    return true;
   };
+
+  /* ---------------- SUBMIT ---------------- */
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validateStep() || !selectedCategory) return;
+    setIsProcessing(true);
+    const payload: IServiceCreate = {
+      title,
+      shortDescription: subtitle,
+      description,
+      deliverables: result,
+      categoryId: selectedCategory.id,
+      price: Number(price),
+      duration: Number(duration),
+      requirements: requirementsList,
+      bannerUrl: selectedImages[0],
+      gallery: selectedImages.slice(1),
+      slug: title,
+      keywords: generateKeywords([title, subtitle, description]),
+    };
+
+    const api = new ServicesService(
+      localStorage.getItem("acess-x-token") as string
+    );
+
+    const res = await api.update(payload, Number(id));
+
+    if (res?.logout) {
+      router.push("/auth/login");
+      toast.error("Sessão expirada");
+      return;
+    }
+
+    res?.id
+      ? toast.success("Serviço atualizado com sucesso")
+      : toast.error(res?.message ?? "Erro ao atualizar serviço");
+
+    setIsProcessing(false);
+  };
+  if (loading) return <Loader />;
+
+  if (!serviceExists) {
+    return (
+      <section className="flex flex-col items-center gap-4 mt-20">
+        <h2 className="text-lg font-semibold">Serviço não encontrado</h2>
+        <p className="text-sm text-muted-foreground">
+          O serviço que você tentou editar não existe ou foi removido.
+        </p>
+        <Button variant="outline" onClick={() => router.back()}>
+          <ArrowLeft />
+          Voltar
+        </Button>
+      </section>
+    );
+  }
+
+  /* ---------------- UI ---------------- */
   return (
-    <section className="flex flex-col gap-4 lg:justify-center items-center">
-      {loading ? (
-        <Loader />
-      ) : (
-        <>
-          {" "}
-          <div className="flex w-full lg:w-[50%] justify-between px-4 gap-4">
-            {steps.map((item, idx) => (
-              <div
-                key={idx}
-                className={clsx(
-                  "flex flex-col md:justify-start md:items-start items-center justify-center opacity-40",
-                  {
-                    "opacity-100": idx === currentStep,
-                  }
-                )}
-              >
-                <span
-                  className={clsx(
-                    "bg-gray-400 transition-all text-white rounded-full md:w-8 md:h-8 h-6 w-6 text-sm justify-center items-center flex font-bold",
-                    {
-                      "bg-orange-500": idx === currentStep,
-                    }
-                  )}
-                >
-                  {idx + 1}
-                </span>
-                <h1 className="md:font-medium text-sm">{item.title}</h1>
-                <small className="text-gray-500 md:flex hidden">
-                  {item.description}
-                </small>
-              </div>
-            ))}
+    <section className="flex flex-col items-center gap-6">
+      <form
+        onSubmit={handleSubmit}
+        className="w-full max-w-xl flex flex-col gap-4"
+      >
+        <Label>Categoria</Label>
+        <select
+          className="border rounded-md h-10 px-3"
+          value={selectedCategory?.id ?? ""}
+          onChange={(e) =>
+            setSelectedCategory(
+              categories.find((c) => c.id === Number(e.target.value)) ?? null
+            )
+          }
+        >
+          <option value="" disabled>
+            Selecione uma categoria
+          </option>
+          {categories.map((cat) => (
+            <option key={cat.id} value={cat.id}>
+              {cat.title}
+            </option>
+          ))}
+        </select>
+
+        <Label>Título</Label>
+        <Input value={title} onChange={(e) => setTitle(e.target.value)} />
+
+        <Label>Subtítulo</Label>
+        <Input value={subtitle} onChange={(e) => setSubtitle(e.target.value)} />
+
+        <Label>Preço</Label>
+        <Input
+          type="number"
+          value={price}
+          onChange={(e) => setPrice(e.target.value)}
+        />
+
+        <Label>Duração</Label>
+        <Input
+          type="number"
+          value={duration}
+          onChange={(e) => setDuration(e.target.value)}
+        />
+
+        <Label>Descrição</Label>
+        <Textarea
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+        />
+
+        <Label>Resultado</Label>
+        <Textarea value={result} onChange={(e) => setResult(e.target.value)} />
+
+        <Label>Requisitos</Label>
+        <InputGroup>
+          <InputGroupInput
+            value={requiments}
+            placeholder="Adicionar requisito"
+            onChange={(e) => setRequirements(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                if (!requiments || requirementsList.includes(requiments))
+                  return;
+                setRequirementsList((prev) => [...prev, requiments]);
+                setRequirements("");
+              }
+            }}
+          />
+          <InputGroupAddon>
+            <List />
+          </InputGroupAddon>
+          <InputGroupAddon align="inline-end">
+            <Button
+              type="button"
+              onClick={() => {
+                if (!requiments || requirementsList.includes(requiments))
+                  return;
+                setRequirementsList((prev) => [...prev, requiments]);
+                setRequirements("");
+              }}
+            >
+              <Plus />
+            </Button>
+          </InputGroupAddon>
+        </InputGroup>
+
+        {requirementsList.map((req) => (
+          <div
+            key={req}
+            className="flex items-center justify-between border p-2 rounded"
+          >
+            <span className="flex items-center gap-1 text-sm">
+              <Check size={14} /> {req}
+            </span>
+            <Button
+              size="icon"
+              variant="outline"
+              onClick={() =>
+                setRequirementsList(requirementsList.filter((r) => r !== req))
+              }
+            >
+              <Trash size={12} />
+            </Button>
           </div>
-          <form action="" className="flex w-full lg:w-[50%] flex-col gap-4 p-4">
-            {currentStep == 0 && (
-              <>
-                <Label htmlFor="priority">
-                  Categoria <span className="text-red-500">*</span>
-                </Label>
-                <Select required>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Selecione uma categoria" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {verifyArrayDisponiblity(categories) &&
-                      categories.map((item, idx) => (
-                        <SelectItem key={idx} value={String(item.id)}>
-                          {item.title}
-                        </SelectItem>
-                      ))}
-                  </SelectContent>
-                </Select>
-                <Label htmlFor="title">
-                  Título <span className="text-red-500">*</span>
-                </Label>
-                <Input
-                  id="title"
-                  name="title"
-                  required
-                  placeholder="título do serviço"
-                />
-                <Label htmlFor="shorttitle">
-                  Subtitulo <span className="text-red-500">*</span>
-                </Label>
-                <Input
-                  id="shorttitle"
-                  name="shorttitle"
-                  required
-                  placeholder="sub-título do serviço"
-                />
-                <Label htmlFor="price">
-                  Preço <span className="text-red-500">*</span>
-                </Label>
-                <Input
-                  type="number"
-                  id="price"
-                  name="price"
-                  placeholder="preço do serviço"
-                  required
-                />
-                <Label htmlFor="requiments">Requisitos</Label>
-                <InputGroup className="w-full">
-                  <InputGroupInput
-                    id="requiments"
-                    name="requiments"
-                    placeholder="lista de requisitos"
-                    value={requiments}
-                    onChange={(e) => {
-                      setRequirements(e.target.value);
-                    }}
-                  />
-                  <InputGroupAddon>
-                    <List />
-                  </InputGroupAddon>
-                  <InputGroupAddon align="inline-end">
-                    <Button
-                      type="button"
-                      onClick={() => {
-                        if (requimentsList.length >= 10) {
-                          toast.info("limite atingido de requisitos");
-                          return;
-                        }
-                        if (!requiments) {
-                          toast.info("Preenche o requisito");
-                          return;
-                        }
-                        const exist = requimentsList.findIndex((item) => {
-                          return item.toUpperCase() == requiments.toUpperCase();
-                        });
-                        if (exist >= 0) {
-                          toast.info("Requisito existente");
-                          return;
-                        }
-                        setRequirementsList((prev) => [...prev, requiments]);
-                        setRequirements("");
-                      }}
-                      size={"sm"}
-                    >
-                      <Plus />
-                    </Button>
-                  </InputGroupAddon>
-                </InputGroup>
-                {verifyArrayDisponiblity(requimentsList) && (
-                  <span className="flex flex-col gap-2">
-                    {requimentsList.map((item, idx) => (
-                      <div
-                        className="border  transition-all hover:bg-neutral-100 rounded-md p-2 flex justify-between items-center"
-                        key={idx}
-                      >
-                        <span className="flex text-sm  items-center gap-2">
-                          <Check size={14} />
-                          {item}
-                        </span>
-                        <Badge
-                          className="rounded-sm h-6 text-red-500 border-red-500/50 cursor-pointer"
-                          variant={"outline"}
-                          onClick={() => {
-                            setRequirementsList(
-                              requimentsList.filter((req) => {
-                                return req.toUpperCase() != item.toUpperCase();
-                              })
-                            );
-                          }}
-                        >
-                          <Trash />
-                        </Badge>
-                      </div>
-                    ))}
-                  </span>
-                )}
-                <Label htmlFor="results">Resultados</Label>
-                <InputGroup className="w-full">
-                  <InputGroupInput
-                    id="results"
-                    name="results"
-                    placeholder="lista de possíveis resultados"
-                    value={result}
-                    onChange={(e) => {
-                      setResult(e.target.value);
-                    }}
-                  />
-                  <InputGroupAddon>
-                    <List />
-                  </InputGroupAddon>
-                  <InputGroupAddon align="inline-end">
-                    <Button
-                      type="button"
-                      onClick={() => {
-                        if (resultList.length >= 10) {
-                          toast.info("limite atingido de resultados");
-                          return;
-                        }
-                        if (!result) {
-                          toast.info("Preenche o resultado");
-                          return;
-                        }
-                        const exist = resultList.findIndex((item) => {
-                          return item.toUpperCase() == result.toUpperCase();
-                        });
-                        if (exist >= 0) {
-                          toast.info("Resultado existente");
-                          return;
-                        }
-                        setResultList((prev) => [...prev, result]);
-                        setResult("");
-                      }}
-                      size={"sm"}
-                    >
-                      <Plus />
-                    </Button>
-                  </InputGroupAddon>
-                </InputGroup>
-                {verifyArrayDisponiblity(resultList) && (
-                  <span className="flex flex-col gap-2">
-                    {resultList.map((item, idx) => (
-                      <div
-                        className="border  transition-all hover:bg-neutral-100 rounded-md p-2 flex justify-between items-center"
-                        key={idx}
-                      >
-                        <span className="flex text-sm  items-center gap-2">
-                          <Check size={14} />
-                          {item}
-                        </span>
-                        <Badge
-                          className="rounded-sm h-6 text-red-500 border-red-500/50 cursor-pointer"
-                          variant={"outline"}
-                          onClick={() => {
-                            setResultList(
-                              resultList.filter((req) => {
-                                return req.toUpperCase() != item.toUpperCase();
-                              })
-                            );
-                          }}
-                        >
-                          <Trash />
-                        </Badge>
-                      </div>
-                    ))}
-                  </span>
-                )}
-                <Label htmlFor="min">
-                  Duração em minutos <span className="text-red-500">*</span>
-                </Label>
-                <Input
-                  id="min"
-                  type="number"
-                  name="min"
-                  placeholder="Duração em minutos"
-                />{" "}
-                <Label>Descrição</Label>
-                <Textarea
-                  placeholder="descrição"
-                  className="resize-none"
-                  required
-                />
-              </>
-            )}
-            {currentStep == 1 && (
-              <>
-                {loadImages ? (
-                  <Loader />
-                ) : (
-                  <span className="flex flex-col gap-3">
-                    {verifyArrayDisponiblity(images) ? (
-                      <>
-                        <Label htmlFor="images">
-                          Seleciona uma ou mais imagens
-                          <span className="text-red-500">*</span>
-                        </Label>
-                        <span className="grid grid-cols-2 gap-3">
-                          {images.map((item, idx) => (
-                            <img
-                              onClick={() => {
-                                const existInList = selectImages.findIndex(
-                                  (image) => {
-                                    return image == item;
-                                  }
-                                );
+        ))}
 
-                                if (existInList >= 0) {
-                                  const newData = selectImages.filter(
-                                    (image) => {
-                                      return image != item;
-                                    }
-                                  );
-                                  setSelectedImages(newData);
-                                  return;
-                                }
+        <div className="grid grid-cols-2 gap-2">
+          <Button type="submit" disabled={isProcessing}>
+            {isProcessing ? <Loader2 className="animate-spin" /> : "Finalizar"}
+          </Button>
 
-                                if (selectImages.length >= 3) {
-                                  toast.info("Limite atingido");
-                                  return;
-                                }
-                                setSelectedImages((prev) => [...prev, item]);
-                              }}
-                              src={item}
-                              className={clsx(
-                                "h-40 bg-gray-100 w-full object-cover rounded-sm",
-                                {
-                                  "border-2 border-green-500":
-                                    selectImages.findIndex((image) => {
-                                      return image == item;
-                                    }) >= 0,
-                                }
-                              )}
-                              key={idx}
-                            />
-                          ))}
-                        </span>
-                      </>
-                    ) : (
-                      <Empty>
-                        <EmptyHeader>
-                          <EmptyMedia variant="icon">
-                            <Box />
-                          </EmptyMedia>
-                          <EmptyTitle>Imagem não econtrada</EmptyTitle>
-                          <EmptyDescription>
-                            Imagem não encontrada para o título deste serviço
-                          </EmptyDescription>
-                        </EmptyHeader>
-                      </Empty>
-                    )}
-                  </span>
-                )}
-              </>
-            )}
-
-            <div className="flex md:flex-row flex-col gap-3 mt-4">
-              <div className="grid grid-cols-2 md:w-auto w-full gap-2">
-                <Button
-                  disabled={currentStep === 0}
-                  onClick={() => setCurrentStep((prev) => prev - 1)}
-                  type="button"
-                  variant="outline"
-                >
-                  <ArrowLeft size={16} /> Anterior
-                </Button>
-                <Button
-                  disabled={currentStep >= steps.length - 1}
-                  type="button"
-                  onClick={() => {
-                    if (validateCurrentStep()) {
-                      setLoadImages(true);
-                      setCurrentStep((prev) => prev + 1);
-                      setTimeout(() => {
-                        setLoadImages(false);
-                      }, constants.TIMEOUT.LOADER);
-                    }
-                  }}
-                  variant="outline"
-                >
-                  Próximo <ArrowRight size={16} />
-                </Button>
-              </div>
-              <Button
-                className="flex-1"
-                type={validateCurrentStep() ? "submit" : "button"}
-              >
-                {currentStep < steps.length - 1 ? "Continuar" : "Finalizar"}
-              </Button>
-            </div>
-          </form>
-        </>
-      )}
+          <Button
+            type="button"
+            variant="outline"
+            disabled={isProcessing}
+            onClick={() => router.back()}
+          >
+            <ArrowLeft /> Voltar
+          </Button>
+        </div>
+      </form>
     </section>
   );
 }

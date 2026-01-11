@@ -27,11 +27,7 @@ export class ClientsController {
   }
 
   @Get()
-  findAll(
-    @currentUser() userId: number,
-    @Query('page', ParseIntPipe) page: number,
-    @Query('limit', ParseIntPipe) limit: number,
-  ) {
-    return this.clientsService.get(page, limit, userId);
+  findAll(@currentUser() userId: number) {
+    return this.clientsService.get(userId);
   }
 }

@@ -1,6 +1,5 @@
 import { UserNotFoundExecption } from '@core/http/erros/user.error';
 import { ILoginUseCase, ILoginUseCaseReturnType } from '@core/shared/types';
-import { RequestActivation } from '@core/shared/utils/services/ActivationService/activation.service';
 import { ICryptoInterface } from '@core/shared/utils/services/CryptoService/crypto.interface';
 import { EmailServiceInterface } from '@core/shared/utils/services/EmailService/emailService.interface';
 import CacheService from '@infra/cache/cahe.service';
@@ -47,7 +46,9 @@ export class LoginUseCase {
         message: 'Senha incorrecta, tente novamente',
       });
     }
-    const TWO_WEEKS = 60 * 60 * 24 * 14;
+    const ONE_HOUR = 1000 * 60 * 60;
+    const TWO_WEEKS = 1000 * 60 * 60 * 24 * 14;
+
     const [acessToken, refreshToken] = [
       this.jwt.sign(
         {
@@ -70,7 +71,7 @@ export class LoginUseCase {
 
     const { password, ...userPublicData } = user;
     await Promise.all([
-      this.cache.set(`userProfile-${user.id}`, userPublicData, 60 * 60),
+      this.cache.set(`userProfile-${user.id}`, userPublicData, ONE_HOUR),
       this.cache.set(`userRefreshToken-${user.id}`, refreshToken, TWO_WEEKS),
     ]);
     return {

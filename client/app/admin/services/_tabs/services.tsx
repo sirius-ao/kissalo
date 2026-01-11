@@ -119,8 +119,10 @@ export function TableViewServices({
                     <Dialog>
                       <DialogTrigger asChild>
                         <span className="flex items-center p-2 hover:bg-neutral-100 rounded-md justify-between text-sm gap-1 ">
-                          <Trash size={14} className="text-neutral-500" />
-                          Eliminar
+                          <span className="flex gap-2 items-center">
+                            <Trash size={14} className="text-neutral-500" />
+                            Eliminar
+                          </span>
                           <DropdownMenuShortcut>⇧⌘D</DropdownMenuShortcut>
                         </span>
                       </DialogTrigger>
@@ -165,7 +167,6 @@ export function TableViewServices({
                         </div>
                       </DialogContent>
                     </Dialog>
-
                     <Link href={`/admin/services/${service.id}/edit`}>
                       <DropdownMenuItem>
                         <Pencil />

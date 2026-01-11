@@ -57,7 +57,9 @@ export default function CreateService() {
   const [loadImages, setLoadImages] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [categories, setCategories] = useState<ICategory[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<string>("");
+  const [selectedCategory, setSelectedCategory] = useState<ICategory>(
+    {} as any
+  );
   const [title, setTitle] = useState("");
   const [subtitle, setSubtitle] = useState("");
   const [price, setPrice] = useState("");
@@ -147,7 +149,7 @@ export default function CreateService() {
     const payload: IServiceCreate = {
       bannerUrl: selectedImages[0],
       gallery: selectedImages.slice(1),
-      categoryId: +selectedCategory,
+      categoryId: +selectedCategory.id,
       deliverables: result,
       description: description,
       shortDescription: subtitle,
@@ -219,7 +221,18 @@ export default function CreateService() {
             {currentStep === 0 && (
               <>
                 <Label>Categoria *</Label>
-                <Select required onValueChange={(v) => setSelectedCategory(v)}>
+                <Select
+                  required
+                  onValueChange={(v) => {
+                    const item = categories.find((c) => {
+                      return c.id == Number(v);
+                    });
+                    if (!item) {
+                      return;
+                    }
+                    setSelectedCategory(item);
+                  }}
+                >
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Selecione uma categoria" />
                   </SelectTrigger>
@@ -354,31 +367,36 @@ export default function CreateService() {
                   <Loader />
                 ) : verifyArrayDisponiblity(images) ? (
                   <div className="grid grid-cols-2 gap-3">
-                    {images.map((img, idx) => (
-                      <img
-                        key={idx}
-                        src={img.previewURL}
-                        className={clsx(
-                          "h-40 w-full border rounded-sm cursor-pointer",
-                          {
-                            "border-2 border-green-500":
-                              selectedImages.includes(img.previewURL),
-                          }
-                        )}
-                        onClick={() => {
-                          if (selectedImages.includes(img.previewURL)) {
-                            setSelectedImages(
-                              selectedImages.filter((i) => i !== img.previewURL)
-                            );
-                          } else {
-                            setSelectedImages((prev) => [
-                              ...prev,
-                              img.previewURL,
-                            ]);
-                          }
-                        }}
-                      />
-                    ))}
+                    {images.map((img, idx) => {
+                      if (idx > 5) return null;
+                      return (
+                        <img
+                          key={idx}
+                          src={img.largeImageURL}
+                          className={clsx(
+                            "h-70 w-full border rounded-sm cursor-pointer",
+                            {
+                              "border-2 border-green-500":
+                                selectedImages.includes(img.largeImageURL),
+                            }
+                          )}
+                          onClick={() => {
+                            if (selectedImages.includes(img.largeImageURL)) {
+                              setSelectedImages(
+                                selectedImages.filter(
+                                  (i) => i !== img.largeImageURL
+                                )
+                              );
+                            } else {
+                              setSelectedImages((prev) => [
+                                ...prev,
+                                img.largeImageURL,
+                              ]);
+                            }
+                          }}
+                        />
+                      );
+                    })}
                   </div>
                 ) : (
                   <Empty>
@@ -420,7 +438,7 @@ export default function CreateService() {
                         localStorage.getItem("acess-x-token") as string
                       );
                       const data = await Promise.all([
-                        imagesService.getImages(title),
+                        imagesService.getImages(selectedCategory?.title),
                       ]);
 
                       for (const item of data) {

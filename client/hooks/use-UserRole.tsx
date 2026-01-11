@@ -8,7 +8,6 @@ export function useUserRole(): { role: UserRole | undefined } {
   const context = useContext(UserContext);
   const router = useRouter();
   if (!context || !context?.user) {
-    router.push("/auth/login");
     return {
       role: undefined,
     };

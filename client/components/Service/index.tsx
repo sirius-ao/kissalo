@@ -33,7 +33,7 @@ export function UnJoinedServiceCard({
     <Card className="shadow-none relative  rounded-sm transition-all duration-300">
       <span className="absolute flex right-0 bg-white shadow-2xl rounded-md p-1 text-sm top-3 items-center gap-1">
         <Star className="text-amber-500" size={12} />
-        {service?.bookings?.length ?? 0}
+        {service?.bookings?.length ?? 4.5}
       </span>
       <CardHeader className="px-3 py-0">
         {!autoHigth ? (

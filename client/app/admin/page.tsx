@@ -57,8 +57,8 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
+import { UsersService } from "@/services/Users/index.service";
 type UserTypeFilter = "ALL" | "CUSTOMER" | "PROFESSIONAL";
-
 
 export default function HomePage() {
   const [load, setIsLoading] = useState(true);
@@ -68,33 +68,40 @@ export default function HomePage() {
     ...usersCustomersMock,
     ...usersProfessionalsMock,
   ]);
-  const stats: IStats[] = [
-    {
-      isCoin: false,
-      label: "total profissionais da plaforma",
-      oldValue: 1000,
-      title: "Total profissionais",
-      value: 100,
-    },
-    {
-      isCoin: false,
-      label: "total clientes da plaforma ",
-      oldValue: 1000,
-      title: "Total clientes",
-      value: 567100,
-    },
-    {
-      isCoin: false,
-      label: "total de usuários",
-      oldValue: 1,
-      title: "Total usuários",
-      value: 10,
-    },
-  ];
+  const [stats, setStats] = useState<IStats[]>([]);
+
   useEffect(() => {
-    setTimeout(() => {
-      setIsLoading(false);
-    }, constants.TIMEOUT.LOADER);
+    async function get() {
+      const serviceApi = new UsersService(
+        localStorage.getItem("acess-x-token") as string
+      );
+
+      const data = await serviceApi.get();
+
+      if (data?.clients && data?.profissionals) {
+        setStats([
+          {
+            isCoin: false,
+            label: "total profissionais da plaforma",
+            oldValue: data?.profissionals.length,
+            title: "Total profissionais",
+            value: data?.profissionals.length,
+          },
+          {
+            isCoin: false,
+            label: "total clientes da plaforma",
+            oldValue: data?.clients.length,
+            title: "Total clientes",
+            value: data?.clients.length,
+          },
+        ]);
+      }
+      console.log(data);
+      setTimeout(() => {
+        setIsLoading(false);
+      }, constants.TIMEOUT.LOADER);
+    }
+    get();
   }, []);
 
   const filteredUsers = useMemo(() => {

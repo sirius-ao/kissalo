@@ -8,39 +8,28 @@ export class ProfissionalGetUseCase {
     private readonly cache: CacheService,
   ) {}
 
-  public async getAlls(page: number, limit: number) {
-    page = isNaN(page) || page == 0 ? 1 : page;
-    limit = isNaN(limit) || limit == 0 ? 10 : limit;
-    const skip = (page - 1) * limit;
-    const where: any = {};
+  public async getAlls() {
     const [items, total] = await Promise.all([
       this.database.professional.findMany({
-        skip,
-        take: limit,
         orderBy: {
           createdAt: 'desc',
         },
-        where,
+        include: {
+          user: {
+            omit: {
+              password: true,
+            },
+          },
+        },
       }),
-      this.database.professional.count({
-        where,
-      }),
+      this.database.professional.count({}),
     ]);
 
-    const totalPages = Math.ceil(total / limit);
     return {
       data: items,
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages,
-        hasNextPage: page < totalPages,
-        hasPrevPage: page > 1,
-        lasPage: totalPages,
-      },
     };
   }
+  
   public async getOne(id: number) {
     const cachedUser = await this.cache.get(`Profissional-${id}`);
     if (cachedUser) {

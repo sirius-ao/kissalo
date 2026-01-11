@@ -31,12 +31,8 @@ export class ProfissionalsController {
     summary: 'Profissionals list',
   })
   @Get()
-  findAll(
-    @Query('page', ParseIntPipe) page: number,
-    @Query('limit', ParseIntPipe) limit: number,
-  ) {
-    console.log(page, limit);
-    return this.profissionalsService.findAll(page, limit);
+  findAll() {
+    return this.profissionalsService.findAll();
   }
 
   @ApiOperation({
