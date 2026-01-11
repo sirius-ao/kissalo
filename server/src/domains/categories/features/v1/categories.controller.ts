@@ -34,10 +34,6 @@ export class CategoriesController {
     return this.categoriesService.findOne(+id);
   }
 
-  @Get('slug/:slug')
-  findBySlug(@Param('slug') slug: string) {
-    return this.categoriesService.findBySlug(slug);
-  }
 
   @UseGuards(IsAdminGuard)
   @Patch(':id')

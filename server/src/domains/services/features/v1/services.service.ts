@@ -32,16 +32,37 @@ export class ServicesService {
     }
     const service = await this.database.serviceTemplate.create({
       data: {
-        ...data,
         isFeatured: true,
         slug,
+        isActive: true,
+        isNegotiable: false,
+        description: data.description,
+        duration: data.duration,
+        price: data.price,
+        priceType: 'FIXED',
+        title: data.title,
+        shortDescription: data.shortDescription,
+        bannerUrl: data.bannerUrl,
+        gallery: data.gallery,
+        videoUrl: '',
+        categoryId: data.categoryId,
+        currency: 'kz',
+        keywords: data.keywords,
+        maxBookings: 0,
+        maxRequestsPerDay: 0,
+        deliverables: data.deliverables,
+        ratingAverage: 0,
+
+        requirements: data.requirements,
+        bookingsCount: 0,
+        viewsCount: 0,
       },
     });
     return service;
   }
 
   async findAll() {
-    return await this.database.serviceTemplate.findMany({
+    const data = await this.database.serviceTemplate.findMany({
       where: {
         isActive: true,
       },
@@ -49,6 +70,10 @@ export class ServicesService {
         category: true,
       },
     });
+
+    return {
+      data,
+    };
   }
 
   async findOne(id: number) {

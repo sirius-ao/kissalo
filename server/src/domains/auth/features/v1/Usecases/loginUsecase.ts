@@ -39,15 +39,6 @@ export class LoginUseCase {
     if (!user) {
       throw new UserNotFoundExecption();
     }
-    if (!user.isEmailVerified && user.role !== 'CUSTOMER') {
-      const requestActivation = new RequestActivation(
-        this.database,
-        this.emailService,
-        this.jwt,
-      );
-      await requestActivation.request(user);
-      return;
-    }
     if (!this.isPassMatch(user.password, userData.password)) {
       this.logger.error(
         `Wrong Password from ${userData.unique} to ${user.email}`,

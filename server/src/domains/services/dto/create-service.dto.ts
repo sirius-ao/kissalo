@@ -96,14 +96,6 @@ export class CreateServiceTemplateDto {
   gallery?: string[];
 
   @ApiPropertyOptional({
-    description: 'URL do vídeo demonstrativo',
-    example: 'https://youtube.com/watch?v=example',
-  })
-  @IsOptional()
-  @IsString()
-  videoUrl?: string;
-
-  @ApiPropertyOptional({
     description: 'URL do banner do serviço',
     example: 'banner.jpg',
   })
@@ -111,65 +103,13 @@ export class CreateServiceTemplateDto {
   @IsString()
   bannerUrl?: string;
 
-  @ApiPropertyOptional({
-    description: 'Se o preço é negociável',
-    default: false,
-  })
-  @IsOptional()
-  @IsBoolean()
-  isNegotiable?: boolean;
-
-  @ApiPropertyOptional({
-    description: 'Se requer aprovação prévia',
-    default: false,
-  })
-  @IsOptional()
-  @IsBoolean()
-  requiresApproval?: boolean;
-
   @ApiProperty({
     description: 'Preço base do serviço',
     example: 50000,
   })
   @IsNumber()
   @IsPositive()
-  basePrice: number;
-
-  @ApiPropertyOptional({
-    description: 'Preço mínimo (se negociável)',
-    example: 30000,
-  })
-  @ValidateIf((o) => o.isNegotiable)
-  @IsOptional()
-  @IsNumber()
-  @IsPositive()
-  minPrice?: number;
-
-  @ApiPropertyOptional({
-    description: 'Preço máximo (se negociável)',
-    example: 80000,
-  })
-  @ValidateIf((o) => o.isNegotiable)
-  @IsOptional()
-  @IsNumber()
-  @IsPositive()
-  maxPrice?: number;
-
-  @ApiProperty({
-    description: 'Tipo de preço',
-    enum: ServicePriceType,
-    example: ServicePriceType.FIXED,
-  })
-  @IsEnum(ServicePriceType)
-  priceType: ServicePriceType;
-
-  @ApiPropertyOptional({
-    description: 'Moeda (padrão: AOA)',
-    default: 'AOA',
-  })
-  @IsOptional()
-  @IsString()
-  currency?: string;
+  price: number;
 
   @ApiProperty({
     description: 'Duração em dias',
@@ -178,38 +118,4 @@ export class CreateServiceTemplateDto {
   @IsNumber()
   @IsPositive()
   duration: number;
-
-  @ApiPropertyOptional({
-    description: 'Se o serviço está ativo',
-    default: true,
-  })
-  @IsOptional()
-  @IsBoolean()
-  isActive?: boolean;
-
-  @ApiPropertyOptional({
-    description: 'Se o serviço é destacado',
-    default: false,
-  })
-  @IsOptional()
-  @IsBoolean()
-  isFeatured?: boolean;
-
-  @ApiPropertyOptional({
-    description: 'Máximo de solicitações por dia',
-    example: 10,
-  })
-  @IsOptional()
-  @IsNumber()
-  @IsPositive()
-  maxRequestsPerDay?: number;
-
-  @ApiPropertyOptional({
-    description: 'Máximo de reservas simultâneas',
-    example: 5,
-  })
-  @IsOptional()
-  @IsNumber()
-  @IsPositive()
-  maxBookings?: number;
 }

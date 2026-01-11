@@ -9,7 +9,7 @@ import {
 import { Loader } from "@/components/Loader";
 import { IStats, StarsCard } from "@/components/StatsCard";
 import constants from "@/constants";
-import { verifyArrayDisponiblity } from "@/lib/utils";
+import { includesText, verifyArrayDisponiblity } from "@/lib/utils";
 import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -17,6 +17,7 @@ import {
   ArrowRight,
   ClipboardList,
   Files,
+  Loader2,
   Paintbrush,
   Plus,
   Search,
@@ -42,49 +43,97 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { TableViewServiceRequests } from "./_tabs/service-requests";
 import { serviceRequestsMock } from "@/mocks/service-requests";
+import { CategoriesService } from "@/services/Categories/index.service";
+import { useRouter, useSearchParams } from "next/navigation";
+import { toast } from "sonner";
+import { FilterProvider } from "@/context/searchContext";
+import { ServicesService } from "@/services/Services/index.service";
 
 export default function ServicesPage() {
-  const [stats, setStats] = useState<IStats[]>([
-    {
-      isCoin: false,
-      label: "serviços criados",
-      oldValue: 30,
-      title: "Total serviços",
-      value: 100,
-    },
-    {
-      isCoin: false,
-      label: "serviços sem profissionais anexados",
-      oldValue: 1000,
-      title: "Serviços anémicos",
-      value: 567100,
-    },
-    {
-      isCoin: false,
-      label: "total categoria de serviços",
-      oldValue: 1,
-      title: "Categorias de serviços",
-      value: 10,
-    },
-  ]);
-  const [currentTab, setCurrentTab] = useState(0);
-  const [services, setServices] = useState<IServiceTemplate[]>([
-    ...servicesMock,
-  ]);
-  const [categories, setCategories] = useState<ICategory[]>([
-    ...categoriesMock,
-  ]);
+  const searchParams = useSearchParams();
+  const tabFromUrl = (searchParams.get("tab") as TabKey) ?? "services";
+  const router = useRouter();
+  const TAB_KEYS = ["services", "categories", "requests"] as const;
+  type TabKey = (typeof TAB_KEYS)[number];
+  const [processing, setProcessing] = useState(false);
+  const [newCategorie, setNewCategorie] = useState<ICategory>({} as any);
+  const [stats, setStats] = useState<IStats[]>([]);
+  const [currentTab, setCurrentTab] = useState<number>(
+    TAB_KEYS.indexOf(tabFromUrl)
+  );
+
+  const [services, setServices] = useState<IServiceTemplate[]>([]);
+  const [search, setSearch] = useState("");
+
+  const [categories, setCategories] = useState<ICategory[]>([]);
   const [serviceRequests, setServiceRequests] = useState<
     IProfessionalServiceRequest[]
   >([...serviceRequestsMock]);
 
   const [loading, setIsLoading] = useState(true);
-
   useEffect(() => {
+    async function get() {
+      const [categoriService, servicesService] = [
+        new CategoriesService(localStorage.getItem("acess-x-token") as string),
+        new ServicesService(localStorage.getItem("acess-x-token") as string),
+      ];
+      const [categoriesList, serviceList] = await Promise.all([
+        categoriService.get(),
+        servicesService.get(),
+      ]);
+      if (categoriesList?.logout || serviceList?.logout) {
+        router.push("/auth/login");
+        toast.error("Sessão expirada");
+        return;
+      }
+      setCategories(categoriesList?.data ?? []);
+      setServices(serviceList?.data ?? []);
+      setStats([
+        {
+          isCoin: false,
+          label: "total de serviços",
+          oldValue: Array.isArray(serviceList?.data)
+            ? serviceList?.data?.length
+            : 0,
+          title: "Total serviços",
+          value: Array.isArray(serviceList?.data)
+            ? serviceList?.data?.length
+            : 0,
+        },
+        {
+          isCoin: false,
+          label: "total de categorias",
+          oldValue: Array.isArray(categoriesList?.data)
+            ? categoriesList?.data?.length
+            : 0,
+          title: "Total categorias",
+          value: Array.isArray(categoriesList?.data)
+            ? categoriesList?.data?.length
+            : 0,
+        },
+      ]);
+    }
+
+    get();
     setTimeout(() => {
       setIsLoading(false);
     }, constants.TIMEOUT.LOADER);
   }, []);
+
+  useEffect(() => {
+    const index = TAB_KEYS.indexOf(tabFromUrl);
+    if (index !== -1) {
+      setCurrentTab(index);
+    }
+  }, [tabFromUrl]);
+
+  function changeTab(tab: TabKey) {
+    router.push(`?tab=${tab}`);
+  }
+
+  useEffect(() => {
+    setSearch("");
+  }, [currentTab]);
 
   return (
     <section>
@@ -97,14 +146,14 @@ export default function ServicesPage() {
               stats.map((item, idx) => <StarsCard data={item} key={idx} />)}
           </span>
           <Tabs
-            defaultValue="services"
+            value={TAB_KEYS[currentTab]}
             className="flex  mt-5 gap-6 overflow-visible"
           >
             <TabsList className="flex lg:flex-row flex-col-reverse justify-between w-full gap-3 h-auto   bg-transparent">
               <div className=" flex gap-3 lg:w-[20%] w-full">
                 <TabsTrigger
                   onClick={() => {
-                    setCurrentTab(0);
+                    changeTab("services");
                   }}
                   value="services"
                   className="justify-start gap-2"
@@ -114,7 +163,7 @@ export default function ServicesPage() {
                 </TabsTrigger>
                 <TabsTrigger
                   onClick={() => {
-                    setCurrentTab(1);
+                    changeTab("categories");
                   }}
                   value="categories"
                   className="justify-start gap-2 "
@@ -122,7 +171,7 @@ export default function ServicesPage() {
                   <Files size={16} /> Categorias
                 </TabsTrigger>
                 <TabsTrigger
-                  onClick={() => setCurrentTab(2)}
+                  onClick={() => changeTab("requests")}
                   value="requests"
                   className="justify-start gap-2 "
                 >
@@ -135,7 +184,12 @@ export default function ServicesPage() {
                 className="flex  justify-end lg:w-[30%] w-full  gap-3"
               >
                 <InputGroup className="w-full">
-                  <InputGroupInput placeholder="Buscar por serviços ..." />
+                  <InputGroupInput
+                    placeholder="Buscar..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                  />
+
                   <InputGroupAddon>
                     <Search />
                   </InputGroupAddon>
@@ -161,22 +215,87 @@ export default function ServicesPage() {
                         Crie categorias e anexe serviços a elas
                       </DialogDescription>
 
-                      <form action="" className="flex flex-col gap-2">
+                      <form
+                        onSubmit={async (e) => {
+                          e.preventDefault();
+                          setProcessing(true);
+                          const categorieServices = new CategoriesService(
+                            localStorage.getItem("acess-x-token") as string
+                          );
+                          const data = await categorieServices.create({
+                            color: newCategorie.color as string,
+                            title: newCategorie.title,
+                            description: newCategorie.description as string,
+                            order: categories?.length + 1,
+                          });
+                          if (data?.logout) {
+                            router.push("/auth/login");
+                            toast.error("Sessão expirada");
+                            return;
+                          }
+                          toast.info(
+                            data?.message ?? "Categoria criada com sucesso"
+                          );
+                          if (data?.data?.id) {
+                            console.log(data);
+                            setCategories((prev) => [
+                              ...prev,
+                              {
+                                ...(data?.data as ICategory),
+                                services: [],
+                              },
+                            ]);
+                          }
+                          setProcessing(false);
+                        }}
+                        className="flex flex-col gap-2"
+                      >
                         <Label>Título</Label>
-                        <Input required placeholder="título da categoria" />
+                        <Input
+                          required
+                          defaultValue={newCategorie?.title}
+                          placeholder="título da categoria"
+                          onChange={(e) => {
+                            setNewCategorie((prev) => ({
+                              ...prev,
+                              title: e.target.value,
+                            }));
+                          }}
+                        />
+                        <Label>Cor</Label>
                         <Input
                           type="color"
                           className="w-20"
                           required
+                          defaultValue={newCategorie?.color}
                           placeholder=""
+                          onChange={(e) => {
+                            setNewCategorie((prev) => ({
+                              ...prev,
+                              color: e.target.value,
+                            }));
+                          }}
                         />
                         <Label>Descrição</Label>
                         <Textarea
                           placeholder="descrição da categoria"
                           className="resize-none h-30"
                           required
+                          onChange={(e) => {
+                            setNewCategorie((prev) => ({
+                              ...prev,
+                              description: e.target.value,
+                            }));
+                          }}
+                          defaultValue={newCategorie?.description}
                         />
-                        <Button onClick={() => {}}>Criar categoria</Button>
+                        <Button disabled={processing} onClick={() => {}}>
+                          {processing ? (
+                            <Loader2 className="animate-spin" />
+                          ) : (
+                            "Criar categoria"
+                          )}
+                        </Button>
                       </form>
                     </DialogContent>
                   </Dialog>
@@ -186,53 +305,69 @@ export default function ServicesPage() {
 
             <div className="flex-1 lg:pt-10  ">
               <TabsContent value="services">
-                <TableViewServices services={services} />{" "}
-                {verifyArrayDisponiblity(services) && (
-                  <span className="flex  mt-5 justify-between items-center gap-3">
-                    <div>1 de 10</div>
-                    <span className="flex  gap-2">
-                      <Button variant={"outline"}>
-                        <ArrowLeft />
-                      </Button>
-                      <Button variant={"outline"}>
-                        <ArrowRight />
-                      </Button>
-                    </span>
-                  </span>
-                )}
+                <FilterProvider
+                  data={services}
+                  search={search}
+                  filter={(service, search) =>
+                    includesText(service.title, search) ||
+                    includesText(service.description, search) ||
+                    includesText(service.category?.title, search)
+                  }
+                >
+                  {(filteredServices) => (
+                    <TableViewServices
+                      services={filteredServices}
+                      onRemove={(id) =>
+                        setServices((prev) => prev.filter((c) => c.id !== id))
+                      }
+                      onUpdate={(updated) =>
+                        setServices((prev) =>
+                          prev.map((c) => (c.id === updated.id ? updated : c))
+                        )
+                      }
+                    />
+                  )}
+                </FilterProvider>
               </TabsContent>
+
               <TabsContent value="categories">
-                <TableViewCategories categories={categories} />{" "}
-                {verifyArrayDisponiblity(categories) && (
-                  <span className="flex mt-5 justify-between items-center gap-3">
-                    <div>1 de 10</div>
-                    <span className="flex  gap-2">
-                      <Button variant={"outline"}>
-                        <ArrowLeft />
-                      </Button>
-                      <Button variant={"outline"}>
-                        <ArrowRight />
-                      </Button>
-                    </span>
-                  </span>
-                )}
+                <FilterProvider
+                  data={categories}
+                  search={search}
+                  filter={(category, search) =>
+                    includesText(category.title, search) ||
+                    includesText(category.description, search)
+                  }
+                >
+                  {(filteredCategories) => (
+                    <TableViewCategories
+                      onRemove={(id) =>
+                        setCategories((prev) => prev.filter((c) => c.id !== id))
+                      }
+                      onUpdate={(updated) =>
+                        setCategories((prev) =>
+                          prev.map((c) => (c.id === updated.id ? updated : c))
+                        )
+                      }
+                      categories={filteredCategories}
+                    />
+                  )}
+                </FilterProvider>
               </TabsContent>
               <TabsContent value="requests">
-                <TableViewServiceRequests requests={serviceRequests} />
-
-                {verifyArrayDisponiblity(serviceRequests) && (
-                  <span className="flex mt-5 justify-between items-center gap-3">
-                    <div>1 de 10</div>
-                    <span className="flex gap-2">
-                      <Button variant={"outline"}>
-                        <ArrowLeft />
-                      </Button>
-                      <Button variant={"outline"}>
-                        <ArrowRight />
-                      </Button>
-                    </span>
-                  </span>
-                )}
+                <FilterProvider
+                  data={serviceRequests}
+                  search={search}
+                  filter={(request, search) =>
+                    includesText(request.service?.title, search) ||
+                    includesText(request.professional?.user?.email, search) ||
+                    includesText(request.professional?.user?.firstName, search)
+                  }
+                >
+                  {(filteredRequests) => (
+                    <TableViewServiceRequests requests={filteredRequests} />
+                  )}
+                </FilterProvider>
               </TabsContent>
             </div>
           </Tabs>

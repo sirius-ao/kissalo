@@ -1,4 +1,4 @@
-import { BcryptService } from '../core/shared/utils/services/CryptoService/crypto.service'
+import { BcryptService } from '../core/shared/utils/services/CryptoService/crypto.service';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { loadEnvFile } from 'process';
 loadEnvFile();
@@ -104,11 +104,13 @@ export async function runSeeds() {
       shortDescription: 'Eletricista profissional',
       keywords: ['eletricidade', 'reparo', 'casa'],
       requirements: ['Energia desligada'],
-      basePrice: 15000,
       priceType: ServicePriceType.FIXED,
       duration: 60,
       currency: 'AOA',
       isActive: true,
+      price: 1000,
+      gallery: [],
+      
     },
   });
 

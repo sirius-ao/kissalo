@@ -1,12 +1,12 @@
 "use client";
 import { IconLogout } from "@tabler/icons-react";
-import { UserPen } from "lucide-react";
+import { User, UserPen } from "lucide-react";
 import { navigations } from "@/constants/navigations";
 import { useUserRole } from "@/hooks/use-UserRole";
 import { Logo } from "../Logo";
 import { verifyArrayDisponiblity } from "@/lib/utils";
 import { Button } from "../ui/button";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import clsx from "clsx";
 import Link from "next/link";
 import { Separator } from "../ui/separator";
@@ -19,9 +19,15 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { usePathname } from "next/navigation";
 import { UserRole } from "@/types/enum";
+import { UserContext } from "@/context/userContext";
 
 export function SideBar() {
+  const context = useContext(UserContext);
   const { role } = useUserRole();
+  if (!role || !context || !context?.user) {
+    return null;
+  }
+  const { user } = context;
   const nav = navigations[role] ?? [];
   if (nav.length == 0) {
     return null;
@@ -33,13 +39,6 @@ export function SideBar() {
   const [active, setActive] = useState(
     defaultActived == -1 ? 0 : defaultActived
   );
-  const user = {
-    fisrtName: "Francico",
-    lastName: "Diakomas",
-    avatarUrl: "https://github.com/shadcn.png",
-    role: "Profissional",
-    email: "franciscodiakoma@gmail.com",
-  };
   const message =
     role == UserRole.PROFESSIONAL
       ? {
@@ -111,25 +110,33 @@ export function SideBar() {
             </Card>
           )}
 
-          <div className="flex bottom-10 left-2 absolute gap-2 p-2 rounded-sm border-black/4   items-center border">
-            <Avatar>
-              <AvatarImage src={user.avatarUrl} />
-              <AvatarFallback className="bg-linear-to-r from-[#f7a60ed1] to-[#ec4d03e3] text-white">
-                {user.fisrtName.charAt(0).toUpperCase() +
-                  user.lastName.charAt(0).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
-            <span className="flex flex-col text-sm gap-2">
-              <h1>{user.fisrtName + " " + user.lastName}</h1>
-              <small>{user.email}</small>
-              <small>{role == "CUSTOMER" ? "CLIENTE" : role}</small>
-            </span>
+          <div className="flex bottom-10 left-2 absolute gap-2 p-2 rounded-sm border-black/4 w-[93%]  items-center border justify-between">
+            <div className="flex gap-2 ">
+              <Avatar>
+                <AvatarImage src={user.avatarUrl} />
+                <AvatarFallback className="bg-linear-to-r from-[#f7a60ed1] to-[#ec4d03e3] text-white">
+                  {user.firstName.charAt(0).toUpperCase() +
+                    user.lastName.charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <span className="flex flex-col text-sm ">
+                <h1>{user.firstName + " " + user.lastName}</h1>
+                <small>{user.email}</small>
+                <small className="lowercase flex items-center gap-1">
+                  {" "}
+                  <User size={12} /> {role == "CUSTOMER" ? "CLIENTE" : role}
+                </small>
+              </span>
+            </div>
             <Button
               variant={"ghost"}
-              className="hover:bg-transparent"
+              className="hover:bg-transparent "
               size={"lg"}
+              asChild
             >
-              <IconLogout />
+              <Link href={"/auth/login"}>
+                <IconLogout />
+              </Link>
             </Button>
           </div>
         </span>

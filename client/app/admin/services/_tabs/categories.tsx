@@ -1,7 +1,7 @@
+"use client";
+
 import { ICategory, IServiceTemplate } from "@/types/interfaces";
-import { Badge } from "@/components/ui/badge";
-import { ApprovalStatus } from "@/types/enum";
-import { Eye, Pencil, StepForward, Trash } from "lucide-react";
+import { Eye, Loader2, Pencil, StepForward, Trash } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -20,7 +20,6 @@ import {
 } from "@/components/ui/table";
 
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
 import {
   DropdownMenu,
@@ -36,12 +35,27 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { CategoriesService } from "@/services/Categories/index.service";
+import { useState } from "react";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 export function TableViewCategories({
   categories,
+  onUpdate,
+  onRemove,
 }: {
   categories: ICategory[];
+  onUpdate: (updated: ICategory) => void;
+  onRemove: (id: number) => void;
 }) {
+  const router = useRouter();
+  const service = new CategoriesService(
+    localStorage.getItem("acess-x-token") as string
+  );
+  const [processing, setProcessing] = useState(false);
+  const [editData, setEditData] = useState<ICategory>({} as any);
+
   return (
     <Table>
       <TableHeader>
@@ -53,7 +67,6 @@ export function TableViewCategories({
           <TableHead>Slug</TableHead>
           <TableHead>Categoria</TableHead>
           <TableHead>Serviços</TableHead>
-          <TableHead>Estado</TableHead>
           <TableHead>Criado</TableHead>
           <TableHead>Ações</TableHead>
         </TableRow>
@@ -83,11 +96,8 @@ export function TableViewCategories({
             </TableCell>
             <TableCell>{category.services.length}</TableCell>
             <TableCell>
-              <Switch defaultChecked={category.isActive} />
-            </TableCell>
-            <TableCell>
               {category.createdAt &&
-                category.createdAt?.toLocaleDateString("pt")}
+                new Date(category.createdAt)?.toLocaleDateString("pt")}
             </TableCell>
             <TableCell>
               <DropdownMenu>
@@ -97,7 +107,12 @@ export function TableViewCategories({
                 <DropdownMenuContent className="w-56" align="start">
                   <DropdownMenuRadioGroup>
                     <Dialog>
-                      <DialogTrigger asChild>
+                      <DialogTrigger
+                        asChild
+                        onClick={() => {
+                          setEditData(category);
+                        }}
+                      >
                         <span className="flex items-center p-2 hover:bg-neutral-100 rounded-md justify-between text-sm gap-1 ">
                           <Pencil size={14} className="text-neutral-500" />
                           Editar
@@ -110,28 +125,83 @@ export function TableViewCategories({
                           actualize categorias e anexe serviços a elas
                         </DialogDescription>
 
-                        <form action="" className="flex flex-col gap-2">
+                        <form className="flex flex-col gap-2">
                           <Label>Título</Label>
                           <Input
-                            defaultValue={category.title}
                             required
+                            value={editData.title ?? ""}
                             placeholder="título da categoria"
+                            onChange={(e) =>
+                              setEditData((prev) => ({
+                                ...prev,
+                                title: e.target.value,
+                              }))
+                            }
                           />
+
+                          <Label>Cor</Label>
                           <Input
                             type="color"
                             className="w-20"
                             required
-                            placeholder=""
-                            defaultValue={category.color}
+                            value={editData.color ?? "#000000"}
+                            onChange={(e) =>
+                              setEditData((prev) => ({
+                                ...prev,
+                                color: e.target.value,
+                              }))
+                            }
                           />
+
                           <Label>Descrição</Label>
                           <Textarea
-                            placeholder="descrição da categoria"
-                            className="resize-none h-30"
                             required
-                            defaultValue={category.description}
+                            className="resize-none h-30"
+                            placeholder="descrição da categoria"
+                            value={editData.description ?? ""}
+                            onChange={(e) =>
+                              setEditData((prev) => ({
+                                ...prev,
+                                description: e.target.value,
+                              }))
+                            }
                           />
-                          <Button onClick={() => {}}>Criar categoria</Button>
+
+                          <Button
+                            disabled={processing}
+                            onClick={async (e) => {
+                              e.preventDefault();
+                              setProcessing(true);
+
+                              const data = await service.update(
+                                {
+                                  title: editData.title,
+                                  description: editData.description as string,
+                                  color: editData.color as string,
+                                  order: editData.order,
+                                },
+                                editData.id
+                              );
+
+                              if (data?.logout) {
+                                router.push("/auth/login");
+                                toast.error("Sessão expirada");
+                                return;
+                              }
+                              if (data?.id) {
+                                toast.success("Categoria atualizada");
+                                onUpdate(data);
+                              }
+
+                              setProcessing(false);
+                            }}
+                          >
+                            {processing ? (
+                              <Loader2 className="animate-spin" />
+                            ) : (
+                              "Salvar alterações"
+                            )}
+                          </Button>
                         </form>
                       </DialogContent>
                     </Dialog>
@@ -154,7 +224,35 @@ export function TableViewCategories({
                           <DialogClose className="border rounded-sm text-sm ">
                             Cancelar
                           </DialogClose>
-                          <Button onClick={() => {}}>Remover </Button>
+                          <Button
+                            disabled={processing}
+                            onClick={async () => {
+                              setProcessing(true);
+
+                              const data = await service.remove(category.id);
+
+                              if (data?.logout) {
+                                router.push("/auth/login");
+                                toast.error("Sessão expirada");
+                                return;
+                              }
+
+                              if (data?.data?.id) {
+                                toast.success("Categoria removida");
+                                onRemove(category.id);
+                              } else {
+                                toast.error("Categoria não encontrada");
+                              }
+
+                              setProcessing(false);
+                            }}
+                          >
+                            {processing ? (
+                              <Loader2 className="animate-spin" />
+                            ) : (
+                              "Remover"
+                            )}
+                          </Button>
                         </div>
                       </DialogContent>
                     </Dialog>

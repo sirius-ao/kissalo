@@ -259,3 +259,32 @@ export interface IPaymentMethod {
   title: string;
   icon: string;
 }
+
+
+export interface IImage {
+  id: number;
+  imageHeight: number;
+  imageWidth: number;
+  imageSize: number;
+  largeImageURL: string;
+  previewURL: string;
+  webformatURL: string;
+  tags: string[];
+  type: string;
+}
+
+
+export interface IServiceCreate {
+  categoryId: number;                 // ID da categoria
+  title: string;                      // Título do serviço
+  shortDescription: string;           // Subtítulo ou descrição curta
+  description: string;                // Descrição detalhada
+  deliverables: string;               // Entregáveis do serviço
+  slug: string;                       // Slug para URL
+  keywords: string[];                 // Palavras-chave para busca
+  requirements: string[];             // Requisitos necessários
+  gallery: string[];                  // Imagens da galeria
+  bannerUrl: string;                  // URL do banner principal
+  price: number;                      // Preço do serviço
+  duration: number;                   // Duração em dias ou horas
+}

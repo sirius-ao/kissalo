@@ -1,4 +1,12 @@
-import { Controller, Post, Body, Param, Delete, Put } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Param,
+  Delete,
+  Put,
+  Get,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import {
   CreateAuthDto,
@@ -14,7 +22,7 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Post('/me')
+  @Get('/me')
   @ApiOperation({
     summary: 'Ge me',
   })

@@ -24,15 +24,13 @@ export class IsAdminGuard implements CanActivate {
       throw new UserNotFoundExecption();
     }
     const userRefreshToken = await this.cache.get(`userRefreshToken-${userId}`);
-
     if (!userRefreshToken) {
-      throw new ForbiddenException('Refresh Token não encontrado ou expirado');
+      throw new ForbiddenException('Sessão expirada');
     }
     let tokenData: IRefreshToken;
     try {
       tokenData = this.jwt.verify(userRefreshToken) as IRefreshToken;
     } catch (error) {
-      console.log(error);
       throw new ForbiddenException(
         'Refresh Token expirado precisa se autenticar',
       );
