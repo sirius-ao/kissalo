@@ -112,12 +112,12 @@ export default function ServicesPage() {
             : 0,
         },
       ]);
+      setTimeout(() => {
+        setIsLoading(false);
+      }, constants.TIMEOUT.LOADER);
     }
 
     get();
-    setTimeout(() => {
-      setIsLoading(false);
-    }, constants.TIMEOUT.LOADER);
   }, []);
 
   useEffect(() => {

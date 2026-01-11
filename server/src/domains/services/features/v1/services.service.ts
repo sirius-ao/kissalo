@@ -93,6 +93,7 @@ export class ServicesService {
                 user: true,
               },
             },
+            service: true,
           },
         },
         category: true,

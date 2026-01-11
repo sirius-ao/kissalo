@@ -1,5 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export default function LogoutTab() {
   return (
@@ -11,7 +12,9 @@ export default function LogoutTab() {
           Tens certeza que desejas sair da tua conta?
         </p>
 
-        <Button variant="destructive">Logout</Button>
+        <Button variant="destructive" asChild>
+          <Link href={"/auth/login"}>Logout</Link>
+        </Button>
       </CardContent>
     </Card>
   );

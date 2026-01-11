@@ -19,7 +19,7 @@ export function DshBoardHeader() {
       ? "/profissional/notifications"
       : role == "ADMIN"
       ? "/admin/notifications"
-      : "/costumer/notifications";
+      : "/customer/notifications";
   const [hasUnRead, setHasUnread] = useState(true);
 
   return (

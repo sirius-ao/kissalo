@@ -44,17 +44,17 @@ export const navigations: Record<UserRole, INavItem[]> = {
   CUSTOMER: [
     {
       title: "Inicial",
-      to: "/costumer",
+      to: "/customer",
       icon: <LayoutGrid size={17} />,
     },
     {
       title: "Históricos",
-      to: "/costumer/history",
+      to: "/customer/history",
       icon: <IconChecklist size={17} />,
     },
     {
       title: "Perfil",
-      to: "/costumer/settings",
+      to: "/customer/settings",
       icon: <User2 size={17} />,
     },
   ],

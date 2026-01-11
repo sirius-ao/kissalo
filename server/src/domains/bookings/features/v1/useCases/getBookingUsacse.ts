@@ -10,7 +10,7 @@ export class GetBookingFacede {
     private readonly database: PrismaService,
     private readonly cache: CacheService,
   ) {}
-  
+
   public async getOne(id: number): Promise<BookingWithRelations> {
     const cachedBooking = await this.cache.get<BookingWithRelations>(
       `booking-${id}`,
@@ -49,10 +49,7 @@ export class GetBookingFacede {
     }
     throw new NotFoundException('Agendamento de serviço não encontrado');
   }
-  public async get(page: number, limit: number, userId: number) {
-    page = isNaN(page) || page == 0 ? 1 : page;
-    limit = isNaN(limit) || limit == 0 ? 10 : limit;
-    const skip = (page - 1) * limit;
+  public async get(userId: number) {
     const user = await this.database.user.findFirst({
       where: {
         id: userId,
@@ -87,26 +84,15 @@ export class GetBookingFacede {
         throw new BadRequestException('Tipo de usuário não suportado');
         break;
     }
-    const [myBookings, openBookings] = await Promise.all([
-      this.getByUser(skip, limit, page, where),
-      this.getOpenBookings(skip, limit, page),
-    ]);
+    const [myBookings] = await Promise.all([this.getByUser(where)]);
     return {
       user,
       myBookings,
-      openBookings,
     };
   }
-  private async getByUser(
-    skip: number,
-    take: number,
-    page: number,
-    where: any,
-  ) {
-    const [bookings, total] = await Promise.all([
+  private async getByUser(where: any) {
+    const [bookings] = await Promise.all([
       this.database.booking.findMany({
-        take,
-        skip,
         where,
         include: {
           client: {
@@ -123,67 +109,9 @@ export class GetBookingFacede {
           review: true,
         },
       }),
-      this.database.booking.count({
-        where,
-      }),
     ]);
-    const totalPages = Math.ceil(total / take);
     return {
       data: bookings,
-      pagination: {
-        page,
-        take,
-        total,
-        totalPages,
-        hasNextPage: page < totalPages,
-        hasPrevPage: page > 1,
-        lastPage: totalPages,
-      },
-    };
-  }
-  public async getOpenBookings(skip: number, take: number, page: number) {
-    const [bookings, total] = await Promise.all([
-      this.database.booking.findMany({
-        take,
-        skip,
-        where: {
-          professionalId: null,
-          status: 'PENDING',
-        },
-        include: {
-          client: {
-            omit: {
-              password: true,
-            },
-          },
-          service: {
-            include: {
-              category: true,
-            },
-          },
-          steps: true,
-          review: true,
-        },
-      }),
-      this.database.booking.count({
-        where: {
-          professionalId: null,
-          status: 'PENDING',
-        },
-      }),
-    ]);
-    const totalPages = Math.ceil(total / take);
-    return {
-      data: bookings,
-      pagination: {
-        page,
-        take,
-        total,
-        totalPages,
-        hasNextPage: page < totalPages,
-        hasPrevPage: page > 1,
-        lastPage: totalPages,
-      },
     };
   }
 }

@@ -104,14 +104,8 @@ export class BookingsController {
     summary: 'Listar agendamentos',
     description: 'Lista os agendamentos do utilizador autenticado',
   })
-  @ApiQuery({ name: 'page', example: 1 })
-  @ApiQuery({ name: 'limit', example: 10 })
-  findAll(
-    @Query('page', ParseIntPipe) page: number,
-    @Query('limit', ParseIntPipe) limit: number,
-    @currentUser() userId: number,
-  ) {
-    return this.bookingsService.findAll(page, limit, userId);
+  findAll(@currentUser() userId: number) {
+    return this.bookingsService.findAll(userId);
   }
 
   @Get(':id')

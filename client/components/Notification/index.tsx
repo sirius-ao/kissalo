@@ -13,11 +13,11 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty";
 import { verifyArrayDisponiblity } from "@/lib/utils";
-import { ArrowLeft, ArrowRight, Box } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import NotificationCard from "@/components/Notifications";
 import { NofiticationService } from "@/services/Notification/index.service";
+import { Box } from "lucide-react";
 
 export default function NotificationPage() {
   const router = useRouter();
@@ -35,7 +35,7 @@ export default function NotificationPage() {
         router.push("/auth/login");
         return;
       }
-      setNotification(data?.data ?? []);
+      setNotification(data?.data?.data ?? []);
       setTimeout(() => {
         setIsLoading(false);
       }, constants.TIMEOUT.LOADER);
@@ -55,14 +55,6 @@ export default function NotificationPage() {
                 {notification.map((item, idx) => (
                   <NotificationCard notification={item} key={idx} />
                 ))}
-              </span>
-              <span className="flex gap-2">
-                <Button variant={"outline"} className="w-10">
-                  <ArrowLeft />
-                </Button>
-                <Button variant={"outline"} className="w-10">
-                  <ArrowRight />
-                </Button>
               </span>
             </article>
           ) : (

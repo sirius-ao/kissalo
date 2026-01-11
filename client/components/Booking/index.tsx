@@ -36,10 +36,23 @@ import {
   DialogTrigger,
 } from "../ui/dialog";
 import clsx from "clsx";
-import { PaymentStatus, ServiceLocation, UserRole } from "@/types/enum";
+import {
+  BookingStatus,
+  PaymentStatus,
+  ServiceLocation,
+  UserRole,
+} from "@/types/enum";
 import { Label } from "../ui/label";
 import { Input } from "../ui/input";
 import { Textarea } from "../ui/textarea";
+import {
+  getPriorityIcon,
+  getPriorityIconText,
+  getStatusBadgeClass,
+  getStatusIcon,
+  priorityColorMap,
+} from "@/app/profissional/page";
+import { IconBrandPaypal } from "@tabler/icons-react";
 
 export function BookingCard({ booking }: { booking: IBooking }) {
   const { role } = useUserRole() as { role: any };
@@ -58,7 +71,7 @@ export function BookingCard({ booking }: { booking: IBooking }) {
       ? "/profissional/bookings"
       : role == "ADMIN"
       ? "/admin/bookings"
-      : "/costumer/booking";
+      : "/customer/booking";
 
   const locationMap: Record<ServiceLocation, string> = {
     CLIENT_HOME: "Estabelecimento do cliente",
@@ -74,10 +87,17 @@ export function BookingCard({ booking }: { booking: IBooking }) {
           {role != "CUSTOMER" && (
             <PaymentAvatar user={booking?.client} notColl={false} />
           )}
+          <small className="text-xs text-shadow-neutral-300 -mt-2">
+            {booking?.service?.description}
+            {booking?.service?.shortDescription}
+          </small>
         </div>
 
-        <Badge variant="outline" className="flex items-center gap-1">
-          {style.icon}
+        <Badge
+          variant="outline"
+          className={getStatusBadgeClass(booking.status)}
+        >
+          {getStatusIcon(booking.status)}
           {booking.status}
         </Badge>
       </div>
@@ -105,29 +125,54 @@ export function BookingCard({ booking }: { booking: IBooking }) {
           {locationMap[booking.location]}
         </span>
         <span className="flex items-center gap-1">
-          <MapPin size={12} />
-          {booking?.address?.city} / {booking?.address?.district}
+          <MapPin size={12} />{" "}
+          {booking?.address && JSON.parse(booking.address)?.country} /{" "}
+          {booking?.address && JSON.parse(booking.address)?.city} /{" "}
+          {booking?.address && JSON.parse(booking.address)?.street}
         </span>
       </div>
 
       <div className="flex justify-between  mt-2">
         <div className="flex items-center gap-2 text-xs">
-          <Badge variant="secondary">{booking.priority}</Badge>
-          <Badge variant="secondary">{booking.paymentStatus}</Badge>
-          <Badge variant="secondary">
-            {booking.canEnd ? "Liberado" : "..."}
+          {" "}
+          <Badge
+            variant="outline"
+            className={`bg-${
+              priorityColorMap[booking.priority]
+            }-500/10  border border-${
+              priorityColorMap[booking.priority]
+            }-500/50  text-${
+              priorityColorMap[booking.priority]
+            }-500 rounded-sm`}
+          >
+            {getPriorityIcon(booking.priority)}
+            {getPriorityIconText(booking.priority)}
+          </Badge>
+          <Badge variant="secondary" className="capitalize">
+            Pagemento : {booking.paymentStatus}
+          </Badge>
+          <Badge variant={booking.canEnd ? "secondary" : "default"}>
+            {booking.canEnd ? "Liberado" : "Não liberado"}
           </Badge>
         </div>
         {JSON.stringify(booking.payment, null, 2)}
         {role == "CUSTOMER" && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button>Acções</Button>
+              <Button
+                disabled={
+                  booking.status == BookingStatus.CANCELED ||
+                  booking.status == BookingStatus.REJECTED
+                }
+              >
+                Acções
+              </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56" align="start">
               <DropdownMenuRadioGroup>
                 {!booking.canEnd && (
                   <DropdownMenuItem>
+                    <IconBrandPaypal />
                     Liberar
                     <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
                   </DropdownMenuItem>
@@ -168,12 +213,12 @@ export function BookingCard({ booking }: { booking: IBooking }) {
               <Dialog>
                 <form>
                   <DialogTrigger asChild>
-                    <Button variant="outline" className="w-full mt-5">
+                    <Button variant="outline" className="w-full mt-2">
                       <Star className="text-amber-500" />
                       Avaliar
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="sm:max-w-[425px]">
+                  <DialogContent className="sm:max-w-[400px]">
                     <DialogHeader>
                       <DialogTitle>Avaliar Serviço</DialogTitle>
                       <DialogDescription>
@@ -213,7 +258,7 @@ export function BookingCard({ booking }: { booking: IBooking }) {
                           id="comment"
                           name="comment"
                           rows={4}
-                          className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-none"
+                          className=" resize-none"
                           placeholder="Conte mais sobre sua experiência..."
                           maxLength={500}
                         />
@@ -222,7 +267,7 @@ export function BookingCard({ booking }: { booking: IBooking }) {
                         </div>
                       </div>
                     </div>
-                    <DialogFooter>
+                    <DialogFooter className="grid grid-cols-2 gap-2">
                       <DialogClose asChild>
                         <Button type="button" variant="outline">
                           Cancelar

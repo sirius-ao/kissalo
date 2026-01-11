@@ -110,6 +110,7 @@ export function UnJoinedServiceCard({
         <div className="w-full">
           <span className="flex md:flex-row justify-between gap-1">
             <Button>{Number(service.price).toLocaleString("pt")},00 Kz</Button>
+
             {role === UserRole.CUSTOMER ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -129,7 +130,7 @@ export function UnJoinedServiceCard({
                     </Link>
                   </DropdownMenuGroup>
                   <DropdownMenuGroup>
-                    <Link href={`/costumer/apointment/${service.id}`} prefetch>
+                    <Link href={`/customer/apointment/${service.id}`} prefetch>
                       <DropdownMenuItem>
                         <ShoppingCart />
                         Agendar

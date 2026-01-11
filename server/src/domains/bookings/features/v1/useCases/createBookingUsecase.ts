@@ -75,8 +75,6 @@ export class CreateBookingUseFacade {
       return booking;
     });
 
-    await this.sendBookingNotifications(booking, client, null, admin, service);
-
     return {
       message: 'Pedido de serviço criado com sucesso',
       id: booking.id,
@@ -263,7 +261,8 @@ export class CreateBookingUseFacade {
         isRead: false,
         userId: client.id,
         createdAt: new Date(),
-        deepLink: `/bookings/${booking.id}`,
+        deepLink: `/customer/bookings/${booking.id}`,
+        channel: 'PUSH',
       },
       {
         title: 'Novo agendamento',
@@ -273,50 +272,13 @@ export class CreateBookingUseFacade {
         userId: admin.id,
         createdAt: new Date(),
         deepLink: `/admin/bookings/${booking.id}`,
+        channel: 'PUSH',
       },
     ];
-
+    console.log(notifications);
     await prisma.notification.createMany({
       data: notifications,
     });
-  }
-
-  private async sendBookingNotifications(
-    booking: any,
-    client: User,
-    professional: User | null,
-    admin: User,
-    service: any,
-  ) {
-    const pushNotifier = this.notifier.send('PUSH');
-    const emailNotifier = this.notifier.send('EMAIL');
-
-    const clientNotification = {
-      title: 'Novo agendamento',
-      message: `O agendamento do serviço "${service.title}", no valor de ${service.price.toFixed(2)} Kz, foi criado com sucesso.`,
-      type: 'BOOKING' as NotificationType,
-      isRead: false,
-      userId: client.id,
-      createdAt: new Date(),
-      deepLink: `/bookings/${booking.id}`,
-    };
-
-    const adminNotification = {
-      title: 'Novo agendamento',
-      message: `Um novo agendamento para o serviço "${service.title}" foi criado pelo cliente ${client.firstName} ${client.lastName}.`,
-      type: 'SYSTEM' as NotificationType,
-      isRead: false,
-      userId: admin.id,
-      createdAt: new Date(),
-      deepLink: `/admin/bookings/${booking.id}`,
-    };
-
-    await Promise.all([
-      pushNotifier.send(clientNotification, client),
-      emailNotifier.send(clientNotification, client),
-      pushNotifier.send(adminNotification, admin),
-      emailNotifier.send(adminNotification, admin),
-    ]);
   }
 
   private async createProfessionalAssignmentNotifications(
@@ -335,6 +297,7 @@ export class CreateBookingUseFacade {
         userId: client.id,
         createdAt: new Date(),
         deepLink: `/bookings/${booking.id}`,
+        channel: 'PUSH',
       },
       {
         title: 'Novo agendamento atribuído',
@@ -344,9 +307,9 @@ export class CreateBookingUseFacade {
         userId: professional.id,
         createdAt: new Date(),
         deepLink: `/bookings/${booking.id}`,
+        channel: 'PUSH',
       },
     ];
-
     await prisma.notification.createMany({
       data: notifications,
     });
@@ -369,6 +332,7 @@ export class CreateBookingUseFacade {
       userId: client.id,
       createdAt: new Date(),
       deepLink: `/bookings/${booking.id}`,
+      channel: 'PUSH',
     };
 
     const professionalNotification = {
@@ -379,6 +343,7 @@ export class CreateBookingUseFacade {
       userId: professional.id,
       createdAt: new Date(),
       deepLink: `/bookings/${booking.id}`,
+      channel: 'PUSH',
     };
 
     await Promise.all([

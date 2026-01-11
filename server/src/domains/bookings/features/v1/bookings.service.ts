@@ -63,9 +63,9 @@ export class BookingsService {
     );
     return await toogleFacade.toogle(data, userId, bookingId);
   }
-  public async findAll(page: number, limit: number, userId: number) {
+  public async findAll(userId: number) {
     const getBookingFacede = new GetBookingFacede(this.database, this.cache);
-    return await getBookingFacede.get(page, limit, userId);
+    return await getBookingFacede.get(userId);
   }
   async findOne(id: number) {
     const getBookingFacede = new GetBookingFacede(this.database, this.cache);

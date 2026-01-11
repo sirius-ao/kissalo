@@ -168,28 +168,6 @@ export function ListView({ bookings }: { bookings: IBooking[] }) {
 }
 
 export function TableView({ bookings }: { bookings: IBooking[] }) {
-  const frameworks = [
-    {
-      value: "next.js",
-      label: "Next.js",
-    },
-    {
-      value: "sveltekit",
-      label: "SvelteKit",
-    },
-    {
-      value: "nuxt.js",
-      label: "Nuxt.js",
-    },
-    {
-      value: "remix",
-      label: "Remix",
-    },
-    {
-      value: "astro",
-      label: "Astro",
-    },
-  ];
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState({
     id: 0,
