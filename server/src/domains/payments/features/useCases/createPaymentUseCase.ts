@@ -9,12 +9,18 @@ export class CreatePaymentUseCase {
   constructor(
     private readonly prisma: PrismaService,
     private readonly notifier: NotificationFactory,
-    private readonly bookservice: BookingsService,
   ) {}
 
-  
   async execute(dto: CreatePaymentDto, userId: number) {
-    const booking = await this.bookservice.findOne(dto.bookingId);
+    const booking = await this.prisma.booking.findFirst({
+      where: {
+        id: dto.bookingId,
+      },
+      include: {
+        payment: true,
+        service: true,
+      },
+    });
     if (!booking) {
       throw new NotFoundException('Agendamento não encontrado');
     }

@@ -14,6 +14,7 @@ import { ProfissionalsService } from './profissionals.service';
 import {
   CreateProfessionalDto,
   CreateProfissionalDocumentsDto,
+  UpdateProfessionalDto,
   UpdateProfissionalDocumentsDto,
 } from './dto/create-profissional.dto';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
@@ -85,12 +86,11 @@ export class ProfissionalsController {
     return this.profissionalsService.requestVerification(data, userId);
   }
 
-  @UseGuards(IsProfissionalGuard)
   @ApiOperation({
     summary: 'Profissional account update',
   })
   @Put()
-  update(@Body() data: CreateProfessionalDto, @currentUser() userId: number) {
+  update(@Body() data: UpdateProfessionalDto, @currentUser() userId: number) {
     return this.profissionalsService.update(data, userId);
   }
 }

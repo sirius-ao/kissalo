@@ -34,7 +34,7 @@ export class ProfissionalsService {
   public async create(data: CreateProfessionalDto) {
     const createUserFacede = new CreateProfissionalUseCase(
       this.database,
-      this.emailService,
+      this.cache,
       this.encript,
       this.jwt,
     );

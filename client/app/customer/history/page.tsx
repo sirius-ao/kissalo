@@ -1,19 +1,29 @@
 "use client";
 
-import { ListView } from "@/app/profissional/bookings/views";
+import { ListView } from "@/app/professional/bookings/views";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { bookingsMock } from "@/mocks/bookings";
-import { Files, Paintbrush } from "lucide-react";
+import { Box, Files, Paintbrush } from "lucide-react";
 import PaymentBookingTab from "./tabs/payments";
 import { useEffect, useState } from "react";
-import { IBooking } from "@/types/interfaces";
+import { IBooking, IPayment } from "@/types/interfaces";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { BookingService } from "@/services/Booking/index.service";
 import constants from "@/constants";
 import { Loader } from "@/components/Loader";
+import { PaymentService } from "@/services/Payments/index.service";
+import { verifyArrayDisponiblity } from "@/lib/utils";
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
 export default function History() {
   const [booking, setBookings] = useState<IBooking[]>([]);
+  const [paymetnts, setPayments] = useState<IPayment[]>([]);
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
 
@@ -22,13 +32,18 @@ export default function History() {
       try {
         const token = localStorage.getItem("acess-x-token") as string;
         const bookingApi = new BookingService(token);
-        const data = await bookingApi.get();
-        if (data?.logout) {
+        const paymentngApi = new PaymentService(token);
+        const [data, dataPayments] = await Promise.all([
+          bookingApi.get(),
+          paymentngApi.get(),
+        ]);
+        if (data?.logout || dataPayments?.logout) {
           router.push("/auth/login");
           return;
         }
-        console.log(data?.data?.myBookings?.data);
+        console.log(dataPayments?.data);
         setBookings(data?.data?.myBookings?.data ?? []);
+        setPayments(dataPayments?.data?.data);
       } catch {
         toast.error("Erro ao carregar agendamentos");
       } finally {
@@ -58,10 +73,26 @@ export default function History() {
           ) : (
             <>
               <TabsContent value="services">
-                <ListView bookings={booking} />
+                {" "}
+                {verifyArrayDisponiblity(booking) ? (
+                  <ListView bookings={booking} />
+                ) : (
+                  <Empty>
+                    <EmptyHeader>
+                      <EmptyMedia variant="icon">
+                        <Box />
+                      </EmptyMedia>
+                      <EmptyTitle>Sem agendamentos</EmptyTitle>
+                      <EmptyDescription>
+                        agendamentos não encontrado , certifique de que tens a
+                        permissão para ver o mesmo e que o mesmo existe
+                      </EmptyDescription>
+                    </EmptyHeader>
+                  </Empty>
+                )}
               </TabsContent>
               <TabsContent value="payments">
-                <PaymentBookingTab />
+                <PaymentBookingTab payments={paymetnts} />
               </TabsContent>
             </>
           )}

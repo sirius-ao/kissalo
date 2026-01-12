@@ -15,6 +15,8 @@ export interface ServiceSchedule {
   location: ServiceLocation;
   address: Address;
   priority: BookingPriority;
+  fileUrl: string;
+  method: string;
 }
 export class BookingService {
   private readonly server = constants.SERVER;
@@ -28,6 +30,34 @@ export class BookingService {
           authorization: `Bearer ${this.token}`,
         },
       });
+      const res = await data.json();
+
+      if (res?.statusCode == 403) {
+        return {
+          logout: true,
+        };
+      }
+      return {
+        logout: false,
+        data: res,
+      };
+    } catch (error) {
+      return {
+        logout: false,
+      };
+    }
+  }
+  public async getById(id: number) {
+    try {
+      const data = await fetch(
+        `${this.server}/${this.version}/bookings/${id}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            authorization: `Bearer ${this.token}`,
+          },
+        }
+      );
       const res = await data.json();
 
       if (res?.statusCode == 403) {
@@ -72,7 +102,32 @@ export class BookingService {
       };
     }
   }
-  public createStep() {}
-  public getById() {}
+  public async createStep(body: { notes: string; files: string[] } , bookingId : number) {
+    try {
+      const data = await fetch(`${this.server}/${this.version}/bookings/${bookingId}/steps`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          authorization: `Bearer ${this.token}`,
+        },
+        body: JSON.stringify(body),
+      });
+      const res = await data.json();
+      if (res?.statusCode == 403) {
+        return {
+          logout: true,
+        };
+      }
+      return {
+        logout: false,
+        message: Array.isArray(res?.message) ? res?.message[0] : res?.message,
+        data: res,
+      };
+    } catch (error) {
+      return {
+        logout: false,
+      };
+    }
+  }
   public toogle() {}
 }

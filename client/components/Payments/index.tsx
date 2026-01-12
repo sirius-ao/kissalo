@@ -1,5 +1,12 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { DollarSign, Clock, CheckCircle, XCircle, File } from "lucide-react";
+import {
+  DollarSign,
+  Clock,
+  CheckCircle,
+  XCircle,
+  File,
+  Download,
+} from "lucide-react";
 import { IPayment } from "@/types/interfaces";
 import { format } from "date-fns";
 import {
@@ -122,7 +129,12 @@ export function PaymentCard({ payment }: { payment: IPayment }) {
 
       <div className="flex-row flex gap-3">
         {payment.fileUrl ? (
-          <Button className="flex-1 ">Comprovativo</Button>
+          <Button className="flex-1" asChild>
+            <Link href={payment.fileUrl} target="_blank" download={payment.fileUrl}>
+              <Download />
+              Comprovativo
+            </Link>
+          </Button>
         ) : (
           <Button
             disabled={payment.status == PaymentStatus.PAID}
@@ -132,8 +144,8 @@ export function PaymentCard({ payment }: { payment: IPayment }) {
             <File /> Anexar comprovativo
           </Button>
         )}
-        <Button asChild>
-          <Link href={`/costumer/booking/${payment.bookingId}`}>Serviço</Link>
+        <Button variant={"outline"} asChild>
+          <Link href={`/customer/booking/${payment.bookingId}`}>Serviço</Link>
         </Button>
       </div>
     </div>

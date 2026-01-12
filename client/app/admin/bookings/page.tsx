@@ -1,6 +1,6 @@
 "use client";
 
-import { TableView } from "@/app/profissional/bookings/views";
+import { TableView } from "@/app/professional/bookings/views";
 import { Loader } from "@/components/Loader";
 import { IStats, StarsCard } from "@/components/StatsCard";
 import { Button } from "@/components/ui/button";

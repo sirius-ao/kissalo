@@ -9,9 +9,8 @@ import {
   IsObject,
   IsOptional,
   IsString,
-  ValidateNested,
+  IsUrl,
 } from 'class-validator';
-import { Type } from 'class-transformer';
 import { IAddress } from '@core/shared/types';
 
 export class CreateBookingDto {
@@ -69,11 +68,20 @@ export class CreateBookingDto {
     enum: BookingPriority,
   })
   priority: BookingPriority;
+
+  @IsString()
+  @IsUrl()
+  @IsNotEmpty()
+  fileUrl: string;
+  @IsString()
+  @IsNotEmpty()
+  method: string;
 }
 
 export class CreateStepsDto {
   @IsString()
-  @IsOptional()
+  @ApiProperty()
+  @IsNotEmpty()
   notes: string;
   @ApiProperty({
     description: 'Anexos ',

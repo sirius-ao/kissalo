@@ -16,8 +16,9 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrent((prev) => (prev + 1) % images.length);
-    }, 5000); // ⏱️ 5 segundos
-
+    }, 5000);
+    localStorage.clear();
+    sessionStorage.clear();
     return () => clearInterval(interval);
   }, []);
 

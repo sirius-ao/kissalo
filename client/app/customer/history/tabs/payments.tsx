@@ -14,12 +14,10 @@ import { IPayment } from "@/types/interfaces";
 import { useEffect, useState } from "react";
 import { verifyArrayDisponiblity } from "@/lib/utils";
 import { Box } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { PaymentCard } from "@/components/Payments";
 
-export default function PaymentBookingTab() {
+export default function PaymentBookingTab({ payments}: { payments: IPayment[] }) {
   const [isLoading, setIsLoading] = useState(true);
-  const [payment, setPayment] = useState<IPayment[]>(paymentsMock);
 
   useEffect(() => {
     setTimeout(() => {
@@ -32,9 +30,9 @@ export default function PaymentBookingTab() {
         <Loader />
       ) : (
         <div>
-          {verifyArrayDisponiblity(payment) ? (
+          {verifyArrayDisponiblity(payments) ? (
             <aside className="flex flex-col gap-3">
-              {payment.map((item, idx) => (
+              {payments.map((item, idx) => (
                 <PaymentCard payment={item} key={idx} />
               ))}
             </aside>

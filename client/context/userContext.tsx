@@ -18,13 +18,11 @@ export function UserContextProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     async function getMe() {
-      const token = localStorage.getItem("acess-x-token");
-      if (!token) {
-        router.push("/auth/login");
-        return;
-      }
+      const token = localStorage.getItem("acess-x-token") as string
       const service = new AuthService();
       const data = (await service.getMe(token)) as IUser | null;
+      console.log(token)
+      console.log(data)
       if (!data?.id) {
         router.push("/auth/login");
         return;

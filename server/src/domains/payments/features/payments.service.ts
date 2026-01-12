@@ -17,15 +17,6 @@ export class PaymentsService {
     private readonly bookservice: BookingsService,
   ) {}
 
-  public async create(createPaymentDto: CreatePaymentDto, userId: number) {
-    const createPaymentFacede = new CreatePaymentUseCase(
-      this.prisma,
-      this.notifier,
-      this.bookservice,
-    );
-    return await createPaymentFacede.execute(createPaymentDto, userId);
-  }
-
   public async consolidate(
     paymentId: number,
     walleltId: number,
@@ -50,9 +41,9 @@ export class PaymentsService {
     return await updatePaymentFacede.execute(paymentId, data, userId);
   }
 
-  public async findAll(userId: number, page: number, limit: number) {
+  public async findAll(userId: number) {
     const getUsecase = new GetPaymentUseCase(this.prisma);
-    return await getUsecase.getAllMyPayments(userId, page, limit);
+    return await getUsecase.getAllMyPayments(userId);
   }
 
   public async findOne(paymentId: number, userId: number) {

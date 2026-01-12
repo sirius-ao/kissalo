@@ -291,6 +291,8 @@ export default function CreateBookingPage() {
           scheduleDate: String(startDate?.toISOString()),
           serviceId: Number(id),
           startTime: String(startDate?.toISOString()),
+          fileUrl: "https://google.com",
+          method: paymentMethod.title,
         });
         console.log(res);
         toast.success(res?.message ?? "Reserva criada com sucesso!");

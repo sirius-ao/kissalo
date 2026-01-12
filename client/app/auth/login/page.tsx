@@ -31,11 +31,6 @@ export default function Login() {
     return null;
   }
 
-  useEffect(() => {
-    localStorage.clear();
-    sessionStorage.clear();
-  }, []);
-
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);

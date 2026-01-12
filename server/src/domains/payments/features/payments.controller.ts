@@ -33,26 +33,6 @@ import { UpdatePaymentDto } from './dto/update-payment.dto';
 export class PaymentsController {
   constructor(private readonly paymentsService: PaymentsService) {}
 
-  @Post()
-  @UseGuards(IsClientGuard)
-  @ApiOperation({
-    summary: 'Criar um pagamento',
-    description:
-      'Permite que o cliente crie um pagamento para um agendamento confirmado',
-  })
-  @ApiBody({ type: CreatePaymentDto })
-  @ApiResponse({ status: 201, description: 'Pagamento criado com sucesso' })
-  @ApiResponse({
-    status: 403,
-    description: 'Apenas clientes podem criar pagamentos',
-  })
-  create(
-    @Body() createPaymentDto: CreatePaymentDto,
-    @currentUser() userId: number,
-  ) {
-    return this.paymentsService.create(createPaymentDto, userId);
-  }
-
   @Post(':id/:file/:walletId/consolidate')
   @UseGuards(IsAdminGuard)
   @ApiOperation({
@@ -91,14 +71,10 @@ export class PaymentsController {
     summary: 'Listar pagamentos',
     description: 'Lista pagamentos do usuário ou todos se for admin',
   })
-  @ApiQuery({ name: 'page', required: false, example: 1 })
-  @ApiQuery({ name: 'limit', required: false, example: 10 })
   findAll(
-    @Query('page', ParseIntPipe) page: number = 1,
-    @Query('limit', ParseIntPipe) limit: number = 10,
     @currentUser() userId: number,
   ) {
-    return this.paymentsService.findAll(userId, page, limit);
+    return this.paymentsService.findAll(userId);
   }
 
   @Get(':id')

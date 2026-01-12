@@ -37,9 +37,6 @@ export class CreateBookingStepUseCase {
       throw new ForbiddenException('Agendamento cancelado');
     }
 
-    if (booking.status == 'PENDING') {
-      throw new BadRequestException('Aguarde a aceitação');
-    }
     const isClient = booking.clientId === userId;
     const isProfessional = booking.professional?.userId === userId;
 

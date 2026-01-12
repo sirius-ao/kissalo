@@ -1,6 +1,6 @@
 import { ISocialMedia } from '@core/shared/types';
 import { ApiProperty } from '@nestjs/swagger';
-import { ProfessionalType } from '@prisma/client';
+import { ProfessionalType, UserRole } from '@prisma/client';
 import {
   ArrayNotEmpty,
   IsArray,
@@ -55,75 +55,12 @@ export class CreateProfessionalDto {
   @IsOptional()
   avatarUrl?: string;
 
-  @ApiProperty({ enum: ProfessionalType })
-  @IsEnum(ProfessionalType)
-  type: ProfessionalType;
-
-  @ApiProperty({ example: 'Desenvolvedor Fullstack' })
-  @IsString()
-  @IsNotEmpty()
-  title: string;
-
-  @ApiProperty({ example: 'Especialista em sistemas web e mobile' })
-  @IsString()
-  @IsNotEmpty()
-  description: string;
-
-  @ApiProperty({ example: 'BI123456789LA' })
-  @IsString()
-  @IsNotEmpty()
-  documentNumber: string;
-
-  @ApiProperty({ example: 5, minimum: 0, maximum: 50 })
-  @IsInt()
-  @Min(0)
-  @Max(50)
-  yearsExperience: number;
-
-  @ApiProperty({ example: ['Node.js', 'NestJS', 'React'] })
-  @IsArray()
-  @ArrayNotEmpty()
-  @IsString({ each: true })
-  specialties: string[];
-
-  @ApiProperty({ example: ['AWS Certified', 'Scrum Master'] })
-  @IsArray()
-  @IsString({ each: true })
-  certification: string[];
-
-  @ApiProperty({ required: false })
-  @IsOptional()
-  @IsUrl()
-  portfolioUrl?: string;
-
-  @ApiProperty({ required: false })
-  @IsOptional()
-  @IsUrl()
-  coverUrl?: string;
-
-  @ApiProperty({ required: false })
-  @IsOptional()
-  @IsUrl()
-  cvUrl?: string;
-
-  @ApiProperty({
-    example: ['+244923000000', '+244911000000'],
-  })
-  @IsArray()
-  @ArrayNotEmpty()
-  @IsPhoneNumber('AO', { each: true })
-  contacts: string[];
-
-  @ApiProperty({
-    example: [{ type: 'LINKEDIN', url: 'https://linkedin.com/in/joao' }],
-  })
-  @IsArray()
-  @ArrayNotEmpty()
-  socialMedia: ISocialMedia[];
+  @ApiProperty({ enum: UserRole })
+  @IsEnum(UserRole)
+  role: UserRole;
 }
 
 export class UpdateProfessionalDto {
-
   @ApiProperty({ enum: ProfessionalType })
   @IsEnum(ProfessionalType)
   type: ProfessionalType;

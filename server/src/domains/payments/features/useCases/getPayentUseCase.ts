@@ -49,10 +49,7 @@ export class GetPaymentUseCase {
 
     return payment;
   }
-  async getAllMyPayments(userId: number, page: number, limit: number) {
-    page = isNaN(page) || page == 0 ? 1 : page;
-    limit = isNaN(limit) || limit == 0 ? 10 : limit;
-    const skip = (page - 1) * limit;
+  async getAllMyPayments(userId: number) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) throw new BadRequestException('Usuário não encontrado');
     let where: Prisma.PaymentWhereInput = {};
@@ -77,7 +74,11 @@ export class GetPaymentUseCase {
               service: true,
             },
           },
-          client: true,
+          client: {
+            omit: {
+              password: true,
+            },
+          },
           professional: {
             include: {
               user: {
@@ -89,13 +90,10 @@ export class GetPaymentUseCase {
           },
           conclidation: true,
         },
-        skip,
-        take: limit,
         orderBy: { createdAt: 'desc' },
       }),
       this.prisma.payment.count({ where }),
     ]);
-    const totalPages = Math.ceil(total / limit);
     const [stats, totalAmount] = await Promise.all([
       this.prisma.payment.groupBy({
         by: ['status'],
@@ -122,14 +120,6 @@ export class GetPaymentUseCase {
         total: total,
         totalAmount: totalAmount._sum.amount ?? 0,
         ...detailedStats,
-      },
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages,
-        hasNextPage: page < totalPages,
-        hasPrevPage: page > 1,
       },
     };
   }

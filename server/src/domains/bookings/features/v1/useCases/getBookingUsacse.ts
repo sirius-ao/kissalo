@@ -38,7 +38,15 @@ export class GetBookingFacede {
             category: true,
           },
         },
-        steps: true,
+        steps: {
+          include: {
+            user: {
+              omit: {
+                password: true,
+              },
+            },
+          },
+        },
         review: true,
         payment: true,
       },

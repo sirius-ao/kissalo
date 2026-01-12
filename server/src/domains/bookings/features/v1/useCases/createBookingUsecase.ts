@@ -14,6 +14,7 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { NotificationFactory } from '@core/shared/utils/services/Notification/notification.factory';
+import { CreatePaymentUseCase } from '@domains/payments/features/useCases/createPaymentUseCase';
 
 @Injectable()
 export class CreateBookingUseFacade {
@@ -63,7 +64,6 @@ export class CreateBookingUseFacade {
           clientId: userId,
         },
       });
-
       await this.createBookingNotifications(
         prisma,
         booking,
@@ -71,10 +71,18 @@ export class CreateBookingUseFacade {
         admin,
         service,
       );
-
       return booking;
     });
 
+    await new CreatePaymentUseCase(this.database, this.notifier).execute(
+      {
+        bookingId: booking.id,
+        method: data.method,
+        fileUrl: data.fileUrl,
+        professionalId: booking.professionalId,
+      },
+      userId,
+    );
     return {
       message: 'Pedido de serviço criado com sucesso',
       id: booking.id,
@@ -118,15 +126,6 @@ export class CreateBookingUseFacade {
         throw new ProfissionalNotFoundExecption('');
       }
 
-      const canBeAdded =
-        professionalUser.professional.serviceRequests.length > 0;
-
-      if (!canBeAdded) {
-        throw new BadRequestException(
-          'O profissional não pode ser anexado, pois não está aprovado para este serviço',
-        );
-      }
-
       if (booking.professionalId) {
         throw new ConflictException(
           'Já existe um profissional atribuído a este agendamento',
@@ -148,7 +147,7 @@ export class CreateBookingUseFacade {
         where: { id: bookingId },
         data: {
           professionalId: professionalUser.professional.id,
-          status: 'CONFIRMED',
+          status: 'ACCEPTED',
         },
       });
 
@@ -280,7 +279,6 @@ export class CreateBookingUseFacade {
       data: notifications,
     });
   }
-
   private async createProfessionalAssignmentNotifications(
     prisma: any,
     booking: any,
@@ -314,7 +312,6 @@ export class CreateBookingUseFacade {
       data: notifications,
     });
   }
-
   private async sendProfessionalAssignmentNotifications(
     booking: any,
     client: User,

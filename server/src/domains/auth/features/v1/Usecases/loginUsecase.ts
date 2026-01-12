@@ -58,6 +58,7 @@ export class LoginUseCase {
           expiresIn: '1h',
         },
       ),
+      
       this.jwt.sign(
         {
           sub: user.id,

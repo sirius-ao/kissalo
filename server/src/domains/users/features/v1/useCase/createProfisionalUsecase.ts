@@ -6,17 +6,18 @@ import { UserAlreadyExistExecption } from '@core/http/erros/user.error';
 import constants from '@core/constants';
 import { JwtService } from '@nestjs/jwt';
 import { RequestActivation } from '@core/shared/utils/services/ActivationService/activation.service';
+import CacheService from '@infra/cache/cahe.service';
 
 export class CreateProfissionalUseCase {
   constructor(
     private readonly database: PrismaService,
-    private readonly emailservice: EmailServiceInterface,
+    private readonly cache: CacheService,
     private readonly encript: ICryptoInterface,
     private readonly jwt: JwtService,
   ) {}
 
   public async create(data: CreateProfessionalDto) {
-    const password = this.encript.encript(data.password);
+    const pass = this.encript.encript(data.password);
     const isAnUser = await this.database.user.findFirst({
       where: {
         OR: [
@@ -39,38 +40,67 @@ export class CreateProfissionalUseCase {
         lastName: data.lastName,
         avatarUrl: data.avatarUrl,
         isEmailVerified: true,
-        role: 'PROFESSIONAL',
+        role: data?.role == 'CUSTOMER' ? 'CUSTOMER' : 'PROFESSIONAL',
         stats: JSON.stringify(constants.STATS.PROFISSIONAL),
         phone: data.phone,
         status: 'ACTIVE',
-        password,
+        password: pass,
       },
     });
-    await this.database.professional.create({
-      data: {
-        userId: createdUser.id,
-        documentNumber: data.documentNumber,
-        type: data.type,
-        yearsExperience: data.yearsExperience,
-        averageRating: 0,
-        certifications: data.certification,
-        contacts: data.contacts,
-        cvUrl: data.cvUrl,
-        coverUrl: data.coverUrl,
-        specialties: data.specialties,
-        isVerified: true,
-        title: data.title,
-        socialMedia: JSON.stringify(data.socialMedia),
-        stats: JSON.stringify(constants.STATS.PROFISSIONAL),
-        portfolioUrl: data.portfolioUrl,
-        description: data.description,
-      },
-    });
-    const requestActivation = new RequestActivation(
-      this.database,
-      this.emailservice,
-      this.jwt,
-    );
-    return await requestActivation.request(createdUser);
+
+    if (createdUser?.role == 'PROFESSIONAL') {
+      await this.database.professional.create({
+        data: {
+          userId: createdUser.id,
+          documentNumber: '',
+          type: 'INDIVIDUAL',
+          yearsExperience: 0,
+          averageRating: 0,
+          certifications: [],
+          contacts: [],
+          cvUrl: '',
+          coverUrl: '',
+          specialties: [],
+          isVerified: true,
+          title: '',
+          socialMedia: {},
+          stats: JSON.stringify(constants.STATS.PROFISSIONAL),
+          portfolioUrl: '',
+          description: '',
+        },
+      });
+    }
+
+    const ONE_HOUR = 1000 * 60 * 60;
+    const TWO_WEEKS = 1000 * 60 * 60 * 24 * 14;
+
+    const [acessToken, refreshToken] = [
+      this.jwt.sign(
+        {
+          sub: createdUser.id,
+        },
+        {
+          expiresIn: '1h',
+        },
+      ),
+      this.jwt.sign(
+        {
+          sub: createdUser.id,
+          role: createdUser.role,
+        },
+        {
+          expiresIn: '14d',
+        },
+      ),
+    ];
+    const { password, ...userPublicData } = createdUser;
+    await Promise.all([
+      this.cache.set(`userProfile-${createdUser.id}`, userPublicData, ONE_HOUR),
+      this.cache.set(`userRefreshToken-${createdUser.id}`, refreshToken, TWO_WEEKS),
+    ]);
+    return {
+      user: userPublicData,
+      acessToken,
+    };
   }
 }

@@ -1,7 +1,16 @@
 import { IBooking, IBookingSteps } from "@/types/interfaces";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, MapPin, User, Camera, Star, Eye } from "lucide-react";
-import { columnStyles } from "@/app/profissional/bookings/views";
+import {
+  Calendar,
+  Clock,
+  MapPin,
+  User,
+  Camera,
+  Star,
+  Eye,
+  Send,
+} from "lucide-react";
+import { columnStyles } from "@/app/professional/bookings/views";
 import { Button } from "../ui/button";
 import {
   DropdownMenu,
@@ -24,7 +33,7 @@ import { verifyArrayDisponiblity } from "@/lib/utils";
 import { PaymentAvatar } from "../Payments";
 
 import { format } from "date-fns";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import {
   Dialog,
   DialogClose,
@@ -51,8 +60,10 @@ import {
   getStatusBadgeClass,
   getStatusIcon,
   priorityColorMap,
-} from "@/app/profissional/page";
+} from "@/app/professional/page";
 import { IconBrandPaypal } from "@tabler/icons-react";
+import { UserContext } from "@/context/userContext";
+import { Separator } from "@/components/ui/separator";
 
 export function BookingCard({ booking }: { booking: IBooking }) {
   const { role } = useUserRole() as { role: any };
@@ -155,7 +166,6 @@ export function BookingCard({ booking }: { booking: IBooking }) {
             {booking.canEnd ? "Liberado" : "Não liberado"}
           </Badge>
         </div>
-        {JSON.stringify(booking.payment, null, 2)}
         {role == "CUSTOMER" && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -328,15 +338,30 @@ export function BookingCard({ booking }: { booking: IBooking }) {
   );
 }
 export function BookinStepsCard({ step }: { step: IBookingSteps }) {
+  const context = useContext(UserContext);
+
+  if (!context) {
+    return;
+  }
+
+  const { user } = context;
   return (
-    <div className="grid shadow-gray-100 shadow-2xs md:grid-cols-2 p-2 rounded-sm gap-2 w-full border">
-      <span className="grid grid-cols-2 gap-1">
+    <div
+      className={clsx(
+        "grid md:grid-cols-2 p-2 rounded-sm gap-4 w-full border",
+
+        {
+          " border-orange-400  ": step.senderId !== user?.id,
+        }
+      )}
+    >
+      <span className="grid grid-cols-2 gap-2 border-b pb-3">
         {verifyArrayDisponiblity(step?.files) &&
           step.files.map((item, idx) => {
             if (idx >= 2) return null;
             return (
               <ImageHoverCard
-                adicionalClas="h-full min-h-20 rounded-sm bg-gray-100"
+                adicionalClas="h-full min-h-20 rounded-sm w-full bg-gray-100"
                 path={item}
                 key={idx}
               />
@@ -344,9 +369,23 @@ export function BookinStepsCard({ step }: { step: IBookingSteps }) {
           })}
       </span>
       <span className="flex flex-col gap-2">
-        <small>{step.notes}</small>
-        <PaymentAvatar user={step?.user} />
+        <small className="text-wrap text-xs wrap-anywhere">{step.notes}</small>
+
+        {step.senderId != user?.id && (
+          <>
+            <Separator />
+            <PaymentAvatar notColl={false} user={step?.user} />
+          </>
+        )}
+
         <small>{format(step.createdAt, "dd/MM/yyyy")} </small>
+        <Badge
+          variant={step.senderId == user?.id ? "secondary" : "default"}
+          className="place-self-end"
+        >
+          <Send />
+          {step.senderId == user?.id ? "Enviado" : "Recebido"}{" "}
+        </Badge>
       </span>
     </div>
   );
@@ -394,7 +433,7 @@ export function ImageHoverCard({
           Arquivo enviado para exlcarecimento
         </DialogDescription>
         <img
-          className="min-h-70 h-full w-full bg-gray-100 rounded-sm"
+          className="h-full w-full bg-gray-100 rounded-sm border"
           src={path}
           alt=""
         />
