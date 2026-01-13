@@ -26,6 +26,7 @@ import { UpdateBookinStatus } from './dto/update-booking.dto';
 import { currentUser } from '@core/http/decorators/currentUser.decorator';
 import { IsClientGuard } from '@core/http/guards/isClient.guard';
 import { IsEmailVerifiedGuard } from '@core/http/guards/isEmailVerifiedGuard';
+import { IsAdminGuard } from '@core/http/guards/isAdmin.guard';
 
 @ApiTags('Bookings V1')
 @ApiBearerAuth()
@@ -40,13 +41,21 @@ export class BookingsController {
     description: 'Permite que um cliente crie um novo agendamento de serviço',
   })
   @ApiBody({ type: CreateBookingDto })
-  @ApiResponse({ status: 201, description: 'Agendamento criado com sucesso' })
-  @ApiResponse({
-    status: 403,
-    description: 'Apenas clientes podem criar agendamentos',
-  })
   create(@Body() data: CreateBookingDto, @currentUser() userId: number) {
     return this.bookingsService.create(data, userId);
+  }
+
+  @Post(':id/:userid/anex')
+  @UseGuards(IsAdminGuard)
+  @ApiOperation({
+    summary: 'Anexar profissional ao serviço',
+  })
+  anex(
+    @currentUser() userId: number,
+    @Param('id', ParseIntPipe) bookingId: number,
+    @Param('userid', ParseIntPipe) userid: number,
+  ) {
+    return this.bookingsService.anex(userid, bookingId);
   }
 
   @Post(':id/steps')
@@ -55,8 +64,6 @@ export class BookingsController {
     description:
       'Permite que o cliente ou o profissional adicionem uma etapa ao agendamento',
   })
-  @ApiResponse({ status: 201, description: 'Etapa criada com sucesso' })
-  @ApiResponse({ status: 403, description: 'Sem permissão' })
   createSteps(
     @Body() data: CreateStepsDto,
     @currentUser() userId: number,

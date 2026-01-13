@@ -6,6 +6,7 @@ import { User, Lock, LogOut } from "lucide-react";
 import PersonalProfile from "@/app/professional/settings/tabs/PersonalProfile";
 import Security from "@/app/professional/settings/tabs/Security";
 import LogoutTab from "@/app/professional/settings/tabs/Logout";
+import Reviews from "@/app/professional/settings/tabs/Reviews";
 
 export default function SettingsPage() {
   return (
@@ -31,7 +32,6 @@ export default function SettingsPage() {
           <TabsContent value="personal">
             <PersonalProfile />
           </TabsContent>
-
           <TabsContent value="security">
             <Security />
           </TabsContent>

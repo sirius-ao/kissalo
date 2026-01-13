@@ -80,7 +80,7 @@ export class CreateProfissionalUseCase {
           sub: createdUser.id,
         },
         {
-          expiresIn: '1h',
+          expiresIn: '7d',
         },
       ),
       this.jwt.sign(

@@ -15,7 +15,6 @@ import { ReviewsModule } from './domains/reviews/reviews.module';
 import { PaymentsModule } from './domains/payments/payments.module';
 import { ProfissionalsModule } from './domains/users/profissionals.module';
 import { BookingsModule } from './domains/bookings/bookings.module';
-import { WalletsModule } from './domains/wallets/wallets.module';
 import { ConfigurationModule } from '@infra/config/config.module';
 import { UtilModule } from '@core/shared/utils/util.module';
 import { IsAuthenticatedMiddlware } from '@core/http/middlewares/isAuthenticated.middleware';
@@ -46,7 +45,6 @@ import { LlmsModule } from './domains/llms/llms.module';
     PaymentsModule,
     ProfissionalsModule,
     BookingsModule,
-    WalletsModule,
     ConfigurationModule,
     UtilModule,
     NotificationsModule,

@@ -86,7 +86,6 @@ export default function CreateService() {
         const data = await service.get();
 
         if (data?.logout) {
-          router.push("/auth/login");
           toast.error("Sessão expirada");
           return;
         }
@@ -167,7 +166,6 @@ export default function CreateService() {
     const data = await service.create(payload);
     console.log(data);
     if (data?.logout) {
-      router.push("/auth/login");
       toast.error("Sessão expirada");
       return;
     }
@@ -443,7 +441,6 @@ export default function CreateService() {
 
                       for (const item of data) {
                         if (item?.logout) {
-                          router.push("/auth/login");
                           toast.error("Sessão expirada");
                           return;
                         }

@@ -32,7 +32,6 @@ export default function NotificationPage() {
       const data = await apiSevice.get();
       console.log(data);
       if (data?.logout) {
-        router.push("/auth/login");
         return;
       }
       setNotification(data?.data?.data ?? []);

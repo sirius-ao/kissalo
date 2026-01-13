@@ -34,7 +34,7 @@ export class RequestRecoveryUsecase {
     );
     const now = new Date();
     now.setMinutes(now.getMinutes() + 5);
-    const activationUrl = `https://kissalo.com/reset?token=${token}`;
+    const activationUrl = `http://localhost:3000/auth/reset?token=${token}`;
     await Promise.all([
       this.database.verification.create({
         data: {

@@ -19,7 +19,6 @@ export class BookingsService {
     private readonly database: PrismaService,
     private readonly notification: NotificationFactory,
     private readonly services: ServicesService,
-    private readonly profissionalService: ProfissionalsService,
     private readonly cache: CacheService,
   ) {}
 
@@ -30,6 +29,15 @@ export class BookingsService {
       this.services,
     );
     return await createFacade.create(data, userId);
+  }
+
+  public async anex(userId: number, bookingId: number) {
+    const createFacade = new CreateBookingUseFacade(
+      this.database,
+      this.notification,
+      this.services,
+    );
+    return await createFacade.anexProfessional(bookingId, userId);
   }
 
   public async createSteps(
@@ -50,7 +58,7 @@ export class BookingsService {
       this.database,
       this.notification,
     );
-    return await liberateFacede.liberate(bookingId, userId);
+    return await liberateFacede.liberate(userId, bookingId);
   }
   public async toogle(
     data: UpdateBookinStatus,

@@ -113,6 +113,15 @@ export class GetBookingFacede {
               category: true,
             },
           },
+          professional: {
+            include: {
+              user: {
+                omit: {
+                  password: true,
+                },
+              },
+            },
+          },
           steps: true,
           review: true,
         },

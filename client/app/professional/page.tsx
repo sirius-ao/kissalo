@@ -3,7 +3,7 @@
 import DashBoardProfissional from "@/components/Charts/dashchart";
 import { IStats, StarsCard } from "@/components/StatsCard";
 import { verifyArrayDisponiblity } from "@/lib/utils";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -101,169 +101,160 @@ export const priorityColorMap: Record<BookingPriority, string> = {
   LOW: "blue",
 };
 
-export default function ProfissionalHomePage() {
-  const [bookings, setBookings] = useState<IBooking[]>(bookingsMock);
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { Search } from "lucide-react";
 
-  const [mounted, setMounted] = useState(false);
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from "@/components/ui/input-group";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
+import { Loader } from "@/components/Loader";
+import { UnJoinedServiceCard } from "@/components/Service";
+
+import constants from "@/constants";
+
+import { CategoriesService } from "@/services/Categories/index.service";
+import { ServicesService } from "@/services/Services/index.service";
+
+import { UserRole } from "@/types/enum";
+import { ICategory, IServiceTemplate } from "@/types/interfaces";
+
+export default function ServiceProfissionalPage() {
+  const router = useRouter();
+
+  const [isLoading, setIsLoading] = useState(true);
+
+  const [categories, setCategories] = useState<ICategory[]>([]);
+  const [allServices, setAllServices] = useState<IServiceTemplate[]>([]);
+
+  const [search, setSearch] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState<number | "all">("all");
+
+  /* ---------------- FETCH ---------------- */
   useEffect(() => {
-    setMounted(true);
-    setBookings(bookingsMock);
-  }, []);
+    async function loadData() {
+      try {
+        const token = localStorage.getItem("acess-x-token") as string;
 
-  if (!mounted) return null;
+        const categoriesApi = new CategoriesService(token);
+        const servicesApi = new ServicesService(token);
 
-  const stats: IStats[] = [
-    {
-      isCoin: false,
-      label: "Agendamentos recebidos na plataforma",
-      oldValue: 1000,
-      title: "Total agendamentos",
-      value: 100,
-    },
-    {
-      isCoin: true,
-      label: "Total recebido na plaforma ",
-      oldValue: 1000,
-      title: "Total facturamento",
-      value: 567100,
-    },
-    {
-      isCoin: false,
-      label: "Serviços anexados ao seu perfil",
-      oldValue: 1,
-      title: "Total servios",
-      value: 10,
-    },
-    {
-      isCoin: false,
-      label: "carteiras registradas por você",
-      oldValue: 1,
-      title: "Total carteiras",
-      value: 10,
-    },
-    {
-      isCoin: false,
-      label: "Serviços prestados e anexados ao seu perfil de profissional",
-      oldValue: 1,
-      title: "Serviços Prestados",
-      value: 10,
-    },
-    {
-      isCoin: true,
-      label: "Valor retido na plaforma",
-      oldValue: 10023,
-      title: "Pagamentos Pendentes",
-      value: 5600,
-    },
-  ];
+        const [cats, servs] = await Promise.all([
+          categoriesApi.get(),
+          servicesApi.get(),
+        ]);
+
+        if (cats?.logout || servs?.logout) {
+          toast.error("Sessão expirada");
+          return;
+        }
+
+        setCategories(cats?.data ?? []);
+        setAllServices(servs?.data ?? []);
+      } catch {
+        toast.error("Erro ao carregar serviços");
+      } finally {
+        setTimeout(() => setIsLoading(false), constants.TIMEOUT.LOADER);
+      }
+    }
+
+    loadData();
+  }, [router]);
+
+  /* ---------------- FILTRO ---------------- */
+  const filteredServices = useMemo(() => {
+    let result = [...allServices];
+
+    if (categoryFilter !== "all") {
+      result = result.filter(
+        (service) => service.categoryId === categoryFilter
+      );
+    }
+
+    if (search.trim()) {
+      const term = search.toLowerCase();
+      result = result.filter(
+        (service) =>
+          service.title.toLowerCase().includes(term) ||
+          service.description.toLowerCase().includes(term)
+      );
+    }
+
+    return result;
+  }, [allServices, categoryFilter, search]);
+
+  /* ---------------- RENDER ---------------- */
+  if (isLoading) return <Loader />;
+
   return (
-    <section className="flex flex-col gap-5">
-      <span className="lg:grid-cols-3 grid md:grid-cols-2 gap-4">
-        {verifyArrayDisponiblity(stats) &&
-          stats.map((item, idx) => <StarsCard data={item} key={idx} />)}
-      </span>
-      <DashBoardProfissional />
-      {verifyArrayDisponiblity(bookings) && (
-        <Card className="rounded-sm">
-          <CardHeader>
-            <CardTitle>Últimos agendamentos</CardTitle>
-            <CardDescription>
-              {" "}
-              ( {bookings.length} ) Agendamentos recentes recebidos{" "}
-            </CardDescription>
-          </CardHeader>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>
-                  <Checkbox />
-                </TableHead>
-                <TableHead>Cliente</TableHead>
-                <TableHead>Serviço</TableHead>
-                <TableHead>Data / Horário</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Montante</TableHead>
-                <TableHead>Prioridade</TableHead>
-                <TableHead>Ações</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {bookings.map((booking, idx) => (
-                <TableRow key={idx}>
-                  <TableCell className="flex gap-2 items-center">
-                    <Checkbox />
-                  </TableCell>
-                  <TableCell>
-                    <span className="flex items-center gap-2">
-                      <Avatar>
-                        <AvatarImage src={booking.client?.avatarUrl} />
-                        <AvatarFallback className="bg-black text-white">
-                          {(booking.client?.firstName?.charAt(0) ?? "") +
-                            (booking.client?.lastName?.charAt(0) ?? "")}
-                        </AvatarFallback>
-                      </Avatar>
-                      <span className="flex flex-col gap-1">
-                        <p>
-                          {booking.client.firstName +
-                            " " +
-                            booking.client.lastName}
-                        </p>
-                        <small>{booking?.client.email}</small>
-                      </span>
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    <span className="flex items-center gap-2">
-                      <h1>{booking.service?.title}</h1>
-                      <small>
-                        {booking.service.description?.length > 0 &&
-                          booking?.service?.description?.slice(0, 30) + "  ..."}
+    <section className="flex flex-col gap-10">
+      {/* FILTROS */}
+      <form className="w-full lg:w-[35%]">
+        <InputGroup>
+          <InputGroupInput
+            placeholder="Buscar por serviços..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+          <InputGroupAddon>
+            <Search />
+          </InputGroupAddon>
+
+          <InputGroupAddon align="inline-end">
+            <Select
+              value={String(categoryFilter)}
+              onValueChange={(value) =>
+                setCategoryFilter(value === "all" ? "all" : Number(value))
+              }
+            >
+              <SelectTrigger className="border-none shadow-none">
+                <SelectValue placeholder="Categorias" />
+              </SelectTrigger>
+
+              <SelectContent>
+                <SelectItem value="all">Todos</SelectItem>
+                {categories.map((cat) => (
+                  <SelectItem key={cat.id} value={String(cat.id)}>
+                    <div className="flex flex-col">
+                      <span>{cat.title}</span>
+                      <small className="text-xs text-muted-foreground">
+                        {cat.services?.length ?? 0} serviços
                       </small>
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    {format(booking.scheduleDate, "dd/MM/yyyy")}{" "}
-                    {format(booking.startTime, "HH:mm")} -{" "}
-                    {format(booking.endTime, "HH:mm")}
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      variant="outline"
-                      className={getStatusBadgeClass(booking.status)}
-                    >
-                      {getStatusIcon(booking.status)}
-                      {booking.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    {Number(booking.totalAmount).toLocaleString("pt")} kz
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      variant="outline"
-                      className={`bg-${
-                        priorityColorMap[booking.priority]
-                      }-500/10  border border-${
-                        priorityColorMap[booking.priority]
-                      }-500/50  text-${
-                        priorityColorMap[booking.priority]
-                      }-500 rounded-sm`}
-                    >
-                      {getPriorityIcon(booking.priority)}
-                      {getPriorityIconText(booking.priority)}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Button size="sm" variant="outline">
-                      Detalhes
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </Card>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </InputGroupAddon>
+        </InputGroup>
+      </form>
+
+      {/* LISTAGEM */}
+      {verifyArrayDisponiblity(filteredServices) ? (
+        <article className="grid lg:grid-cols-3 md:grid-cols-2 gap-4">
+          {filteredServices.map((service) => (
+            <UnJoinedServiceCard
+              key={service.id}
+              service={service}
+              role={UserRole.PROFESSIONAL}
+            />
+          ))}
+        </article>
+      ) : (
+        <div className="text-center mt-20 text-muted-foreground">
+          <h2 className="text-lg font-medium">Nenhum serviço encontrado</h2>
+          <p className="text-sm">Tente mudar os filtros ou a busca</p>
+        </div>
       )}
     </section>
   );

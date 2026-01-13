@@ -64,7 +64,6 @@ export default function CreateService() {
         ]);
 
         if (cats?.logout || srv?.logout) {
-          router.push("/auth/login");
           toast.error("Sessão expirada");
           return;
         }
@@ -141,7 +140,6 @@ export default function CreateService() {
     const res = await api.update(payload, Number(id));
 
     if (res?.logout) {
-      router.push("/auth/login");
       toast.error("Sessão expirada");
       return;
     }

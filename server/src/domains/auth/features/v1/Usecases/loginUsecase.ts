@@ -55,10 +55,10 @@ export class LoginUseCase {
           sub: user.id,
         },
         {
-          expiresIn: '1h',
+          expiresIn: '7d',
         },
       ),
-      
+
       this.jwt.sign(
         {
           sub: user.id,

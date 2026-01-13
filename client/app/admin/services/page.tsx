@@ -41,7 +41,6 @@ import Link from "next/link";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { TableViewServiceRequests } from "./_tabs/service-requests";
 import { serviceRequestsMock } from "@/mocks/service-requests";
 import { CategoriesService } from "@/services/Categories/index.service";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -53,7 +52,7 @@ export default function ServicesPage() {
   const searchParams = useSearchParams();
   const tabFromUrl = (searchParams.get("tab") as TabKey) ?? "services";
   const router = useRouter();
-  const TAB_KEYS = ["services", "categories", "requests"] as const;
+  const TAB_KEYS = ["services", "categories"] as const;
   type TabKey = (typeof TAB_KEYS)[number];
   const [processing, setProcessing] = useState(false);
   const [newCategorie, setNewCategorie] = useState<ICategory>({} as any);
@@ -82,7 +81,6 @@ export default function ServicesPage() {
         servicesService.get(),
       ]);
       if (categoriesList?.logout || serviceList?.logout) {
-        router.push("/auth/login");
         toast.error("Sessão expirada");
         return;
       }
@@ -170,14 +168,6 @@ export default function ServicesPage() {
                 >
                   <Files size={16} /> Categorias
                 </TabsTrigger>
-                <TabsTrigger
-                  onClick={() => changeTab("requests")}
-                  value="requests"
-                  className="justify-start gap-2 "
-                >
-                  <ClipboardList size={16} />
-                  Solicitações
-                </TabsTrigger>
               </div>
               <form
                 action=""
@@ -229,7 +219,6 @@ export default function ServicesPage() {
                             order: categories?.length + 1,
                           });
                           if (data?.logout) {
-                            router.push("/auth/login");
                             toast.error("Sessão expirada");
                             return;
                           }
@@ -351,21 +340,6 @@ export default function ServicesPage() {
                       }
                       categories={filteredCategories}
                     />
-                  )}
-                </FilterProvider>
-              </TabsContent>
-              <TabsContent value="requests">
-                <FilterProvider
-                  data={serviceRequests}
-                  search={search}
-                  filter={(request, search) =>
-                    includesText(request.service?.title, search) ||
-                    includesText(request.professional?.user?.email, search) ||
-                    includesText(request.professional?.user?.firstName, search)
-                  }
-                >
-                  {(filteredRequests) => (
-                    <TableViewServiceRequests requests={filteredRequests} />
                   )}
                 </FilterProvider>
               </TabsContent>

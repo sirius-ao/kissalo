@@ -16,7 +16,7 @@ export function DshBoardHeader() {
   const { user } = context;
   const href =
     role == UserRole.PROFESSIONAL
-      ? "/profissional/notifications"
+      ? "/professional/notifications"
       : role == "ADMIN"
       ? "/admin/notifications"
       : "/customer/notifications";

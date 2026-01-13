@@ -1,15 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import PrismaService from '@infra/database/prisma.service';
-import { NotificationFactory } from '@core/shared/utils/services/Notification/notification.factory';
 import { BookingStatus, NotificationType } from '@prisma/client';
 import { UpdatePaymentDto } from '../dto/update-payment.dto';
 
 @Injectable()
 export class UpdatePaymentUseCase {
-  constructor(
-    private readonly prisma: PrismaService,
-    private readonly notifier: NotificationFactory,
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   async execute(
     paymentId: number,
@@ -32,9 +28,6 @@ export class UpdatePaymentUseCase {
     });
     if (!payment) throw new NotFoundException('Pagamento não encontrado');
 
-    const PushNotifier = this.notifier.send('PUSH');
-    const EmailNotifier = this.notifier.send('EMAIL');
-
     if (updateData.status === 'REFUNDED') {
       await this.prisma.booking.update({
         where: { id: payment.bookingId },
@@ -51,45 +44,28 @@ export class UpdatePaymentUseCase {
       });
 
       const message = `O pagamento do serviço "${payment.booking.serviceId}" foi cancelado pelo admin.`;
-      const notifications = [
-        { user: payment.client, title: 'Pagamento cancelado', message },
-        {
-          user: payment.professional?.user,
+      const notifications = [{}, payment?.professional?.user?.id && {}];
+
+      await this.prisma.notification.create({
+        data: {
+          userId: payment.clientId,
+          channel: 'PUSH',
           title: 'Pagamento cancelado',
           message,
+          type: 'PAYMENT',
         },
-      ];
-
-      await Promise.all(
-        notifications.map(({ user, title, message }) =>
-          Promise.all([
-            PushNotifier.send(
-              {
-                title,
-                message,
-                type: 'PAYMENT',
-                isRead: false,
-                userId: user.id,
-                createdAt: new Date(),
-                deepLink: `/bookings/${payment.bookingId}`,
-              },
-              user,
-            ),
-            EmailNotifier.send(
-              {
-                title,
-                message,
-                type: 'PAYMENT',
-                isRead: false,
-                userId: user.id,
-                createdAt: new Date(),
-                deepLink: `/bookings/${payment.bookingId}`,
-              },
-              user,
-            ),
-          ]),
-        ),
-      );
+      });
+      if (payment?.professional) {
+        await this.prisma.notification.create({
+          data: {
+            userId: payment.professional?.userId,
+            channel: 'PUSH',
+            title: 'Pagamento cancelado',
+            message,
+            type: 'PAYMENT',
+          },
+        });
+      }
     } else {
       const clientNotification = {
         title: 'Pagamento confirmado',
@@ -109,25 +85,32 @@ export class UpdatePaymentUseCase {
         createdAt: new Date(),
         deepLink: `/bookings/${payment.bookingId}`,
       };
-      await Promise.all([
-        PushNotifier.send(clientNotification, payment.client),
-        EmailNotifier.send(clientNotification, payment.client),
-        PushNotifier.send(professionalNotification, payment.professional?.user),
-        EmailNotifier.send(
-          professionalNotification,
-          payment.professional?.user,
-        ),
-        this.prisma.user.update({
-          where: {
-            id: payment.clientId,
-          },
+      await this.prisma.notification.create({
+        data: {
+          userId: payment.clientId,
+          ...clientNotification,
+          channel: 'PUSH',
+        },
+      });
+      if (payment?.professional) {
+        await this.prisma.notification.create({
           data: {
-            amountAvaliable: {
-              increment: payment.amount,
-            },
+            userId: payment.professional?.userId,
+            ...professionalNotification,
+            channel: 'PUSH',
           },
-        }),
-      ]);
+        });
+      }
+      await this.prisma.user.update({
+        where: {
+          id: payment.clientId,
+        },
+        data: {
+          amountAvaliable: {
+            increment: payment.amount,
+          },
+        },
+      });
     }
     const updatedPayment = await this.prisma.payment.update({
       where: { id: paymentId },

@@ -27,8 +27,8 @@ export function StarsCard({ data }: { data: IStats }) {
       </header>
       <h1 className="scroll-m-20  text-2xl font-extrabold tracking-tight text-balance text-start">
         {data.isCoin
-          ? Number(data.value).toLocaleString("pt") + ".00  kz"
-          : data.value}
+          ? Number(data.value ?? 0).toLocaleString("pt") + ".00  kz"
+          : data.value ?? 0}
       </h1>
       <CardContent className="p-0 flex justify-between">
         <span className=" flex gap-3">
@@ -36,8 +36,8 @@ export function StarsCard({ data }: { data: IStats }) {
             <p className={`${color}`}>
               {color == "text-red-500" ? "-" : "+"}{" "}
               {data.isCoin
-                ? Number(data.oldValue).toLocaleString("pt") + ".00 kz"
-                : data.oldValue}{" "}
+                ? Number(data.oldValue ?? 0).toLocaleString("pt") + ".00 kz"
+                : data.oldValue ?? 0}{" "}
             </p>
             <p>nas últimas semanas</p>
           </div>

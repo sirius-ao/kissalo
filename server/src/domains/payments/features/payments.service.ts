@@ -14,19 +14,14 @@ export class PaymentsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly notifier: NotificationFactory,
-    private readonly bookservice: BookingsService,
   ) {}
 
-  public async consolidate(
-    paymentId: number,
-    walleltId: number,
-    fileUrl: string,
-  ) {
+  public async consolidate(paymentId: number) {
     const consolidateFacede = new CreateConciliationUsecase(
       this.prisma,
       this.notifier,
     );
-    return await consolidateFacede.create(paymentId, walleltId, fileUrl);
+    return await consolidateFacede.create(paymentId);
   }
 
   public async update(
@@ -34,10 +29,7 @@ export class PaymentsService {
     userId: number,
     paymentId: number,
   ) {
-    const updatePaymentFacede = new UpdatePaymentUseCase(
-      this.prisma,
-      this.notifier,
-    );
+    const updatePaymentFacede = new UpdatePaymentUseCase(this.prisma);
     return await updatePaymentFacede.execute(paymentId, data, userId);
   }
 

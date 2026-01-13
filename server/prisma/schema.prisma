@@ -154,7 +154,6 @@ model Professional {
   user               User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   serviceRequests    ProfessionalServiceRequest[]
   bookings           Booking[]         @relation("ProfessionalBookings")
-  wallets            Wallet[]
   reviews            Review[]
   payments           Payment[]
   docs ProfessionalDocument[]
@@ -259,7 +258,7 @@ model Booking {
   createdAt        DateTime        @default(now())
   updatedAt        DateTime        @updatedAt
   canceledAt  DateTime?
-  cancelReason  DateTime?
+  cancelReason  String?
   startedAt  DateTime?
   completedAt  DateTime?
   client           User            @relation("ClientBookings", fields: [clientId], references: [id], onDelete: Cascade)
@@ -306,30 +305,15 @@ model Payment {
   conclidation ConcliationPayment?
 }
 
-model Wallet {
-  id               Int        @id @default(autoincrement())
-  professionalId   Int
-  bankName         String
-  accountNumber    String     @unique
-  accountHolder    String
-  isActive         Boolean    @default(true)
-  isVerified       Boolean    @default(false)
-  createdAt        DateTime   @default(now())
-  updatedAt        DateTime   @updatedAt
-  professional     Professional @relation(fields: [professionalId], references: [id], onDelete: Cascade)
-  conclidation ConcliationPayment[]
-}
 
 
 model ConcliationPayment {
   id             Int           @id @default(autoincrement())
   paymentId Int @unique
   userId Int
-  waaletId Int
   fileUrl String?
   payment Payment @relation( fields: [paymentId] ,references: [id], onDelete: Cascade)
   profissional         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  wallet Wallet @relation(fields: [waaletId] , references: [id] , onDelete: Cascade)
   
 }
 

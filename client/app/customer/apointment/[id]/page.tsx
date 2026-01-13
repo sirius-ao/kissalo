@@ -125,7 +125,6 @@ export default function CreateBookingPage() {
         const servicesApi = new ServicesService(token);
         const [servs] = await Promise.all([servicesApi.getById(Number(id))]);
         if (servs?.logout) {
-          router.push("/auth/login");
           toast.error("Sessão expirada");
           return;
         }

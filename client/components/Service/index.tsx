@@ -143,44 +143,11 @@ export function UnJoinedServiceCard({
             ) : (
               <>
                 {!autoHigth && (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant={"outline"}>
-                        Detalhes
-                        <EllipsisVertical />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent className="w-56" align="start">
-                      <DropdownMenuGroup>
-                        <Link href={`/services/${service.id}`} prefetch>
-                          <DropdownMenuItem>
-                            Detalhes
-                            <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
-                          </DropdownMenuItem>
-                        </Link>
-                        {role === UserRole.PROFESSIONAL && (
-                          <DropdownMenuItem>
-                            Anexar Serviço
-                            <DropdownMenuShortcut>⇧⌘A</DropdownMenuShortcut>
-                          </DropdownMenuItem>
-                        )}
-                      </DropdownMenuGroup>
-                      {role === UserRole.ADMIN && (
-                        <>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem>
-                            Adicionar Profissional
-                            <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem>
-                            Remover Serviço
-                            <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
-                          </DropdownMenuItem>
-                        </>
-                      )}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                  <Button variant={"outline"} asChild>
+                    <Link href={`/services/${service.id}`} prefetch>
+                      Detalhes
+                    </Link>
+                  </Button>
                 )}
               </>
             )}

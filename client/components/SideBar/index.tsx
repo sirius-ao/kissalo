@@ -39,23 +39,6 @@ export function SideBar() {
   const [active, setActive] = useState(
     defaultActived == -1 ? 0 : defaultActived
   );
-  const message =
-    role == UserRole.PROFESSIONAL
-      ? {
-          title: "Gerencie seus agendamentos",
-          to: "",
-          active: 2,
-          message:
-            "Aceite ou começe agora executando as tarefas que lhe foi atribuido",
-          btnLabel: "Agendamentos",
-        }
-      : {
-          title: "Seja bemvindo novamente",
-          to: "",
-          active: 2,
-          message: "Desamos lhe um bom dia e deixe o restante com a Kissalo",
-          btnLabel: "Bemvindo",
-        };
 
   useEffect(() => {
     const defaultActived = nav.findIndex((item) => {
@@ -93,23 +76,6 @@ export function SideBar() {
         </ul>
         <Separator />
         <span className="w-full flex flex-col gap-5 ">
-          {role != UserRole.ADMIN && (
-            <Card className="rounded-sm px-2 py-4 gap-3 shadow-none border-none">
-              <CardTitle>{message.title}</CardTitle>
-              <CardContent className="p-0">
-                <CardDescription>{message.message}</CardDescription>
-              </CardContent>
-
-              <Button
-                size={"lg"}
-                className="bg-linear-to-r shadow-2xl from-[#161615f2] to-[#434242f5] text-white"
-              >
-                {message.btnLabel}
-                <UserPen />
-              </Button>
-            </Card>
-          )}
-
           <div className="flex bottom-10 left-2 absolute gap-2 p-2 rounded-sm border-black/4 w-[93%]  items-center border justify-between">
             <div className="flex gap-2 ">
               <Avatar>

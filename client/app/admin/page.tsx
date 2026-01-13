@@ -78,7 +78,6 @@ export default function HomePage() {
       const data = await serviceApi.get();
 
       if (data?.logout) {
-        router.push("/auth/login");
         return;
       }
       if (verifyArrayDisponiblity(data?.data)) {

@@ -97,6 +97,9 @@ export class CreateBookingUseFacade {
     return await this.database.$transaction(async (prisma) => {
       const booking = await prisma.booking.findFirst({
         where: { id: bookingId },
+        include: {
+          payment: true,
+        },
       });
 
       if (!booking) {
@@ -148,6 +151,13 @@ export class CreateBookingUseFacade {
         data: {
           professionalId: professionalUser.professional.id,
           status: 'ACCEPTED',
+          payment: {
+            update: {
+              data: {
+                professionalId: professionalUser.professional.id,
+              },
+            },
+          },
         },
       });
 

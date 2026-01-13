@@ -1,6 +1,13 @@
 import { IBooking, IBookingSteps } from "@/types/interfaces";
 import { Badge } from "@/components/ui/badge";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Calendar,
   Clock,
   MapPin,
@@ -9,6 +16,11 @@ import {
   Star,
   Eye,
   Send,
+  Loader2,
+  TrendingUp,
+  CheckCheck,
+  AlertCircle,
+  Check,
 } from "lucide-react";
 import { columnStyles } from "@/app/professional/bookings/views";
 import { Button } from "../ui/button";
@@ -64,19 +76,19 @@ import {
 import { IconBrandPaypal } from "@tabler/icons-react";
 import { UserContext } from "@/context/userContext";
 import { Separator } from "@/components/ui/separator";
+import { BookingService } from "@/services/Booking/index.service";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { ReviewServices } from "@/services/Review/index.service";
 
 export function BookingCard({ booking }: { booking: IBooking }) {
   const { role } = useUserRole() as { role: any };
-
+  const router = useRouter();
   const [rating, setRating] = useState(0);
-  const [images, setImages] = useState<string[]>([]);
+  const [notes, setNotes] = useState("");
+  const [status, setStatus] = useState<BookingStatus | null>(null);
 
-  const handleImageUpload = (e: any) => {};
-
-  const removeImage = (index: number) => {
-    const newImages = images.filter((_, i) => i !== index);
-    setImages(newImages);
-  };
+  const [processing, setProcessing] = useState(false);
   const href =
     role == "PROFISSIONAL"
       ? "/profissional/bookings"
@@ -89,15 +101,14 @@ export function BookingCard({ booking }: { booking: IBooking }) {
     PROFESSIONAL_HOME: "Casa do profissional",
     PROFESSIONAL_SPACE: "Estabelecimento do Profissional",
   };
-  const style = columnStyles[booking.status];
   return (
     <div className="flex flex-col gap-3 border rounded-md p-3 shadow-sm bg-background hover:shadow-md transition">
       <div className="flex justify-between items-start">
         <div className="flex flex-col gap-3">
-          <p className="font-semibold leading-tight">{booking.service.title}</p>
           {role != "CUSTOMER" && (
             <PaymentAvatar user={booking?.client} notColl={false} />
           )}
+          <p className="font-semibold leading-tight">{booking.service.title}</p>
           <small className="text-xs text-shadow-neutral-300 -mt-2">
             {booking?.service?.description}
             {booking?.service?.shortDescription}
@@ -116,19 +127,20 @@ export function BookingCard({ booking }: { booking: IBooking }) {
       <div className="flex flex-col gap-1 text-xs text-muted-foreground">
         <span className="flex items-center gap-1">
           <Calendar size={12} />
-          {new Date(booking.scheduleDate).toLocaleDateString()}
+          {new Date(booking.scheduleDate).toDateString()}
         </span>
 
         <span className="flex items-center gap-1">
-          <Clock size={12} />
-          {new Date(booking.startTime).toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-          })}
-          {new Date(booking.endTime).toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-          })}
+          <Clock className="text-blue-500" size={12} />
+          {new Date(booking.startTime).toLocaleDateString()}
+        </span>
+        <span className="flex items-center gap-1">
+          <Clock className="text-indigo-500" size={12} />
+          {new Date(booking.endTime).toLocaleDateString()}
+        </span>
+        <span className="flex items-center gap-1">
+          <Star className="text-amber-500" size={12} />
+          {!!booking?.review ? "Avalidado" : "Não avaliado"}
         </span>
 
         <span className="flex items-center gap-1">
@@ -143,7 +155,7 @@ export function BookingCard({ booking }: { booking: IBooking }) {
         </span>
       </div>
 
-      <div className="flex justify-between  mt-2">
+      <div className="flex  justify-between flex-wrap gap-4  mt-2">
         <div className="flex items-center gap-2 text-xs">
           {" "}
           <Badge
@@ -172,16 +184,39 @@ export function BookingCard({ booking }: { booking: IBooking }) {
               <Button
                 disabled={
                   booking.status == BookingStatus.CANCELED ||
-                  booking.status == BookingStatus.REJECTED
+                  booking.status == BookingStatus.REJECTED ||
+                  (booking.status == BookingStatus.COMPLETED &&
+                    !!booking?.review)
                 }
               >
-                Acções
+                {processing ? <Loader2 className="animate-spin" /> : "Acções"}
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56" align="start">
               <DropdownMenuRadioGroup>
                 {!booking.canEnd && (
-                  <DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={async () => {
+                      setProcessing(true);
+                      const token = localStorage.getItem(
+                        "acess-x-token"
+                      ) as string;
+                      const bookingApi = new BookingService(token);
+                      const data = await bookingApi.liberate(booking.id);
+                      if (data?.logout) {
+                        return;
+                      }
+                      if (data?.updated) {
+                        toast.success("Liberado com sucesso");
+                        setTimeout(() => {
+                          location.reload();
+                        }, 1000);
+                      } else {
+                        toast.error(data?.message ?? "Erro ao liberar");
+                      }
+                      setProcessing(false);
+                    }}
+                  >
                     <IconBrandPaypal />
                     Liberar
                     <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
@@ -218,90 +253,155 @@ export function BookingCard({ booking }: { booking: IBooking }) {
                       </DropdownMenuPortal>
                     </DropdownMenuSub>
                   </DropdownMenuGroup>
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button
+                        disabled={booking.review?.id ? true : false}
+                        variant="outline"
+                        className="w-full mt-2"
+                      >
+                        {booking.review?.id ? (
+                          "Alaiado"
+                        ) : (
+                          <>
+                            <Star className="text-amber-500" />
+                            Avaliar
+                          </>
+                        )}
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <form
+                        onSubmit={async (e) => {
+                          e.preventDefault();
+                          setProcessing(true);
+                          const token = localStorage.getItem(
+                            "acess-x-token"
+                          ) as string;
+
+                          const reviewApi = new ReviewServices(token);
+
+                          const data = await reviewApi.create({
+                            bookingId: booking.id,
+                            comment: notes,
+                            rating,
+                          });
+
+                          if (data?.logout) {
+                            toast.error("Sessão expirada");
+                            return;
+                          }
+
+                          toast.info(
+                            data?.message ??
+                              data?.data?.message ??
+                              data?.data?.sucess
+                              ? "Avalação criada"
+                              : "Avaliação não criada"
+                          );
+                          console.log(data);
+                          if (data?.data?.sucess) {
+                            setTimeout(() => {
+                              location.reload();
+                            }, 1000);
+                          }
+                          setProcessing(false);
+                        }}
+                      >
+                        <DialogHeader>
+                          <DialogTitle>Avaliar Serviço</DialogTitle>
+                          <DialogDescription>
+                            Compartilhe sua experiência. Sua avaliação ajuda
+                            outros usuários.
+                          </DialogDescription>
+                        </DialogHeader>
+                        <div className="grid gap-4 py-4">
+                          <div className="grid gap-3">
+                            <Label htmlFor="rating">Avaliação</Label>
+                            <div className="grid grid-cols-5 gap-2">
+                              {[1, 2, 3, 4, 5].map((star) => (
+                                <button
+                                  key={star}
+                                  type="button"
+                                  onClick={() => setRating(star)}
+                                >
+                                  {star <= rating ? (
+                                    <Star
+                                      className="fill-amber-500 text-amber-500"
+                                      size={33}
+                                    />
+                                  ) : (
+                                    <Star
+                                      className="text-gray-300  text-3xl"
+                                      size={33}
+                                    />
+                                  )}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+                          <div className="grid gap-3">
+                            <Label htmlFor="comment">Comentário</Label>
+                            <Textarea
+                              id="comment"
+                              name="comment"
+                              rows={4}
+                              className=" resize-none"
+                              value={notes}
+                              required
+                              placeholder="Conte mais sobre sua experiência..."
+                              maxLength={500}
+                              onChange={(e) => {
+                                setNotes(e.target.value);
+                              }}
+                            />
+                            <div className="text-xs text-gray-500 text-right">
+                              Máximo de 500 caracteres
+                            </div>
+                          </div>
+                        </div>
+                        <DialogFooter className="grid grid-cols-2 gap-2">
+                          <DialogClose asChild>
+                            <Button type="button" variant="outline">
+                              Cancelar
+                            </Button>
+                          </DialogClose>
+                          <Button
+                            type="submit"
+                            className="bg-amber-500 hover:bg-amber-600"
+                            disabled={processing}
+                          >
+                            {processing ? (
+                              <Loader2 className="animate-spin" />
+                            ) : (
+                              <>
+                                <Star className="h-4 w-4 mr-2" />
+                                Publicar Avaliação
+                              </>
+                            )}
+                          </Button>
+                        </DialogFooter>
+                      </form>
+                    </DialogContent>
+                  </Dialog>
                 </>
               )}
-              <Dialog>
-                <form>
-                  <DialogTrigger asChild>
-                    <Button variant="outline" className="w-full mt-2">
-                      <Star className="text-amber-500" />
-                      Avaliar
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="sm:max-w-[400px]">
-                    <DialogHeader>
-                      <DialogTitle>Avaliar Serviço</DialogTitle>
-                      <DialogDescription>
-                        Compartilhe sua experiência. Sua avaliação ajuda outros
-                        usuários.
-                      </DialogDescription>
-                    </DialogHeader>
-                    <div className="grid gap-4 py-4">
-                      <div className="grid gap-3">
-                        <Label htmlFor="rating">Avaliação</Label>
-                        <div className="grid grid-cols-5 gap-2">
-                          {[1, 2, 3, 4, 5].map((star) => (
-                            <button
-                              key={star}
-                              type="button"
-                              onClick={() => setRating(star)}
-                            >
-                              {star <= rating ? (
-                                <Star
-                                  className="fill-amber-500 text-amber-500"
-                                  size={33}
-                                />
-                              ) : (
-                                <Star
-                                  className="text-gray-300  text-3xl"
-                                  size={33}
-                                />
-                              )}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div className="grid gap-3">
-                        <Label htmlFor="comment">Comentário</Label>
-                        <Textarea
-                          id="comment"
-                          name="comment"
-                          rows={4}
-                          className=" resize-none"
-                          placeholder="Conte mais sobre sua experiência..."
-                          maxLength={500}
-                        />
-                        <div className="text-xs text-gray-500 text-right">
-                          Máximo de 500 caracteres
-                        </div>
-                      </div>
-                    </div>
-                    <DialogFooter className="grid grid-cols-2 gap-2">
-                      <DialogClose asChild>
-                        <Button type="button" variant="outline">
-                          Cancelar
-                        </Button>
-                      </DialogClose>
-                      <Button
-                        type="submit"
-                        className="bg-amber-500 hover:bg-amber-600"
-                      >
-                        <Star className="h-4 w-4 mr-2" />
-                        Publicar Avaliação
-                      </Button>
-                    </DialogFooter>
-                  </DialogContent>
-                </form>
-              </Dialog>
             </DropdownMenuContent>
           </DropdownMenu>
         )}
-
-        {role == "PROFISSIONAL" && (
+        {role == "PROFESSIONAL" && (
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button>Acções</Button>
+            <DropdownMenuTrigger className="flex-1" asChild>
+              <Button
+                disabled={
+                  booking.status == BookingStatus.CANCELED ||
+                  booking.status == BookingStatus.REJECTED ||
+                  booking.status == BookingStatus.COMPLETED
+                }
+              >
+                {processing ? <Loader2 className="animate-spin" /> : "Acções"}
+              </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56" align="start">
               <DropdownMenuRadioGroup>
@@ -312,6 +412,7 @@ export function BookingCard({ booking }: { booking: IBooking }) {
                   </DropdownMenuItem>
                 </Link>
               </DropdownMenuRadioGroup>
+
               <DropdownMenuSeparator />
               <DropdownMenuGroup>
                 <DropdownMenuSub>
@@ -330,6 +431,117 @@ export function BookingCard({ booking }: { booking: IBooking }) {
                   </DropdownMenuPortal>
                 </DropdownMenuSub>
               </DropdownMenuGroup>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button
+                    disabled={booking.status == BookingStatus.COMPLETED}
+                    variant="outline"
+                    className="w-full mt-2"
+                  >
+                    <TrendingUp className="text-amber-500" />
+                    Alterar estado
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[400px]">
+                  <DialogHeader>
+                    <DialogTitle>Mude o estado do agendamento</DialogTitle>
+                    <DialogDescription>
+                      Mude o estado do serviço conforme
+                    </DialogDescription>
+                  </DialogHeader>
+
+                  <form
+                    onSubmit={async (e) => {
+                      e.preventDefault();
+                      if (status == BookingStatus.CANCELED && !notes) {
+                        return toast.error("Prence o motivo");
+                      }
+
+                      setProcessing(true);
+                      const token = localStorage.getItem(
+                        "acess-x-token"
+                      ) as string;
+                      const bookingApi = new BookingService(token);
+                      const data = await bookingApi.toogle(
+                        {
+                          files: [],
+                          notes:
+                            status == BookingStatus.CANCELED
+                              ? notes
+                              : "Alteração feita pelos propreitarios do agendamento",
+                          status: status as any,
+                        },
+                        booking.id
+                      );
+                      if (data?.logout) {
+                        return;
+                      }
+                      console.log(data);
+                      toast.info(data?.message ?? "Serviço modificado");
+                      setProcessing(false);
+                    }}
+                    className="flex flex-col gap-4"
+                  >
+                    <Label>Estado</Label>
+                    <Select
+                      onValueChange={(e: BookingStatus) => {
+                        setStatus(e);
+                      }}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue
+                          placeholder="Filtrar"
+                          className="text-white placeholder:text-white "
+                        />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todos</SelectItem>
+                        {booking.status == BookingStatus.ACCEPTED && (
+                          <SelectItem value="STARTED">
+                            <Loader2 size={100} className="animate-spin" />
+                            Em progresso
+                          </SelectItem>
+                        )}
+                        {booking.status == BookingStatus.STARTED &&
+                          booking.canEnd && (
+                            <SelectItem value="COMPLETED">
+                              <Check />
+                              Finalizar
+                            </SelectItem>
+                          )}
+
+                        <SelectItem value="CANCELED">
+                          <AlertCircle size={100} />
+                          Cancelar
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+
+                    {status == BookingStatus.CANCELED && (
+                      <>
+                        <Label>Mótivo</Label>
+                        <Input
+                          required
+                          onChange={(e) => {
+                            setNotes(e.target.value);
+                          }}
+                          placeholder="motivo da mudança de estado"
+                        />
+                      </>
+                    )}
+                    <DialogFooter className="grid grid-cols-2 gap-2">
+                      <DialogClose asChild>
+                        <Button type="button" variant="outline">
+                          Cancelar
+                        </Button>
+                      </DialogClose>
+                      <Button type="submit" disabled={processing}>
+                        {processing ? <Loader2 /> : "Alterar"}
+                      </Button>
+                    </DialogFooter>
+                  </form>
+                </DialogContent>
+              </Dialog>
             </DropdownMenuContent>
           </DropdownMenu>
         )}
@@ -347,15 +559,9 @@ export function BookinStepsCard({ step }: { step: IBookingSteps }) {
   const { user } = context;
   return (
     <div
-      className={clsx(
-        "grid md:grid-cols-2 p-2 rounded-sm gap-4 w-full border",
-
-        {
-          " border-orange-400  ": step.senderId !== user?.id,
-        }
-      )}
+      className={clsx("grid md:grid-cols-2 p-2 rounded-sm gap-4 w-full border")}
     >
-      <span className="grid grid-cols-2 gap-2 border-b pb-3">
+      <span className="grid grid-cols-2 gap-2 pb-3">
         {verifyArrayDisponiblity(step?.files) &&
           step.files.map((item, idx) => {
             if (idx >= 2) return null;

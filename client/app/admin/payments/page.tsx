@@ -18,7 +18,15 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Eye, PlusCircle, Check, X } from "lucide-react";
+import {
+  MoreHorizontal,
+  Eye,
+  PlusCircle,
+  Check,
+  X,
+  Download,
+  Loader2,
+} from "lucide-react";
 import Link from "next/link";
 import { IPayment } from "@/types/interfaces";
 import { PaymentStatus } from "@/types/enum";
@@ -26,18 +34,72 @@ import { Loader } from "@/components/Loader";
 import { IStats, StarsCard } from "@/components/StatsCard";
 import constants from "@/constants";
 import { verifyArrayDisponiblity } from "@/lib/utils";
-import { paymentsMock } from "@/mocks/payments";
 import { Checkbox } from "@/components/ui/checkbox";
-
+import { useRouter } from "next/navigation";
+import { PaymentService } from "@/services/Payments/index.service";
+import { toast } from "sonner";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import clsx from "clsx";
 export default function PaymentsPage() {
   const [search, setSearch] = useState("");
-  const [payments, setOayments] = useState<IPayment[]>(paymentsMock);
   const [filteredPayments, setFilteredPayments] = useState<IPayment[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [payments, setPayments] = useState<IPayment[]>([]);
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(true);
+  const [stats, setStats] = useState<IStats[]>([]);
+  const [status, setStaus] = useState<"PAID" | "REFUNDED">("PAID");
+  const [open, setOpen] = useState(false);
+  const [id, setId] = useState(0);
+  const [notes, setNotes] = useState("");
+  const [reload, setReload] = useState(false);
+  const [processing, setProcessing] = useState(false);
 
   useEffect(() => {
-    setTimeout(() => setLoading(false), constants.TIMEOUT.LOADER);
-  }, []);
+    async function loadData() {
+      try {
+        const token = localStorage.getItem("acess-x-token") as string;
+        const paymentngApi = new PaymentService(token);
+        const [dataPayments] = await Promise.all([paymentngApi.get()]);
+        if (dataPayments?.logout) {
+          return;
+        }
+        console.log(dataPayments?.data);
+        setPayments(dataPayments?.data?.data);
+        if (dataPayments?.data?.stats) {
+          setStats([
+            {
+              isCoin: false,
+              label: "pagamentos",
+              oldValue: dataPayments?.data?.stats?.total,
+              title: "Total Pagamentos",
+              value: dataPayments?.data?.stats?.total,
+            },
+            {
+              isCoin: false,
+              label: "Pendências",
+              oldValue: dataPayments?.data?.stats?.pending,
+              title: "Pendências",
+              value: dataPayments?.data?.stats?.pending,
+            },
+          ]);
+        }
+      } catch {
+        toast.error("Erro ao carregar agendamentos");
+      } finally {
+        setTimeout(() => setIsLoading(false), constants.TIMEOUT.LOADER);
+      }
+    }
+
+    loadData();
+  }, [router, reload]);
 
   useEffect(() => {
     setFilteredPayments(
@@ -56,45 +118,12 @@ export default function PaymentsPage() {
     );
   }, [payments, search]);
 
-  // Calculando stats
-  const stats: IStats[] = [
-    {
-      isCoin: true,
-      label: "Total de pagamentos",
-      oldValue: 0,
-      title: "Pagamentos",
-      value: payments.length,
-    },
-    {
-      isCoin: true,
-      label: "Pagamentos pagos",
-      oldValue: 0,
-      title: "Pagos",
-      value: payments.filter((p) => p.status === PaymentStatus.PAID).length,
-    },
-    {
-      isCoin: true,
-      label: "Pagamentos pendentes",
-      oldValue: 0,
-      title: "Pendentes",
-      value: payments.filter((p) => p.status === PaymentStatus.PENDING).length,
-    },
-    {
-      isCoin: true,
-      label: "Pagamentos consolidados",
-      oldValue: 0,
-      title: "Consolidados",
-      value: payments.filter((p) => p.conclidation).length,
-    },
-  ];
-
-  if (loading) return <Loader />;
+  if (isLoading) return <Loader />;
 
   return (
     <section className="space-y-6">
-
       {/* STATS */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2  gap-4">
         {verifyArrayDisponiblity(stats) &&
           stats.map((stat, idx) => <StarsCard key={idx} data={stat} />)}
       </div>
@@ -110,19 +139,89 @@ export default function PaymentsPage() {
         />
       </div>
 
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogTrigger></DialogTrigger>
+        <DialogContent>
+          <DialogTitle>
+            {status == "PAID" ? "Aprovação" : "Reprovação"} do pagamento
+          </DialogTitle>
+          <DialogDescription>
+            Informe o motivo pelo qual estas a executar esta acção
+          </DialogDescription>
+
+          <form
+            onSubmit={async (e) => {
+              e.preventDefault();
+              if (!id || id == 0) {
+                toast.info("Seleciona o pagamento");
+                return;
+              }
+              setProcessing(true);
+              const token = localStorage.getItem("acess-x-token") as string;
+              const paymentngApi = new PaymentService(token);
+              const [dataPayments] = await Promise.all([
+                paymentngApi.update(
+                  id,
+                  status,
+                  !notes && status == "PAID" ? "Pagamento confirmado" : notes
+                ),
+              ]);
+              if (dataPayments?.logout) {
+                return;
+              }
+              console.log(dataPayments?.data);
+              if (dataPayments?.data?.id) {
+                toast.info("Pagamento actualizado");
+              } else {
+                toast.info(
+                  dataPayments?.data?.message ?? "Pagamento actualizado"
+                );
+              }
+              setProcessing(false);
+              setReload((prev) => !prev);
+            }}
+            className="flex flex-col gap-3"
+          >
+            <Label>Título</Label>
+            <Input
+              required={status == "PAID" ? false : true}
+              placeholder="nota informativa"
+              onChange={(e) => {
+                setNotes(e.target.value);
+              }}
+            />{" "}
+            <div
+              className={clsx(
+                "flex flex-col justify-center items-center text-center border rounded-sm p-2 text-sm ",
+                {
+                  "bg-green-500/5 border-green-500 text-green-500":
+                    status == "PAID",
+                  "bg-red-500/5 border-red-500 text-red-500":
+                    status == "REFUNDED",
+                }
+              )}
+            >
+              {status == "PAID" ? "Aprovação" : "Reprovação"}
+            </div>
+            <Button disabled={processing} onClick={() => {}}>
+              {processing ? <Loader2 className="animate-spin" /> : "Actualizar"}
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
+
       {/* TABLE */}
       <div className="rounded-lg border overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>
-                <Checkbox />
-              </TableHead>
               <TableHead>Cliente</TableHead>
               <TableHead>Serviço</TableHead>
               <TableHead>Profissional</TableHead>
               <TableHead>Status</TableHead>
+              <TableHead>Consolidação</TableHead>
               <TableHead>Valor</TableHead>
+              <TableHead>Comprovante</TableHead>
               <TableHead className="text-right">Ações</TableHead>
             </TableRow>
           </TableHeader>
@@ -136,10 +235,6 @@ export default function PaymentsPage() {
 
               return (
                 <TableRow key={payment.id}>
-                  <TableCell>
-                    <Checkbox />
-                  </TableCell>
-                  {/* CLIENTE */}
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <Avatar>
@@ -167,18 +262,14 @@ export default function PaymentsPage() {
                         {payment.booking.service.title}
                       </p>
                       <p className="text-sm text-muted-foreground line-clamp-1">
-                        {payment.booking.service.description?.slice(0, 40)}...
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        Valor: {payment.amount.toLocaleString()}{" "}
-                        {payment.currency}
+                        {payment.booking.service.description?.slice(0, 50)}...
                       </p>
                     </div>
                   </TableCell>
 
                   {/* PROFISSIONAL */}
                   <TableCell>
-                    {payment.professional && (
+                    {payment.professional ? (
                       <div className="flex items-center gap-2">
                         <Avatar>
                           <AvatarImage
@@ -199,6 +290,10 @@ export default function PaymentsPage() {
                           </p>
                         </div>
                       </div>
+                    ) : (
+                      <p className="text-red-500 text-xs">
+                        Sem profissional anexado
+                      </p>
                     )}
                   </TableCell>
 
@@ -217,25 +312,76 @@ export default function PaymentsPage() {
                     </Badge>
                   </TableCell>
 
+                  <TableCell>
+                    {payment?.conclidation ? (
+                      <Badge>Consolidado</Badge>
+                    ) : (
+                      <Button
+                        disabled={
+                          payment.conclidation?.id
+                            ? true
+                            : false ||
+                              payment.status == PaymentStatus.REFUNDED ||
+                              processing
+                        }
+                        onClick={async () => {
+                          setProcessing(true);
+                          const token = localStorage.getItem(
+                            "acess-x-token"
+                          ) as string;
+                          const paymentngApi = new PaymentService(token);
+                          const [dataPayments] = await Promise.all([
+                            paymentngApi.consolidate(payment.id),
+                          ]);
+                          if (dataPayments?.logout) {
+                            return;
+                          }
+                          console.log(dataPayments?.data);
+                          toast.success(
+                            dataPayments?.data?.message ?? "Erro ao consolidar"
+                          );
+                          setProcessing(false);
+                          setTimeout(() => {
+                            location.reload();
+                          }, 10000);
+                        }}
+                      >
+                        {processing ? (
+                          <Loader2 className="animate-spin" />
+                        ) : (
+                          "Consolidar"
+                        )}
+                      </Button>
+                    )}
+                  </TableCell>
                   {/* VALOR */}
                   <TableCell>
                     {payment.amount.toLocaleString()} {payment.currency}
                   </TableCell>
+                  <TableCell>
+                    <Button variant={"secondary"} asChild>
+                      <Link
+                        href={payment?.fileUrl as string}
+                        download={payment?.fileUrl}
+                        target="_blank"
+                      >
+                        <Download />
+                        Baixar
+                      </Link>
+                    </Button>
+                  </TableCell>
 
-                  {/* AÇÕES */}
                   <TableCell className="text-right">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button>Acções</Button>
+                        <Button
+                          disabled={payment?.status != PaymentStatus.PENDING}
+                        >
+                          Acções
+                        </Button>
                       </DropdownMenuTrigger>
 
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem asChild>
-                          <Link href={`payments/${payment.id}`}>
-                            <Eye className="mr-2 h-4 w-4" /> Ver detalhes
-                          </Link>
-                        </DropdownMenuItem>
-
+                      <DropdownMenuContent>
                         {canCreateConsolidation && (
                           <DropdownMenuItem asChild>
                             <Link href={`payments/consolidation/${payment.id}`}>
@@ -245,7 +391,6 @@ export default function PaymentsPage() {
                           </DropdownMenuItem>
                         )}
 
-                        {/* Aprovar/Reprovar exemplo */}
                         {payment.status === PaymentStatus.PENDING && (
                           <>
                             <DropdownMenuItem>
@@ -253,6 +398,11 @@ export default function PaymentsPage() {
                                 variant="ghost"
                                 size="sm"
                                 className="w-full justify-start gap-2"
+                                onClick={() => {
+                                  setId(payment.id);
+                                  setStaus("PAID");
+                                  setOpen(true);
+                                }}
                               >
                                 <Check /> Aprovar
                               </Button>
@@ -262,6 +412,11 @@ export default function PaymentsPage() {
                                 variant="ghost"
                                 size="sm"
                                 className="w-full justify-start gap-2"
+                                onClick={() => {
+                                  setId(payment.id);
+                                  setStaus("REFUNDED");
+                                  setOpen(true);
+                                }}
                               >
                                 <X /> Reprovar
                               </Button>

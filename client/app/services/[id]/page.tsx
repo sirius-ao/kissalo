@@ -48,7 +48,6 @@ export default function ServiceDetailsPublicPage() {
         const res = await api.getById(Number(id));
 
         if (res?.logout) {
-          router.push("/auth/login");
           return;
         }
 

@@ -20,18 +20,16 @@ export default function SettingsPage() {
             <User size={16} /> Perfil pessoal
           </TabsTrigger>
 
-          <TabsTrigger value="professional" className="justify-start gap-2 ">
+          {/* 
+            <TabsTrigger value="professional" className="justify-start gap-2 ">
             <Briefcase size={16} /> Perfil profissional
-          </TabsTrigger>
-
+          </TabsTrigger>{" "}*/}
           <TabsTrigger value="security" className="justify-start gap-2 ">
             <Lock size={16} /> Segurança
           </TabsTrigger>
-
           <TabsTrigger value="reviews" className="justify-start gap-2 ">
             <Star size={16} /> Avaliações
           </TabsTrigger>
-
           <TabsTrigger value="logout" className="justify-start gap-2">
             <LogOut size={16} /> Logout
           </TabsTrigger>
@@ -41,17 +39,13 @@ export default function SettingsPage() {
           <TabsContent value="personal">
             <PersonalProfile />
           </TabsContent>
-
+          {/* 
           <TabsContent value="professional">
             <ProfessionalProfile />
-          </TabsContent>
+          </TabsContent>*/}
 
           <TabsContent value="security">
             <Security />
-          </TabsContent>
-
-          <TabsContent value="reviews">
-            <Reviews />
           </TabsContent>
 
           <TabsContent value="logout">

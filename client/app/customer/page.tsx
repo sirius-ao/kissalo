@@ -56,7 +56,6 @@ export default function ServiceProfissionalPage() {
         ]);
 
         if (cats?.logout || servs?.logout) {
-          router.push("/auth/login");
           toast.error("Sessão expirada");
           return;
         }

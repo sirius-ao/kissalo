@@ -38,7 +38,6 @@ export default function History() {
           paymentngApi.get(),
         ]);
         if (data?.logout || dataPayments?.logout) {
-          router.push("/auth/login");
           return;
         }
         console.log(dataPayments?.data);

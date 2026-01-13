@@ -109,7 +109,7 @@ export class GetPaymentUseCase {
     const detailedStats = stats.reduce(
       (acc, stat) => {
         acc[stat.status.toLowerCase()] = stat._count._all;
-        return acc;
+        return acc ?? 0
       },
       {} as Record<string, number>,
     );

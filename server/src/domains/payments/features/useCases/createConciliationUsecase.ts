@@ -13,7 +13,7 @@ export class CreateConciliationUsecase {
     private readonly notifier: NotificationFactory,
   ) {}
 
-  public async create(paymentId: number, waaletId: number, fileUrl: string) {
+  public async create(paymentId: number) {
     const payment = await this.database.payment.findUnique({
       where: {
         id: paymentId,
@@ -22,13 +22,6 @@ export class CreateConciliationUsecase {
         professional: {
           include: {
             user: true,
-            wallets: {
-              where: {
-                id: waaletId,
-                isActive: true,
-                isVerified: true,
-              },
-            },
           },
         },
         booking: {
@@ -41,11 +34,6 @@ export class CreateConciliationUsecase {
     });
     if (!payment) {
       throw new NotFoundException('Pagamento não encotrado');
-    }
-    if (payment?.professional?.wallets.length == 0) {
-      throw new BadRequestException(
-        'Profissional sem carteiras verificadas ou activas',
-      );
     }
     if (payment.conclidation) {
       throw new ConflictException('Consolidação existente');
@@ -81,8 +69,7 @@ export class CreateConciliationUsecase {
         data: {
           paymentId: payment.id,
           userId: payment.professional.userId,
-          waaletId,
-          fileUrl,
+          fileUrl: payment.fileUrl,
         },
       }),
       PushNotifier.send(professionalNotification, payment.professional?.user),

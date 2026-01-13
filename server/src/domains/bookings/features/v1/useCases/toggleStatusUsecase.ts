@@ -74,29 +74,18 @@ export class ToogleBookingUseCase {
         'O cliente precisa liberar acesso para cocluires',
       );
     }
-    return await this.database.$transaction(async (prisma) => {
+    await this.database.$transaction(async (prisma) => {
       const updatedBooking = await prisma.booking.update({
         where: { id: bookingId },
         data: {
           status: data.status,
           canceledAt: data.status === 'CANCELED' ? new Date() : undefined,
-          cancelReason: data.status === 'CANCELED' ? data.notes : undefined,
+          cancelReason: data.status === 'CANCELED' ? data.notes : '',
           startedAt: data.status === 'STARTED' ? new Date() : undefined,
           completedAt: data.status === 'COMPLETED' ? new Date() : undefined,
           updatedAt: new Date(),
         },
       });
-
-      await prisma.bookingSteps.create({
-        data: {
-          notes: this.generateStepNotes(data, booking, user),
-          bookingId: bookingId,
-          senderId: userId,
-          files: data.files || [],
-          createdAt: new Date(),
-        },
-      });
-
       const admins = await prisma.user.findMany({
         where: { role: 'ADMIN' },
       });
@@ -113,6 +102,9 @@ export class ToogleBookingUseCase {
         status: updatedBooking.status,
       };
     });
+    return {
+      message: 'Agendamento alterado',
+    };
   }
 
   private async validatePermission(
@@ -199,28 +191,6 @@ export class ToogleBookingUseCase {
     }
   }
 
-  private generateStepNotes(
-    data: UpdateBookinStatus,
-    booking: any,
-    user: any,
-  ): string {
-    const userName = `${user.firstName} ${user.lastName}`;
-    const serviceName = booking.service.title;
-
-    const messages: Record<string, string> = {
-      ACCEPTED: `Serviço "${serviceName}" aceito por ${userName}`,
-      REJECTED: `Serviço "${serviceName}" rejeitado por ${userName}`,
-      STARTED: `Serviço "${serviceName}" iniciado por ${userName}`,
-      COMPLETED: `Serviço "${serviceName}" completado por ${userName}`,
-      CANCELED: `Serviço "${serviceName}" cancelado por ${userName}${data.notes ? `: ${data.notes}` : ''}`,
-    };
-
-    return (
-      data.notes ||
-      messages[data.status] ||
-      `Status alterado para ${data.status}`
-    );
-  }
   private getSuccessMessage(status: string): string {
     const messages: Record<string, string> = {
       ACCEPTED: 'Serviço aceito com sucesso',
@@ -332,6 +302,7 @@ export class ToogleBookingUseCase {
           userId: originalBooking.clientId,
           createdAt: new Date(),
           deepLink: `${baseDeepLink}/pay`,
+          channel: 'PUSH',
         };
         notifications.admin = {
           title: 'Serviço aceito',
@@ -342,6 +313,7 @@ export class ToogleBookingUseCase {
           isRead: false,
           createdAt: new Date(),
           deepLink: adminDeepLink,
+          channel: 'PUSH',
         };
         break;
 
@@ -356,6 +328,7 @@ export class ToogleBookingUseCase {
           userId: originalBooking.clientId,
           createdAt: new Date(),
           deepLink: baseDeepLink,
+          channel: 'PUSH',
         };
         notifications.admin = {
           title: 'Serviço rejeitado',
@@ -366,6 +339,7 @@ export class ToogleBookingUseCase {
           isRead: false,
           createdAt: new Date(),
           deepLink: adminDeepLink,
+          channel: 'PUSH',
         };
         break;
 
@@ -378,6 +352,7 @@ export class ToogleBookingUseCase {
           userId: originalBooking.clientId,
           createdAt: new Date(),
           deepLink: baseDeepLink,
+          channel: 'PUSH',
         };
         notifications.admin = {
           title: 'Serviço iniciado',
@@ -388,6 +363,7 @@ export class ToogleBookingUseCase {
           isRead: false,
           createdAt: new Date(),
           deepLink: adminDeepLink,
+          channel: 'PUSH',
         };
         break;
 
@@ -402,6 +378,7 @@ export class ToogleBookingUseCase {
           userId: originalBooking.clientId,
           createdAt: new Date(),
           deepLink: `${baseDeepLink}/review`,
+          channel: 'PUSH',
         };
         notifications.admin = {
           title: 'Serviço completado',
@@ -412,6 +389,7 @@ export class ToogleBookingUseCase {
           isRead: false,
           createdAt: new Date(),
           deepLink: adminDeepLink,
+          channel: 'PUSH',
         };
         break;
 
@@ -433,6 +411,7 @@ export class ToogleBookingUseCase {
                 userId: originalBooking.clientId,
                 createdAt: new Date(),
                 deepLink: baseDeepLink,
+                channel: 'PUSH',
               }
             : null;
 
@@ -448,6 +427,7 @@ export class ToogleBookingUseCase {
             userId: originalBooking.professional.userId,
             createdAt: new Date(),
             deepLink: baseDeepLink,
+            channel: 'PUSH',
           };
         }
 
@@ -460,6 +440,7 @@ export class ToogleBookingUseCase {
           isRead: false,
           createdAt: new Date(),
           deepLink: adminDeepLink,
+          channel: 'PUSH',
         };
         break;
     }

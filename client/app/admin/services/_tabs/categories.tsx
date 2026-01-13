@@ -184,7 +184,6 @@ export function TableViewCategories({
                               );
 
                               if (data?.logout) {
-                                router.push("/auth/login");
                                 toast.error("Sessão expirada");
                                 return;
                               }
@@ -232,7 +231,6 @@ export function TableViewCategories({
                               const data = await service.remove(category.id);
 
                               if (data?.logout) {
-                                router.push("/auth/login");
                                 toast.error("Sessão expirada");
                                 return;
                               }

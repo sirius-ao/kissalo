@@ -5,7 +5,14 @@ import {
   InputGroupInput,
 } from "@/components/ui/input-group";
 import { Button } from "@/components/ui/button";
-import { AlertCircle, Wallet, Search, Loader2, CheckCheck } from "lucide-react";
+import {
+  AlertCircle,
+  Wallet,
+  Search,
+  Loader2,
+  CheckCheck,
+  Download,
+} from "lucide-react";
 
 import {
   Table,
@@ -16,11 +23,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { IPayment } from "@/types/interfaces";
-import {
-  PaymentAvatar,
-  PaymentStats,
-  PaymentStatusBadge,
-} from "@/components/Payments";
+import { PaymentAvatar, PaymentStatusBadge } from "@/components/Payments";
 import Link from "next/link";
 import {
   Select,
@@ -35,151 +38,110 @@ import { Loader } from "@/components/Loader";
 import { paymentsMock } from "@/mocks/payments";
 import { IStats, StarsCard } from "@/components/StatsCard";
 import { verifyArrayDisponiblity } from "@/lib/utils";
+import { PaymentService } from "@/services/Payments/index.service";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+import { Badge } from "@/components/ui/badge";
+import { PaymentStatus } from "@/types/enum";
 export default function Payments() {
   const [isLoading, setIsLoading] = useState(true);
-  const [payments, setpayments] = useState<IPayment[]>(paymentsMock);
-  const stats: IStats[] = [
-    {
-      isCoin: false,
-      label: "Total lucrado",
-      oldValue: 1000,
-      title: "Total",
-      value: 100,
-    },
-    {
-      isCoin: true,
-      label: "Total recebido na plaforma ",
-      oldValue: 100,
-      title: "Total facturamento",
-      value: 560,
-    },
-    {
-      isCoin: false,
-      label: "Pagamentos pendentes",
-      oldValue: 5,
-      title: "Pendências",
-      value: 3,
-    },
-  ];
+  const [payments, setPayments] = useState<IPayment[]>([]);
+  const router = useRouter();
+
   useEffect(() => {
-    setTimeout(() => {
-      setIsLoading(false);
-    }, constants.TIMEOUT.LOADER);
-  }, []);
+    async function loadData() {
+      try {
+        const token = localStorage.getItem("acess-x-token") as string;
+        const paymentngApi = new PaymentService(token);
+        const dataPayments = await paymentngApi.get();
+        if (dataPayments?.logout) {
+          return;
+        }
+        setPayments(dataPayments?.data?.data);
+        console.log(dataPayments);
+      } catch {
+        toast.error("Erro ao carregar agendamentos");
+      } finally {
+        setTimeout(() => setIsLoading(false), constants.TIMEOUT.LOADER);
+      }
+    }
+
+    loadData();
+  }, [router]);
 
   return (
     <section className="flex flex-col gap-4">
-      <header className="flex justify-between items-center mb-10">
-        <div className="flex items-end gap-1">
-          <span className="bg-linear-to-r from-[#f7a60ed1] to-[#ec4d03e3] text-white h-10 w-10 flex justify-center items-center font-bold shadow rounded-sm">
-            <h1 className="scroll-m-20 text-center text-3xl font-extrabold tracking-tight text-balance">
-              P
-            </h1>
-          </span>
-
-          <h1 className="scroll-m-20 text-center text-xl font-extrabold tracking-tight text-balance">
-            agamentos
-          </h1>
-        </div>
-        <div>
-          <Button asChild>
-            <Link href={`/profissional/payments/wallets`} prefetch>
-              <Wallet />
-              Carteiras <span>1</span>
-            </Link>
-          </Button>
-        </div>
-      </header>
-
       {isLoading ? (
         <Loader />
       ) : (
         <article className="flex flex-col gap-5">
-          <span className="lg:grid-cols-3 grid md:grid-cols-2 gap-4">
-            {verifyArrayDisponiblity(stats) &&
-              stats.map((item, idx) => <StarsCard data={item} key={idx} />)}
-          </span>{" "}
-          <form className="grid md:grid-cols-3 ">
-            <div></div>
-            <div></div>
-            <span className="flex items-center gap-2">
-              <InputGroup>
-                <InputGroupInput placeholder="Search..." />
-                <InputGroupAddon>
-                  <Search size={100} />
-                </InputGroupAddon>
-              </InputGroup>
-
-              <Select>
-                <SelectTrigger className="bg-black text-white ">
-                  <SelectValue
-                    placeholder="Filtrar"
-                    className="text-white placeholder:text-white "
-                  />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos</SelectItem>
-                  <SelectItem value="pending">
-                    <Loader2 size={100} className="animate-spin" />
-                    Pendentes
-                  </SelectItem>
-                  <SelectItem value="completed">
-                    <CheckCheck size={100} />
-                    Concluídos
-                  </SelectItem>
-                  <SelectItem value="canceled">
-                    <AlertCircle size={100} />
-                    Cancelados
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </span>
-          </form>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>ID</TableHead>
-                <TableHead>Cliente</TableHead>
-                <TableHead>Profissional</TableHead>
-                <TableHead>Valor</TableHead>
+                <TableHead>Serviço</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead>Data</TableHead>
-                <TableHead></TableHead>
+                <TableHead>Consolidação</TableHead>
+                <TableHead>Valor</TableHead>
+                <TableHead>Comprovante</TableHead>
+                <TableHead>Ações</TableHead>
               </TableRow>
             </TableHeader>
 
             <TableBody>
-              {payments.map((p) => (
-                <TableRow key={p.id}>
-                  <TableCell>#{p.id}</TableCell>
-                  <TableCell>
-                    <PaymentAvatar user={p.client} />
-                  </TableCell>
-                  <TableCell>
-                    {p.professional ? (
-                      <PaymentAvatar user={p.professional.user} />
-                    ) : (
-                      "-"
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    {p.amount.toLocaleString()} {p.currency}
-                  </TableCell>
-                  <TableCell>
-                    <PaymentStatusBadge status={p.status} />
-                  </TableCell>
-                  <TableCell>
-                    {new Date(p.createdAt).toLocaleDateString()}
-                  </TableCell>
-                  <TableCell>
-                    <Link href={`/profissional/payments/${p.id}`}>
-                      <Button size="sm" variant="outline">
-                        Detalhes
+              {verifyArrayDisponiblity(payments) &&
+                payments.map((payment) => (
+                  <TableRow key={payment.id}>
+                    <TableCell>
+                      <div className="space-y-1">
+                        <p className="font-medium">
+                          {payment.booking.service.title}
+                        </p>
+                        <p className="text-sm text-muted-foreground line-clamp-1">
+                          {payment.booking.service.description?.slice(0, 50)}...
+                        </p>
+                      </div>
+                    </TableCell>
+                    {/* STATUS */}
+                    <TableCell>
+                      <Badge
+                        variant={
+                          payment.status === PaymentStatus.PAID
+                            ? "default"
+                            : payment.status === PaymentStatus.PENDING
+                            ? "outline"
+                            : "destructive"
+                        }
+                      >
+                        {payment.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge>
+                        {payment?.conclidation ? "Consolidado" : "Pendente"}
+                      </Badge>
+                    </TableCell>
+                    {/* VALOR */}
+                    <TableCell>
+                      {payment.amount.toLocaleString()} {payment.currency}
+                    </TableCell>
+                    <TableCell>
+                      <Button variant={"secondary"} asChild>
+                        <Link
+                          href={payment?.fileUrl as string}
+                          download={payment?.fileUrl}
+                          target="_blank"
+                        >
+                          <Download />
+                          Baixar
+                        </Link>
                       </Button>
-                    </Link>
-                  </TableCell>
-                </TableRow>
-              ))}
+                    </TableCell>
+
+                    <TableCell>
+                      <Button>Detalhes</Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
             </TableBody>
           </Table>
         </article>

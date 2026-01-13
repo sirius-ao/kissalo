@@ -93,6 +93,7 @@ export class AuthService {
     const response = await data.json();
     return response;
   }
+
   public async updateProfile(
     token: string,
     body: {
@@ -103,7 +104,6 @@ export class AuthService {
       avatarUrl: string;
     }
   ) {
-    console.log(body);
     try {
       const data = await fetch(`${this.server}/${this.version}/auth/profile`, {
         headers: {
@@ -121,5 +121,62 @@ export class AuthService {
       };
     }
   }
-  public async updateCredentials() {}
+  public async updateCredentials(
+    token: string,
+    body: {
+      oldPassword: string;
+      password: string;
+    }
+  ) {
+    try {
+      const data = await fetch(
+        `${this.server}/${this.version}/auth/credentials`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            authorization: `Bearer ${token}`,
+          },
+          method: "PUT",
+          body: JSON.stringify(body),
+        }
+      );
+      const response = await data.json();
+      return response;
+    } catch (error) {
+      return {
+        message: "Erro ao criar conta",
+      };
+    }
+  }
+  public async requestForRecovery(email: string) {
+    const data = await fetch(
+      `${this.server}/${this.version}/auth/${encodeURIComponent(
+        email
+      )}/recovery`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        method: "PUT",
+      }
+    );
+
+    const response = await data.json();
+    return response;
+  }
+  public async resetPassFromToken(token: string, password: String) {
+    const data = await fetch(`${this.server}/${this.version}/auth/reset`, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+      method: "POST",
+      body: JSON.stringify({
+        token,
+        password
+      })
+    });
+
+    const response = await data.json();
+    return response;
+  }
 }

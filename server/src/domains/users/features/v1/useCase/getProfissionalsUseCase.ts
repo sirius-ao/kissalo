@@ -40,6 +40,7 @@ export class ProfissionalGetUseCase {
         data: cachedUser,
       };
     }
+
     const user = await this.database.user.findFirst({
       where: {
         id,
@@ -49,8 +50,50 @@ export class ProfissionalGetUseCase {
       },
       include: {
         professional: true,
+        bookings: {
+          include: {
+            service: true,
+          },
+        },
+        payments: true,
+        reviews: {
+          include: {
+            booking: {
+              include: {
+                service: {
+                  include: {
+                    category: true,
+                  },
+                },
+              },
+            },
+          },
+        },
       },
     });
+    if (user.role == 'PROFESSIONAL') {
+      const reviews = await this.database.review.findMany({
+        where: {
+          booking: {
+            professional: {
+              userId: user.id,
+            },
+          },
+        },
+        include: {
+          booking: {
+            include: {
+              service: {
+                include: {
+                  category: true,
+                },
+              },
+            },
+          },
+        },
+      });
+      user.reviews = reviews as any;
+    }
     await this.cache.set(`user-${id}`, user, 60 * 10);
     if (!user) {
       throw new ProfissionalNotFoundExecption(``);

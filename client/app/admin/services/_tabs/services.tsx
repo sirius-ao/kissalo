@@ -144,7 +144,6 @@ export function TableViewServices({
                               const data = await serviceApi.remove(service.id);
 
                               if (data?.logout) {
-                                router.push("/auth/login");
                                 toast.error("Sessão expirada");
                                 return;
                               }

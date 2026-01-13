@@ -16,28 +16,23 @@ import { ReactNode } from "react";
 export const navigations: Record<UserRole, INavItem[]> = {
   PROFESSIONAL: [
     {
-      title: "Inicial",
-      to: "/profissional",
+      title: "Serviços",
+      to: "/professional",
       icon: <LayoutGrid size={17} />,
     },
     {
-      title: "Serviços",
-      to: "/profissional/services",
-      icon: <PaintRoller size={17} />,
-    },
-    {
       title: "Agendamentos",
-      to: "/profissional/bookings",
+      to: "/professional/bookings",
       icon: <CalendarCog size={17} />,
     },
     {
       title: "Pagamentos",
-      to: "/profissional/payments",
+      to: "/professional/payments",
       icon: <CircleDollarSign size={17} />,
     },
     {
       title: "Perfil",
-      to: "/profissional/settings",
+      to: "/professional/settings",
       icon: <Settings size={17} />,
     },
   ],

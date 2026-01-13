@@ -8,6 +8,8 @@ import {
   FileText,
   IdCard,
   Link as LinkIcon,
+  User,
+  PhoneMissed,
 } from "lucide-react";
 import {
   IProfessionalServiceRequest,
@@ -27,6 +29,8 @@ import constants from "@/constants";
 import { UsersService } from "@/services/Users/index.service";
 import { verify } from "crypto";
 import { verifyArrayDisponiblity } from "@/lib/utils";
+import { BookingCard } from "@/components/Booking";
+import { UnJoinedServiceCard } from "@/components/Service";
 
 export default function UserDetailsPage() {
   const { id } = useParams();
@@ -36,27 +40,25 @@ export default function UserDetailsPage() {
   const [isProfessional, setisProfessional] = useState(false);
 
   useEffect(() => {
-    if (user) {
-      setisProfessional(user.role === UserRole.PROFESSIONAL);
-    }
     async function get() {
       const serviceApi = new UsersService(
         localStorage.getItem("acess-x-token") as string
       );
       const data = await serviceApi.getById(Number(id));
       if (data?.logout) {
-        router.push("/auth/login");
         return;
       }
+      console.log(data);
       if (data?.data) {
         setUser(data?.data);
+        setisProfessional(data?.data?.role === UserRole.PROFESSIONAL);
       }
       setTimeout(() => {
         setIsLoading(false);
       }, constants.TIMEOUT.LOADER);
     }
     get();
-  }, [user]);
+  }, []);
 
   return (
     <section className="space-y-6">
@@ -122,16 +124,15 @@ export default function UserDetailsPage() {
                 </CardContent>
               </Card>
               {/* TABS */}
-              <Tabs defaultValue={isProfessional ? "professional" : "bookings"}>
+              <Tabs defaultValue={"profile"}>
                 <TabsList>
+                  <TabsTrigger value="profile">Perfil</TabsTrigger>
                   {isProfessional ? (
                     <>
                       <TabsTrigger value="professional">
                         Profissional
                       </TabsTrigger>
-                      <TabsTrigger value="services">Serviços</TabsTrigger>
                       <TabsTrigger value="reviews">Avaliações</TabsTrigger>
-                      <TabsTrigger value="wallets">Carteiras</TabsTrigger>
                     </>
                   ) : (
                     <>
@@ -145,6 +146,38 @@ export default function UserDetailsPage() {
                   )}
                 </TabsList>
 
+                <TabsContent value="profile">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <User className="w-5 h-5 text-primary" />
+                        Dados pessoais
+                      </CardTitle>
+                    </CardHeader>
+
+                    <CardContent className="space-y-4 text-sm">
+                      <div className="flex items-center gap-2">
+                        <User className="w-4 h-4 text-muted-foreground" />
+                        <span className="font-medium">Nome:</span>
+                        <span>{user.firstName + " " + user.lastName}</span>
+                      </div>
+
+                      {/* Experiência */}
+                      <div className="flex items-center gap-2">
+                        <Calendar className="w-4 h-4 text-muted-foreground" />
+                        <span className="font-medium">Email:</span>
+                        <span>{user.email} anos</span>
+                      </div>
+
+                      {/* Tipo */}
+                      <div className="flex items-center gap-2">
+                        <PhoneMissed className="w-4 h-4 text-muted-foreground" />
+                        <span className="font-medium">Delular:</span>
+                        <Badge variant="secondary">{user.phone}</Badge>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
                 {isProfessional && user.professional && (
                   <TabsContent value="professional">
                     <Card>
@@ -292,12 +325,49 @@ export default function UserDetailsPage() {
                       user.reviews.length ? (
                         <ul className="space-y-4">
                           {user.reviews.map((r) => (
-                            <li key={r.id} className="rounded border p-3">
+                            <li
+                              key={r.id}
+                              className="rounded border p-3 flex flex-col gap-3"
+                            >
+                              <i className="text-sm">" {r.comment} "</i>
                               <div className="flex items-center gap-2">
-                                <Star className="h-4 w-4 text-yellow-500" />
-                                <strong>{r.rating}</strong>
+                                {Array.from({ length: r.rating }).map(
+                                  (item, idx) => (
+                                    <Star
+                                      key={idx}
+                                      fill="gold"
+                                      className="h-4 w-4 text-yellow-500"
+                                    />
+                                  )
+                                )}{" "}
+                                {Array.from({ length: 5 - r.rating }).map(
+                                  (item, idx) => (
+                                    <Star
+                                      key={idx}
+                                      className="h-4 w-4 text-neutral-500"
+                                    />
+                                  )
+                                )}
                               </div>
-                              <p className="text-sm">{r.comment}</p>
+                              <strong>Serviço</strong>
+                              <h1>{r.booking?.service.title}</h1>
+                              <small>{r.booking?.service.description}</small>
+                              <span className="flex flex-col gap-1">
+                                <div className="flex items-center gap-1">
+                                  <div
+                                    className="h-2 w-2 rounded-full"
+                                    style={{
+                                      backgroundColor: `${r.booking?.service.category.color}`,
+                                    }}
+                                  ></div>
+                                  <p>{r.booking?.service?.category.title}</p>
+                                </div>
+                                <small>
+                                  {String(
+                                    r.booking?.service?.category?.description
+                                  )}
+                                </small>
+                              </span>
                             </li>
                           ))}
                         </ul>
@@ -309,41 +379,6 @@ export default function UserDetailsPage() {
                     </CardContent>
                   </Card>
                 </TabsContent>
-
-                {/* CARTEIRAS */}
-                {isProfessional && (
-                  <TabsContent value="wallets">
-                    <Card>
-                      <CardHeader>
-                        <CardTitle>Carteiras</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        {verifyArrayDisponiblity(
-                          user.professional?.wallets as IWallet[]
-                        ) && user.professional?.wallets.length ? (
-                          <ul className="space-y-3">
-                            {user.professional.wallets.map((w) => (
-                              <li
-                                key={w.id}
-                                className="flex items-center gap-2"
-                              >
-                                <Wallet className="h-4 w-4" />
-                                {w.bankName} — {w.accountNumber}
-                                {w.isVerified && (
-                                  <Badge variant="default">Verificada</Badge>
-                                )}
-                              </li>
-                            ))}
-                          </ul>
-                        ) : (
-                          <p className="text-muted-foreground">
-                            Nenhuma carteira cadastrada
-                          </p>
-                        )}
-                      </CardContent>
-                    </Card>
-                  </TabsContent>
-                )}
 
                 {/* BOOKINGS CLIENTE */}
                 {!isProfessional && (
@@ -357,10 +392,7 @@ export default function UserDetailsPage() {
                         user.bookings.length ? (
                           <ul className="space-y-3">
                             {user.bookings.map((b) => (
-                              <li key={b.id} className="flex justify-between">
-                                <span>{b.service.title}</span>
-                                <Badge>{b.status}</Badge>
-                              </li>
+                              <BookingCard key={b.id} booking={b} />
                             ))}
                           </ul>
                         ) : (

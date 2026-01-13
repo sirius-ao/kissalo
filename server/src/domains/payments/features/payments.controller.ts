@@ -33,7 +33,7 @@ import { UpdatePaymentDto } from './dto/update-payment.dto';
 export class PaymentsController {
   constructor(private readonly paymentsService: PaymentsService) {}
 
-  @Post(':id/:file/:walletId/consolidate')
+  @Post(':id/consolidate')
   @UseGuards(IsAdminGuard)
   @ApiOperation({
     summary: 'Criar consolidação de um pagamento',
@@ -45,10 +45,8 @@ export class PaymentsController {
   consolidate(
     @currentUser() userId: number,
     @Param('id', ParseIntPipe) id: number,
-    @Param('walletId', ParseIntPipe) walletId: number,
-    @Param('file') file: string,
   ) {
-    return this.paymentsService.consolidate(id, walletId, file);
+    return this.paymentsService.consolidate(id);
   }
 
   @Patch(':id/toogle')
@@ -71,9 +69,7 @@ export class PaymentsController {
     summary: 'Listar pagamentos',
     description: 'Lista pagamentos do usuário ou todos se for admin',
   })
-  findAll(
-    @currentUser() userId: number,
-  ) {
+  findAll(@currentUser() userId: number) {
     return this.paymentsService.findAll(userId);
   }
 

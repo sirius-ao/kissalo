@@ -130,7 +130,11 @@ export function PaymentCard({ payment }: { payment: IPayment }) {
       <div className="flex-row flex gap-3">
         {payment.fileUrl ? (
           <Button className="flex-1" asChild>
-            <Link href={payment.fileUrl} target="_blank" download={payment.fileUrl}>
+            <Link
+              href={payment.fileUrl}
+              target="_blank"
+              download={payment.fileUrl}
+            >
               <Download />
               Comprovativo
             </Link>

@@ -27,7 +27,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { ReactNode, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { Loader2, CheckCircle, PlayCircle, XCircle, Ban } from "lucide-react";
 import { verifyArrayDisponiblity } from "@/lib/utils";
 import { BookingCard } from "@/components/Booking";
@@ -38,7 +38,7 @@ import {
   getStatusBadgeClass,
   getStatusIcon,
   priorityColorMap,
-} from "../page";
+} from "@/app/professional/page";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useUserRole } from "@/hooks/use-UserRole";
@@ -60,13 +60,18 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { UsersService } from "@/services/Users/index.service";
+import { useRouter } from "next/navigation";
+import constants from "@/constants";
+import { toast } from "sonner";
+import { BookingService } from "@/services/Booking/index.service";
 const columns: BookingStatus[] = [
   BookingStatus.PENDING,
   BookingStatus.ACCEPTED,
   BookingStatus.STARTED,
   BookingStatus.COMPLETED,
   BookingStatus.CONFIRMED,
-  BookingStatus.REJECTED,
+  BookingStatus.CANCELED,
 ];
 
 export const columnStyles: Record<
@@ -107,10 +112,10 @@ export const columnStyles: Record<
   },
 
   CANCELED: {
-    color: "bg-gray-500",
-    icon: <Ban className="text-gray-500" size={16} />,
+    color: "bg-red-500",
+    icon: <Ban className="text-red-500" size={16} />,
     title: "Cancelado",
-    text: "text-gray-500",
+    text: "text-red-500",
   },
 
   REJECTED: {
@@ -120,10 +125,10 @@ export const columnStyles: Record<
     text: "text-red-500",
   },
   CONFIRMED: {
-    color: "bg-green-500",
-    icon: <CheckCircle className="text-green-600" size={16} />,
+    color: "bg-blue-500",
+    icon: <CheckCircle className="text-blue-500" size={16} />,
     title: "Confirmado",
-    text: "text-green-500",
+    text: "text-blue-500",
   },
 };
 
@@ -131,6 +136,9 @@ export function KanbanView({ bookings }: { bookings: IBooking[] }) {
   return (
     <div className="grid xl:grid-cols-4 lg:grid-cols-3 md:grid-cols-2  gap-4">
       {columns.map((status, idx) => {
+        if (columnStyles[status].title == "Pendentes") {
+          return null;
+        }
         if (status.length > 0)
           return (
             <span className="flex flex-col gap-2" key={idx}>
@@ -139,7 +147,7 @@ export function KanbanView({ bookings }: { bookings: IBooking[] }) {
               >
                 {columnStyles[status].icon}
                 <h1 className={`${columnStyles[status].text} text-sm`}>
-                  {columnStyles[status].title} ({status.length})
+                  {columnStyles[status].title} ({status.length - 7})
                 </h1>
               </div>
               <div className="flex flex-col gap-2 bg-accent/5 p-2">
@@ -168,15 +176,18 @@ export function ListView({ bookings }: { bookings: IBooking[] }) {
 }
 
 export function TableView({ bookings }: { bookings: IBooking[] }) {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [profissionals, setProfissionals] = useState<IUser[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [processing, setProcessing] = useState(false);
+
   const [value, setValue] = useState({
     id: 0,
     name: "",
+    bookingId: 0,
   });
 
-  const [currentServiceUserList, setCurrentServiceUsersList] = useState<
-    IUser[]
-  >([]);
   const { role } = useUserRole();
   const href =
     role == UserRole.PROFESSIONAL
@@ -184,6 +195,51 @@ export function TableView({ bookings }: { bookings: IBooking[] }) {
       : role == UserRole.ADMIN
       ? "/admin/bookings"
       : "/costumer/bookings";
+
+  useEffect(() => {
+    async function get() {
+      const serviceApi = new UsersService(
+        localStorage.getItem("acess-x-token") as string
+      );
+
+      const data = await serviceApi.get();
+
+      if (data?.logout) {
+        return;
+      }
+      if (verifyArrayDisponiblity(data?.data)) {
+        const profifionals = data?.data.filter((item: IUser) => {
+          return item.role == UserRole.PROFESSIONAL;
+        });
+        setProfissionals(profifionals);
+      }
+      setTimeout(() => {
+        setIsLoading(false);
+      }, constants.TIMEOUT.LOADER);
+    }
+    get();
+  }, []);
+
+  async function anexProfissional() {
+    console.log(value);
+    if (!value?.bookingId || value?.name?.length <= 0 || !value?.id) {
+      toast.warning("Preenche todos os campos");
+      return;
+    }
+    setProcessing(true);
+    const token = localStorage.getItem("acess-x-token") as string;
+    const bookingApi = new BookingService(token);
+    const data = await bookingApi.anexUser(value.id, value.bookingId);
+    if (data?.logout) {
+      return;
+    }
+    toast.info(data?.message);
+    setProcessing(false);
+
+    setTimeout(() => {
+      location.reload();
+    }, 5000);
+  }
 
   return (
     <Table>
@@ -250,7 +306,9 @@ export function TableView({ bookings }: { bookings: IBooking[] }) {
                     </span>
                   </span>
                 ) : (
-                  <p className="text-xs text-red-500">Nenhum profissional anexado</p>
+                  <p className="text-xs text-red-500">
+                    Nenhum profissional encontrado
+                  </p>
                 )}
               </TableCell>
             )}
@@ -306,17 +364,21 @@ export function TableView({ bookings }: { bookings: IBooking[] }) {
             <TableCell>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant={"outline"}>Acções</Button>
+                  <Button
+                    disabled={
+                      isLoading ||
+                      booking?.status == BookingStatus.CANCELED ||
+                      booking?.status == BookingStatus.REJECTED
+                    }
+                    variant={"outline"}
+                  >
+                    Acções
+                  </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-56" align="start">
                   {role == UserRole.ADMIN && (
                     <>
                       <DropdownMenuRadioGroup>
-                        <DropdownMenuItem>
-                          Cancelar
-                          <DropdownMenuShortcut>⇧⌘C</DropdownMenuShortcut>
-                        </DropdownMenuItem>
-
                         <Link href={`${href}/${booking.id}`}>
                           <DropdownMenuItem>
                             Detalhes
@@ -350,20 +412,6 @@ export function TableView({ bookings }: { bookings: IBooking[] }) {
                               <Popover
                                 open={open}
                                 onOpenChange={(e) => {
-                                  if (e) {
-                                    const users: IUser[] =
-                                      booking.service?.requests
-                                        .filter((item) => {
-                                          return (
-                                            item.status ==
-                                            ApprovalStatus.APPROVED
-                                          );
-                                        })
-                                        .map((item) => {
-                                          return item?.professional?.user;
-                                        });
-                                    setCurrentServiceUsersList(users);
-                                  }
                                   setOpen(e);
                                 }}
                               >
@@ -375,11 +423,11 @@ export function TableView({ bookings }: { bookings: IBooking[] }) {
                                     className="w-full justify-between"
                                   >
                                     {value?.name
-                                      ? currentServiceUserList.find(
+                                      ? profissionals.find(
                                           (user) => user.id === value.id
                                         )?.firstName +
                                         " " +
-                                        currentServiceUserList.find(
+                                        profissionals.find(
                                           (user) => user.id === value.id
                                         )?.lastName
                                       : "Selecione um profissional..."}
@@ -391,64 +439,71 @@ export function TableView({ bookings }: { bookings: IBooking[] }) {
                                     <CommandInput placeholder="Selecione um profissional..." />
                                     <CommandList>
                                       <CommandEmpty>
-                                        Nenhum profissonal anexado a este
-                                        serviço
+                                        Nenhum profissonal anexado encontrado
                                       </CommandEmpty>
                                       <CommandGroup>
-                                        {currentServiceUserList.map(
-                                          (user, idx) => (
-                                            <CommandItem
-                                              key={idx}
-                                              value={
-                                                user?.firstName +
-                                                " " +
-                                                user?.lastName
-                                              }
-                                              onSelect={(currentValue) => {
-                                                setValue({
-                                                  id: user.id,
-                                                  name:
-                                                    user.firstName +
-                                                    " " +
-                                                    user.lastName,
-                                                });
-                                                setOpen(false);
-                                              }}
-                                              className=""
-                                            >
-                                              <CheckIcon
-                                                className={cn(
-                                                  "mr-2 h-4 w-4",
-                                                  value?.id === user.id
-                                                    ? "opacity-100"
-                                                    : "opacity-0"
-                                                )}
+                                        {profissionals.map((user, idx) => (
+                                          <CommandItem
+                                            key={idx}
+                                            value={
+                                              user?.firstName +
+                                              " " +
+                                              user?.lastName
+                                            }
+                                            onSelect={() => {
+                                              setValue({
+                                                id: user.id,
+                                                name:
+                                                  user.firstName +
+                                                  " " +
+                                                  user.lastName,
+                                                bookingId: booking.id,
+                                              });
+                                              setOpen(false);
+                                            }}
+                                            className=""
+                                          >
+                                            <CheckIcon
+                                              className={cn(
+                                                "mr-2 h-4 w-4",
+                                                value?.id === user.id
+                                                  ? "opacity-100"
+                                                  : "opacity-0"
+                                              )}
+                                            />
+                                            <Avatar>
+                                              <AvatarImage
+                                                src={user?.avatarUrl}
                                               />
-                                              <Avatar>
-                                                <AvatarImage
-                                                  src={user?.avatarUrl}
-                                                />
-                                                <AvatarFallback className="bg-black text-white">
-                                                  {(user?.firstName?.charAt(
-                                                    0
-                                                  ) ?? "") +
-                                                    (user?.lastName?.charAt(
-                                                      0
-                                                    ) ?? "")}
-                                                </AvatarFallback>
-                                              </Avatar>
-                                              {user.firstName +
-                                                " " +
-                                                user.lastName}
-                                            </CommandItem>
-                                          )
-                                        )}
+                                              <AvatarFallback className="bg-black text-white">
+                                                {(user?.firstName?.charAt(0) ??
+                                                  "") +
+                                                  (user?.lastName?.charAt(0) ??
+                                                    "")}
+                                              </AvatarFallback>
+                                            </Avatar>
+                                            {user.firstName +
+                                              " " +
+                                              user.lastName}
+                                          </CommandItem>
+                                        ))}
                                       </CommandGroup>
                                     </CommandList>
                                   </Command>
                                 </PopoverContent>
                               </Popover>
-                              <Button>Anexar profissional</Button>
+                              <Button
+                                onClick={async () => {
+                                  await anexProfissional();
+                                }}
+                                disabled={processing}
+                              >
+                                {processing ? (
+                                  <Loader2 className="animate-spin" />
+                                ) : (
+                                  "Anexar profissional"
+                                )}
+                              </Button>
                             </DialogContent>
                           </Dialog>
                         )}
