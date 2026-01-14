@@ -1,23 +1,16 @@
 import { Injectable } from '@nestjs/common';
-import { CreateBookingDto } from './dto/create-booking.dto';
-import {
-  UpdateBookinSatatusProfisional,
-  UpdateBookingDto,
-} from './dto/update-booking.dto';
+import { CreateBookingDto, CreateStepsDto } from './dto/create-booking.dto';
+import { UpdateBookinStatus, UpdateBookingDto } from './dto/update-booking.dto';
 import PrismaService from '@infra/database/prisma.service';
 import { NotificationFactory } from '@core/shared/utils/services/Notification/notification.factory';
 import { ServicesService } from '@domains/services/features/v1/services.service';
-import { ClientsService } from '@domains/clients/features/v1/clients.service';
 import { CreateBookingUseFacade } from './useCases/createBookingUsecase';
 import { Booking } from '@prisma/client';
-import { ProfissionalToogleBookingStatus } from './useCases/profissionalToggleStatusUsecase';
-import { ProfissionalsService } from '@domains/profissionals/features/v1/profissionals.service';
+import { ToogleBookingUseCase } from './useCases/toggleStatusUsecase';
+import { ProfissionalsService } from '@domains/users/features/v1/profissionals.service';
 import { GetBookingFacede } from './useCases/getBookingUsacse';
 import CacheService from '@infra/cache/cahe.service';
-import { CancelBookingUseCase } from './useCases/cancelBookingUsecase';
-import { StartBookingUseCase } from './useCases/startBookingUsecase';
 import { CreateBookingStepUseCase } from './useCases/CreateBookingStepUseCase';
-import { EndBookingUseCase } from './useCases/endBookingUsecase';
 import { LiberateBookingUseCase } from './useCases/liberateBookingusecase';
 
 @Injectable()
@@ -26,7 +19,6 @@ export class BookingsService {
     private readonly database: PrismaService,
     private readonly notification: NotificationFactory,
     private readonly services: ServicesService,
-    private readonly profissionalService: ProfissionalsService,
     private readonly cache: CacheService,
   ) {}
 
@@ -39,30 +31,26 @@ export class BookingsService {
     return await createFacade.create(data, userId);
   }
 
+  public async anex(userId: number, bookingId: number) {
+    const createFacade = new CreateBookingUseFacade(
+      this.database,
+      this.notification,
+      this.services,
+    );
+    return await createFacade.anexProfessional(bookingId, userId);
+  }
+
   public async createSteps(
-    data: UpdateBookinSatatusProfisional,
+    data: CreateStepsDto,
     userId: number,
+    bookingId: number,
   ) {
     const createFacade = new CreateBookingStepUseCase(
       this.database,
       this.cache,
     );
 
-    data.userId = userId;
-    return await createFacade.execute(data);
-  }
-
-  public async start(bookingId: number, userId: number) {
-    const startFacede = new StartBookingUseCase(
-      this.database,
-      this.notification,
-    );
-    return await startFacede.execute(bookingId, userId);
-  }
-
-  public async end(bookingId: number, userId: number) {
-    const endFacede = new EndBookingUseCase(this.database, this.notification);
-    return await endFacede.execute(bookingId, userId);
+    return await createFacade.execute(data, userId, bookingId);
   }
 
   public async liberate(bookingId: number, userId: number) {
@@ -70,35 +58,25 @@ export class BookingsService {
       this.database,
       this.notification,
     );
-    return await liberateFacede.liberate(bookingId, userId);
+    return await liberateFacede.liberate(userId, bookingId);
   }
-  public async toogle(data: UpdateBookinSatatusProfisional, userId: number) {
-    data.userId = userId;
-    const toogleFacade = new ProfissionalToogleBookingStatus(
+  public async toogle(
+    data: UpdateBookinStatus,
+    userId: number,
+    bookingId: number,
+  ) {
+    const toogleFacade = new ToogleBookingUseCase(
       this.database,
       this.notification,
-      this,
-      this.profissionalService,
-      this.services,
     );
-    return await toogleFacade.toogle(data);
+    return await toogleFacade.toogle(data, userId, bookingId);
   }
-  public async findAll(page: number, limit: number, userId: number) {
+  public async findAll(userId: number) {
     const getBookingFacede = new GetBookingFacede(this.database, this.cache);
-    return await getBookingFacede.get(page, limit, userId);
+    return await getBookingFacede.get(userId);
   }
   async findOne(id: number) {
     const getBookingFacede = new GetBookingFacede(this.database, this.cache);
     return await getBookingFacede.getOne(id);
-  }
-  public async cancel(userId: number, data: UpdateBookinSatatusProfisional) {
-    const facede = new CancelBookingUseCase(
-      this.database,
-      this.notification,
-      this,
-    );
-
-    data.userId = userId;
-    return await facede.cancel(data);
   }
 }

@@ -1,6 +1,5 @@
 import { UserNotFoundExecption } from '@core/http/erros/user.error';
 import { ILoginUseCase, ILoginUseCaseReturnType } from '@core/shared/types';
-import { RequestActivation } from '@core/shared/utils/services/ActivationService/activation.service';
 import { ICryptoInterface } from '@core/shared/utils/services/CryptoService/crypto.interface';
 import { EmailServiceInterface } from '@core/shared/utils/services/EmailService/emailService.interface';
 import CacheService from '@infra/cache/cahe.service';
@@ -39,15 +38,6 @@ export class LoginUseCase {
     if (!user) {
       throw new UserNotFoundExecption();
     }
-    if (!user.isEmailVerified) {
-      const requestActivation = new RequestActivation(
-        this.database,
-        this.emailService,
-        this.jwt,
-      );
-      await requestActivation.request(user);
-      return;
-    }
     if (!this.isPassMatch(user.password, userData.password)) {
       this.logger.error(
         `Wrong Password from ${userData.unique} to ${user.email}`,
@@ -56,16 +46,19 @@ export class LoginUseCase {
         message: 'Senha incorrecta, tente novamente',
       });
     }
-    const TWO_WEEKS = 60 * 60 * 24 * 14;
+    const ONE_HOUR = 1000 * 60 * 60;
+    const TWO_WEEKS = 1000 * 60 * 60 * 24 * 14;
+
     const [acessToken, refreshToken] = [
       this.jwt.sign(
         {
           sub: user.id,
         },
         {
-          expiresIn: '1h',
+          expiresIn: '7d',
         },
       ),
+
       this.jwt.sign(
         {
           sub: user.id,
@@ -76,11 +69,12 @@ export class LoginUseCase {
         },
       ),
     ];
+
+    const { password, ...userPublicData } = user;
     await Promise.all([
-      this.cache.set(`userProfile-${user.id}`, user, 60 * 60 * 1),
+      this.cache.set(`userProfile-${user.id}`, userPublicData, ONE_HOUR),
       this.cache.set(`userRefreshToken-${user.id}`, refreshToken, TWO_WEEKS),
     ]);
-    const { password, ...userPublicData } = user;
     return {
       user: userPublicData,
       acessToken,

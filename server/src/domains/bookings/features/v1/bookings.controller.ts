@@ -21,12 +21,12 @@ import {
 } from '@nestjs/swagger';
 
 import { BookingsService } from './bookings.service';
-import { CreateBookingDto } from './dto/create-booking.dto';
-import { UpdateBookinSatatusProfisional } from './dto/update-booking.dto';
+import { CreateBookingDto, CreateStepsDto } from './dto/create-booking.dto';
+import { UpdateBookinStatus } from './dto/update-booking.dto';
 import { currentUser } from '@core/http/decorators/currentUser.decorator';
 import { IsClientGuard } from '@core/http/guards/isClient.guard';
-import { IsProfissionalGuard } from '@core/http/guards/isProfissional.guard';
 import { IsEmailVerifiedGuard } from '@core/http/guards/isEmailVerifiedGuard';
+import { IsAdminGuard } from '@core/http/guards/isAdmin.guard';
 
 @ApiTags('Bookings V1')
 @ApiBearerAuth()
@@ -41,13 +41,21 @@ export class BookingsController {
     description: 'Permite que um cliente crie um novo agendamento de serviço',
   })
   @ApiBody({ type: CreateBookingDto })
-  @ApiResponse({ status: 201, description: 'Agendamento criado com sucesso' })
-  @ApiResponse({
-    status: 403,
-    description: 'Apenas clientes podem criar agendamentos',
-  })
   create(@Body() data: CreateBookingDto, @currentUser() userId: number) {
     return this.bookingsService.create(data, userId);
+  }
+
+  @Post(':id/:userid/anex')
+  @UseGuards(IsAdminGuard)
+  @ApiOperation({
+    summary: 'Anexar profissional ao serviço',
+  })
+  anex(
+    @currentUser() userId: number,
+    @Param('id', ParseIntPipe) bookingId: number,
+    @Param('userid', ParseIntPipe) userid: number,
+  ) {
+    return this.bookingsService.anex(userid, bookingId);
   }
 
   @Post(':id/steps')
@@ -56,53 +64,26 @@ export class BookingsController {
     description:
       'Permite que o cliente ou o profissional adicionem uma etapa ao agendamento',
   })
-  @ApiResponse({ status: 201, description: 'Etapa criada com sucesso' })
-  @ApiResponse({ status: 403, description: 'Sem permissão' })
   createSteps(
-    @Body() data: UpdateBookinSatatusProfisional,
+    @Body() data: CreateStepsDto,
     @currentUser() userId: number,
     @Param('id', ParseIntPipe) bookingId: number,
   ) {
-    data.bookingId = bookingId;
-    return this.bookingsService.createSteps(data, userId);
+    return this.bookingsService.createSteps(data, userId, bookingId);
   }
 
-  @Patch(':id/start')
-  @UseGuards(IsProfissionalGuard)
+  @Patch(':id/toogle')
   @ApiOperation({
-    summary: 'Iniciar execução do agendamento',
+    summary: 'Aceitar ou rejeitar , etc um agendamento',
     description:
-      'Permite que o profissional inicie a execução do serviço agendado',
+      'Permite que o profissional aceite ou rejeite um agendamento pendente',
   })
-  @ApiParam({ name: 'id', example: 1 })
-  @ApiResponse({
-    status: 200,
-    description: 'Agendamento iniciado com sucesso',
-  })
-  start(
+  toogle(
     @Param('id', ParseIntPipe) bookingId: number,
     @currentUser() userId: number,
+    @Body() data: UpdateBookinStatus,
   ) {
-    return this.bookingsService.start(bookingId, userId);
-  }
-
-  @Patch(':id/end')
-  @UseGuards(IsProfissionalGuard)
-  @ApiOperation({
-    summary: 'Terminar execução do agendamento',
-    description:
-      'Permite que o profissional termine a execução do serviço agendado',
-  })
-  @ApiParam({ name: 'id', example: 1 })
-  @ApiResponse({
-    status: 200,
-    description: 'Agendamento terminado com sucesso',
-  })
-  end(
-    @Param('id', ParseIntPipe) bookingId: number,
-    @currentUser() userId: number,
-  ) {
-    return this.bookingsService.end(bookingId, userId);
+    return this.bookingsService.toogle(data, userId, bookingId);
   }
 
   @Patch(':id/liberate')
@@ -122,49 +103,18 @@ export class BookingsController {
     @Param('id', ParseIntPipe) bookingId: number,
     @currentUser() userId: number,
   ) {
-    return this.bookingsService.end(bookingId, userId);
+    return this.bookingsService.liberate(bookingId, userId);
   }
 
-  @Patch(':id/status')
-  @UseGuards(IsProfissionalGuard)
-  @ApiOperation({
-    summary: 'Aceitar ou rejeitar um agendamento',
-    description:
-      'Permite que o profissional aceite ou rejeite um agendamento pendente',
-  })
-  @ApiParam({ name: 'id', example: 1 })
-  @ApiBody({ type: UpdateBookinSatatusProfisional })
-  @ApiResponse({ status: 200, description: 'Status atualizado com sucesso' })
-  updateStatus(
-    @Param('id', ParseIntPipe) bookingId: number,
-    @Body() data: UpdateBookinSatatusProfisional,
-    @currentUser() userId: number,
-  ) {
-    data.bookingId = bookingId;
-    return this.bookingsService.toogle(data, userId);
-  }
-
-  // ============================
-  // LIST BOOKINGS
-  // ============================
   @Get()
   @ApiOperation({
     summary: 'Listar agendamentos',
     description: 'Lista os agendamentos do utilizador autenticado',
   })
-  @ApiQuery({ name: 'page', example: 1 })
-  @ApiQuery({ name: 'limit', example: 10 })
-  findAll(
-    @Query('page', ParseIntPipe) page: number,
-    @Query('limit', ParseIntPipe) limit: number,
-    @currentUser() userId: number,
-  ) {
-    return this.bookingsService.findAll(page, limit, userId);
+  findAll(@currentUser() userId: number) {
+    return this.bookingsService.findAll(userId);
   }
 
-  // ============================
-  // GET BOOKING BY ID
-  // ============================
   @Get(':id')
   @ApiOperation({
     summary: 'Buscar agendamento por ID',
@@ -173,24 +123,5 @@ export class BookingsController {
   @ApiParam({ name: 'id', example: 1 })
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.bookingsService.findOne(id);
-  }
-
-  // ============================
-  // CANCEL BOOKING
-  // ============================
-  @Delete(':id')
-  @ApiOperation({
-    summary: 'Cancelar um agendamento',
-    description:
-      'Permite que o cliente, profissional ou administrador cancele um agendamento',
-  })
-  @ApiParam({ name: 'id', example: 1 })
-  cancel(
-    @Param('id', ParseIntPipe) bookingId: number,
-    @currentUser() userId: number,
-    @Body() data: UpdateBookinSatatusProfisional,
-  ) {
-    data.bookingId = bookingId;
-    return this.bookingsService.cancel(userId, data);
   }
 }

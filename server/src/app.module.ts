@@ -13,14 +13,11 @@ import { ServicesModule } from './domains/services/services.module';
 import { CategoriesModule } from './domains/categories/categories.module';
 import { ReviewsModule } from './domains/reviews/reviews.module';
 import { PaymentsModule } from './domains/payments/payments.module';
-import { ProfissionalsModule } from './domains/profissionals/profissionals.module';
+import { ProfissionalsModule } from './domains/users/profissionals.module';
 import { BookingsModule } from './domains/bookings/bookings.module';
-import { WalletsModule } from './domains/wallets/wallets.module';
 import { ConfigurationModule } from '@infra/config/config.module';
-import { ClientsModule } from './domains/clients/clients.module';
 import { UtilModule } from '@core/shared/utils/util.module';
 import { IsAuthenticatedMiddlware } from '@core/http/middlewares/isAuthenticated.middleware';
-import { BoostrapModule } from '@infra/boostrap/boostrap.module';
 import { NotificationsModule } from './domains/notifications/notifications.module';
 import { Shedule } from '@infra/schedule/schedule.module';
 import { LlmsModule } from './domains/llms/llms.module';
@@ -48,11 +45,8 @@ import { LlmsModule } from './domains/llms/llms.module';
     PaymentsModule,
     ProfissionalsModule,
     BookingsModule,
-    WalletsModule,
     ConfigurationModule,
-    ClientsModule,
     UtilModule,
-    BoostrapModule,
     NotificationsModule,
     LlmsModule,
   ],
@@ -63,14 +57,14 @@ export class AppModule implements NestModule {
       .apply(IsAuthenticatedMiddlware)
       .exclude(
         { path: 'v1/auth/login', method: RequestMethod.POST },
-        { path: 'v1/profissionals', method: RequestMethod.POST },
-        { path: 'v1/profissionals', method: RequestMethod.GET },
-        { path: 'v1/auth/verify/:token', method: RequestMethod.PUT },
-        { path: 'v1/auth/refresh/:token', method: RequestMethod.PUT },
-        { path: 'v1/auth/recovery/:unique', method: RequestMethod.PATCH },
+        { path: 'v1/users', method: RequestMethod.POST },
+        { path: 'v1/auth/:token/verify', method: RequestMethod.PUT },
+        { path: 'v1/auth/:token/refresh', method: RequestMethod.PUT },
+        { path: 'v1/auth/:unique/recovery', method: RequestMethod.PUT },
         { path: 'v1/auth/reset', method: RequestMethod.POST },
         { path: 'v1/services', method: RequestMethod.GET },
         { path: 'v1/services/:id', method: RequestMethod.GET },
+        { path: 'v1/services/category/:categoryId', method: RequestMethod.GET },
         { path: 'v1/categories', method: RequestMethod.GET },
         { path: 'v1/categories/:id', method: RequestMethod.GET },
       )

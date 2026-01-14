@@ -9,12 +9,18 @@ export class CreatePaymentUseCase {
   constructor(
     private readonly prisma: PrismaService,
     private readonly notifier: NotificationFactory,
-    private readonly bookservice: BookingsService,
   ) {}
 
-  
   async execute(dto: CreatePaymentDto, userId: number) {
-    const booking = await this.bookservice.findOne(dto.bookingId);
+    const booking = await this.prisma.booking.findFirst({
+      where: {
+        id: dto.bookingId,
+      },
+      include: {
+        payment: true,
+        service: true,
+      },
+    });
     if (!booking) {
       throw new NotFoundException('Agendamento não encontrado');
     }
@@ -53,7 +59,7 @@ export class CreatePaymentUseCase {
         clientId: booking.clientId,
         professionalId: booking.professionalId ?? dto.professionalId ?? null,
         fileUrl: dto.fileUrl,
-        amount: booking.service.basePrice,
+        amount: booking.service.price,
         currency: booking.service.currency,
         method: dto.method,
         status: PaymentStatus.PENDING,

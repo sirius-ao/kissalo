@@ -1,9 +1,19 @@
-import Image from "next/image";
+"use client";
+
+import { About } from "@/components/Landigpage/about";
+import { Faq } from "@/components/Landigpage/flaqs";
+import { Footer } from "@/components/Landigpage/footer";
+import LandingPageHeader from "@/components/Landigpage/header";
+import LandingPageHome from "@/components/Landigpage/home";
 
 export default function Home() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <p>ola mundo</p>
-    </div>
+    <main className="overflow-x-hidden max-w-screen flex flex-col gap-5 pb-10">
+      <LandingPageHeader />
+      <LandingPageHome />
+      <About />
+      <Faq />
+      <Footer />
+    </main>
   );
 }

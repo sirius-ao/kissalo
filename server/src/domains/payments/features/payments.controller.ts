@@ -24,6 +24,7 @@ import { IsClientGuard } from '@core/http/guards/isClient.guard';
 import { currentUser } from '@core/http/decorators/currentUser.decorator';
 import { IsAdminGuard } from '@core/http/guards/isAdmin.guard';
 import { IsEmailVerifiedGuard } from '@core/http/guards/isEmailVerifiedGuard';
+import { UpdatePaymentDto } from './dto/update-payment.dto';
 
 @ApiTags('Payments V1')
 @ApiBearerAuth()
@@ -32,27 +33,7 @@ import { IsEmailVerifiedGuard } from '@core/http/guards/isEmailVerifiedGuard';
 export class PaymentsController {
   constructor(private readonly paymentsService: PaymentsService) {}
 
-  @Post()
-  @UseGuards(IsClientGuard)
-  @ApiOperation({
-    summary: 'Criar um pagamento',
-    description:
-      'Permite que o cliente crie um pagamento para um agendamento confirmado',
-  })
-  @ApiBody({ type: CreatePaymentDto })
-  @ApiResponse({ status: 201, description: 'Pagamento criado com sucesso' })
-  @ApiResponse({
-    status: 403,
-    description: 'Apenas clientes podem criar pagamentos',
-  })
-  create(
-    @Body() createPaymentDto: CreatePaymentDto,
-    @currentUser() userId: number,
-  ) {
-    return this.paymentsService.create(createPaymentDto, userId);
-  }
-
-  @Post(':id/:file/:walletId/consolidate')
+  @Post(':id/consolidate')
   @UseGuards(IsAdminGuard)
   @ApiOperation({
     summary: 'Criar consolidação de um pagamento',
@@ -64,26 +45,23 @@ export class PaymentsController {
   consolidate(
     @currentUser() userId: number,
     @Param('id', ParseIntPipe) id: number,
-    @Param('walletId', ParseIntPipe) walletId: number,
-    @Param('file', ParseIntPipe) file: string,
   ) {
-    return this.paymentsService.consolidate(id, walletId, file);
+    return this.paymentsService.consolidate(id);
   }
 
-  @Patch(':id')
+  @Patch(':id/toogle')
   @UseGuards(IsAdminGuard)
   @ApiOperation({
     summary: 'Atualizar um pagamento',
     description: 'Permite atualizar dados de um pagamento status',
   })
   @ApiParam({ name: 'id', example: 1 })
-  @ApiBody({ type: CreatePaymentDto })
   update(
-    @Body() createPaymentDto: CreatePaymentDto,
+    @Body() UpdatePaymentDto: UpdatePaymentDto,
     @currentUser() userId: number,
     @Param('id', ParseIntPipe) id: number,
   ) {
-    return this.paymentsService.update(createPaymentDto, userId, id);
+    return this.paymentsService.update(UpdatePaymentDto, userId, id);
   }
 
   @Get()
@@ -91,14 +69,8 @@ export class PaymentsController {
     summary: 'Listar pagamentos',
     description: 'Lista pagamentos do usuário ou todos se for admin',
   })
-  @ApiQuery({ name: 'page', required: false, example: 1 })
-  @ApiQuery({ name: 'limit', required: false, example: 10 })
-  findAll(
-    @Query('page', ParseIntPipe) page: number = 1,
-    @Query('limit', ParseIntPipe) limit: number = 10,
-    @currentUser() userId: number,
-  ) {
-    return this.paymentsService.findAll(userId, page, limit);
+  findAll(@currentUser() userId: number) {
+    return this.paymentsService.findAll(userId);
   }
 
   @Get(':id')

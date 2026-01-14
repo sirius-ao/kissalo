@@ -14,6 +14,8 @@ export class IsAuthenticatedMiddlware implements NestMiddleware {
     secret: process.env.JWT_SECRET,
   });
 
+
+  
   public async use(req: Request, res: Response, next: NextFunction) {
     const authHeader = req.headers['authorization'];
     if (!authHeader) {

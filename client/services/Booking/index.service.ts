@@ -1,0 +1,233 @@
+import constants from "@/constants";
+import { BookingPriority, ServiceLocation } from "@/types/enum";
+
+export interface Address {
+  street: string;
+  city: string;
+  country: string;
+}
+
+export interface ServiceSchedule {
+  serviceId: number;
+  scheduleDate: string;
+  startTime: string;
+  endTime: string;
+  location: ServiceLocation;
+  address: Address;
+  priority: BookingPriority;
+  fileUrl: string;
+  method: string;
+}
+export class BookingService {
+  private readonly server = constants.SERVER;
+  private readonly version = "v1";
+  constructor(private readonly token: string) {}
+  public async get() {
+    try {
+      const data = await fetch(`${this.server}/${this.version}/bookings`, {
+        headers: {
+          "Content-Type": "application/json",
+          authorization: `Bearer ${this.token}`,
+        },
+      });
+      const res = await data.json();
+
+      if (res?.statusCode == 403) {
+        return {
+          logout: true,
+        };
+      }
+      return {
+        logout: false,
+        data: res,
+      };
+    } catch (error) {
+      return {
+        logout: false,
+      };
+    }
+  }
+  public async getById(id: number) {
+    try {
+      const data = await fetch(
+        `${this.server}/${this.version}/bookings/${id}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            authorization: `Bearer ${this.token}`,
+          },
+        }
+      );
+      const res = await data.json();
+
+      if (res?.statusCode == 403) {
+        return {
+          logout: true,
+        };
+      }
+      return {
+        logout: false,
+        data: res,
+      };
+    } catch (error) {
+      return {
+        logout: false,
+      };
+    }
+  }
+  public async create(body: ServiceSchedule) {
+    try {
+      const data = await fetch(`${this.server}/${this.version}/bookings`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          authorization: `Bearer ${this.token}`,
+        },
+        body: JSON.stringify(body),
+      });
+      const res = await data.json();
+      if (res?.statusCode == 403) {
+        return {
+          logout: true,
+        };
+      }
+      return {
+        logout: false,
+        message: Array.isArray(res?.message) ? res?.message[0] : res?.message,
+        data: res,
+      };
+    } catch (error) {
+      return {
+        logout: false,
+      };
+    }
+  }
+  public async createStep(
+    body: { notes: string; files: string[] },
+    bookingId: number
+  ) {
+    try {
+      const data = await fetch(
+        `${this.server}/${this.version}/bookings/${bookingId}/steps`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            authorization: `Bearer ${this.token}`,
+          },
+          body: JSON.stringify(body),
+        }
+      );
+      const res = await data.json();
+      if (res?.statusCode == 403) {
+        return {
+          logout: true,
+        };
+      }
+      return {
+        logout: false,
+        message: Array.isArray(res?.message) ? res?.message[0] : res?.message,
+        data: res,
+      };
+    } catch (error) {
+      return {
+        logout: false,
+      };
+    }
+  }
+
+  public async toogle(
+    body: {
+      notes: string;
+      files: string[];
+      status: "REJECTED" | "STARTED" | "COMPLETED" | "CANCELED";
+    },
+    id: number
+  ) {
+    try {
+      const data = await fetch(
+        `${this.server}/${this.version}/bookings/${id}/toogle`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            authorization: `Bearer ${this.token}`,
+          },
+          body: JSON.stringify(body),
+        }
+      );
+      const res = await data.json();
+      if (res?.statusCode == 403) {
+        return {
+          logout: true,
+        };
+      }
+      return {
+        ...res,
+        logout: false,
+      };
+    } catch (error) {
+      return {
+        logout: false,
+      };
+    }
+  }
+
+  public async anexUser(userId: number, bookingId: number) {
+    try {
+      const data = await fetch(
+        `${this.server}/${this.version}/bookings/${bookingId}/${userId}/anex`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            authorization: `Bearer ${this.token}`,
+          },
+        }
+      );
+      const res = await data.json();
+      if (res?.statusCode == 403) {
+        return {
+          logout: true,
+        };
+      }
+      return {
+        ...res,
+        logout: false,
+      };
+    } catch (error) {
+      return {
+        logout: false,
+      };
+    }
+  }
+
+  public async liberate(id: number) {
+    try {
+      const data = await fetch(
+        `${this.server}/${this.version}/bookings/${id}/liberate`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            authorization: `Bearer ${this.token}`,
+          },
+        }
+      );
+      const res = await data.json();
+      if (res?.statusCode == 403) {
+        return {
+          logout: true,
+        };
+      }
+      return {
+        ...res,
+        logout: false,
+      };
+    } catch (error) {
+      return {
+        logout: false,
+      };
+    }
+  }
+}

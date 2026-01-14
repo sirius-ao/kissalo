@@ -25,12 +25,8 @@ export class NotificationsController {
   @ApiOperation({
     summary: 'Get all notification with paginations',
   })
-  findAll(
-    @currentUser() userId: number,
-    @Query('page', ParseIntPipe) page: number,
-    @Query('limit', ParseIntPipe) limit: number,
-  ) {
-    return this.notificationsService.findAll(userId, page, limit);
+  findAll(@currentUser() userId: number) {
+    return this.notificationsService.findAll(userId);
   }
 
   @Patch(':to')

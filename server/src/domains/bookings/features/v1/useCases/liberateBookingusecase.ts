@@ -14,7 +14,7 @@ export class LiberateBookingUseCase {
   ) {}
 
   public async liberate(userId: number, bookingId: number) {
-    const booking = await this.database.booking.findUnique({
+    const booking = await this.database.booking.findFirst({
       where: { id: bookingId },
       include: {
         client: true,
@@ -50,13 +50,6 @@ export class LiberateBookingUseCase {
         'Aguarde o pagamento para poder permitir o término o serviço',
       );
     }
-    const now = new Date();
-    if (now < booking.endTime) {
-      throw new BadRequestException(
-        'O serviço só pode ser finalizado no horário agendado',
-      );
-    }
-
     await this.database.booking.update({
       where: { id: bookingId },
       data: {

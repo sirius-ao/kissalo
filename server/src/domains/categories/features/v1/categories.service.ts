@@ -31,6 +31,9 @@ export class CategoriesService {
       where: {
         isActive: true,
       },
+      include: {
+        services: true,
+      },
     });
   }
 
@@ -40,19 +43,13 @@ export class CategoriesService {
         id: id,
         isActive: true,
       },
-    });
-    return category;
-  }
-
-  async findBySlug(slug: string) {
-    const category = await this.database.category.findUnique({
-      where: {
-        slug: slug,
-        isActive: true,
+      include: {
+        services: true,
       },
     });
     return category;
   }
+
   async update(id: number, updateCategoryDto: UpdateCategoryDto) {
     const category = await this.database.category.findFirst({
       where: { id },
@@ -67,6 +64,9 @@ export class CategoriesService {
       },
       data: {
         ...updateCategoryDto,
+      },
+      include: {
+        services: true,
       },
     });
     return updated;

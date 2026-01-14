@@ -5,7 +5,7 @@ import {
   Param,
   Delete,
   Put,
-  Patch,
+  Get,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import {
@@ -21,6 +21,14 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 @Controller('v1/auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
+
+  @Get('/me')
+  @ApiOperation({
+    summary: 'Ge me',
+  })
+  me(@currentUser() userId: number) {
+    return this.authService.me(userId);
+  }
 
   @Post('/login')
   @ApiOperation({
@@ -51,6 +59,7 @@ export class AuthController {
     summary: 'profile update',
   })
   profile(@currentUser() userId: number, @Body() data: UpdateProfileDto) {
+    console.log(userId);
     return this.authService.update(data, userId);
   }
 

@@ -1,8 +1,14 @@
 import { CreateServiceTemplateDto } from './../../dto/create-service.dto';
 import { SlugService } from '@core/shared/utils/services/Slug/slug.service';
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import PrismaService from '@infra/database/prisma.service';
 import { UpdateServiceTemplateDto } from '@domains/services/dto/update-service.dto';
+import { ProfessionalServiceRequestDto } from '@domains/services/dto/professional-service-request.dto';
+import { ProfissionalNotFoundExecption } from '@core/http/erros/profissional.error';
 
 @Injectable()
 export class ServicesService {
@@ -12,30 +18,62 @@ export class ServicesService {
   ) {}
 
   async create(data: CreateServiceTemplateDto) {
-    const category = await this.database.category.findFirst({
-      where: {
-        id: data.categoryId,
-      },
-    });
+    const [category, slug] = await Promise.all([
+      this.database.category.findFirst({
+        where: {
+          id: data.categoryId,
+        },
+      }),
+      this.SlugService.gen(data.title, 'service'),
+    ]);
 
     if (!category) {
       throw new BadRequestException('Category not found');
     }
     const service = await this.database.serviceTemplate.create({
       data: {
-        ...data,
         isFeatured: true,
+        slug,
+        isActive: true,
+        isNegotiable: false,
+        description: data.description,
+        duration: data.duration,
+        price: data.price,
+        priceType: 'FIXED',
+        title: data.title,
+        shortDescription: data.shortDescription,
+        bannerUrl: data.bannerUrl,
+        gallery: data.gallery,
+        videoUrl: '',
+        categoryId: data.categoryId,
+        currency: 'kz',
+        keywords: data.keywords,
+        maxBookings: 0,
+        maxRequestsPerDay: 0,
+        deliverables: data.deliverables,
+        ratingAverage: 0,
+
+        requirements: data.requirements,
+        bookingsCount: 0,
+        viewsCount: 0,
       },
     });
     return service;
   }
 
   async findAll() {
-    return await this.database.serviceTemplate.findMany({
+    const data = await this.database.serviceTemplate.findMany({
       where: {
         isActive: true,
       },
+      include: {
+        category: true,
+      },
     });
+
+    return {
+      data,
+    };
   }
 
   async findOne(id: number) {
@@ -55,29 +93,55 @@ export class ServicesService {
                 user: true,
               },
             },
+            service: true,
           },
         },
+        category: true,
       },
     });
   }
 
   async update(id: number, data: UpdateServiceTemplateDto) {
-    return await this.database.serviceTemplate.update({
+    const category = this.database.category.findFirst({
       where: {
-        id: id,
-      },
-      data: {
-        ...data,
+        id: data.categoryId,
       },
     });
+    if (!category) {
+      throw new BadRequestException('Category not found');
+    }
+    try {
+      return await this.database.serviceTemplate.update({
+        where: {
+          id: id,
+        },
+        data: {
+          title: data.title,
+          description: data.description,
+          shortDescription: data.shortDescription,
+          price: data.price,
+          duration: data.duration,
+          deliverables: data.deliverables,
+          requirements: data.requirements,
+          categoryId: data.categoryId,
+        },
+      });
+    } catch (error) {
+      console.log(error);
+      throw new NotFoundException('Serviço não encontrado');
+    }
   }
 
   async remove(id: number) {
-    return await this.database.serviceTemplate.delete({
-      where: {
-        id: id,
-      },
-    });
+    try {
+      return await this.database.serviceTemplate.delete({
+        where: {
+          id: id,
+        },
+      });
+    } catch (error) {
+      throw new NotFoundException('Serviço não encontrado');
+    }
   }
 
   async findByCategory(categoryId: number) {
@@ -85,6 +149,78 @@ export class ServicesService {
       where: {
         categoryId: categoryId,
         isActive: true,
+      },
+    });
+  }
+
+  async professionalServicesRequest(serviceId: number, userId: number) {
+    const isProfessional = await this.database.user.findFirst({
+      where: {
+        id: userId,
+      },
+      include: {
+        professional: true,
+      },
+    });
+
+    if (!isProfessional) {
+      throw new ProfissionalNotFoundExecption('');
+    }
+    const isprofessionalServiceRequestExists =
+      await this.database.professionalServiceRequest.findFirst({
+        where: {
+          professionalId: isProfessional.professional.id,
+          serviceId: serviceId,
+        },
+      });
+
+    if (isprofessionalServiceRequestExists) {
+      throw new BadRequestException(
+        'Ja existe uma requisicao pendente para este servico.',
+      );
+    }
+
+    return await this.database.professionalServiceRequest.create({
+      data: {
+        serviceId: serviceId,
+        professionalId: isProfessional.professional.id,
+        status: 'PENDING',
+        adminNotes: 'Revisar o perfil do profissional',
+      },
+    });
+  }
+  async toogleStatus(serviceId: number, userId: number, status: boolean) {
+    const isProfessional = await this.database.professional.findFirst({
+      where: {
+        userId: userId,
+      },
+      include: {
+        user: true,
+      },
+    });
+
+    if (!isProfessional) {
+      throw new ProfissionalNotFoundExecption('');
+    }
+    const isprofessionalServiceRequestExists =
+      await this.database.professionalServiceRequest.findFirst({
+        where: {
+          professionalId: isProfessional.id,
+          serviceId: serviceId,
+        },
+      });
+    if (!isprofessionalServiceRequestExists) {
+      throw new BadRequestException('Pedido não encontrado');
+    }
+
+    return await this.database.professionalServiceRequest.update({
+      data: {
+        status: status ? 'APPROVED' : 'REJECTED',
+      },
+      where: {
+        professionalId: isProfessional.id,
+        serviceId: serviceId,
+        id: isprofessionalServiceRequestExists.id,
       },
     });
   }

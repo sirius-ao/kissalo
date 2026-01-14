@@ -1,5 +1,11 @@
 import { ApiProperty, PartialType } from '@nestjs/swagger';
-import { IsEnum, IsOptional, IsString, IsUrl } from 'class-validator';
+import {
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsUrl,
+} from 'class-validator';
 
 export enum PaymentUpdateStatus {
   PAID = 'PAID',
@@ -7,7 +13,6 @@ export enum PaymentUpdateStatus {
 }
 
 export class UpdatePaymentDto {
-  @IsOptional()
   @IsEnum(PaymentUpdateStatus)
   @ApiProperty({
     description: 'Novo status do pagamento',
@@ -15,27 +20,8 @@ export class UpdatePaymentDto {
     required: false,
     example: PaymentUpdateStatus.PAID,
   })
-  status?: PaymentUpdateStatus;
-
-  @IsOptional()
-  @IsString()
-  @IsUrl()
-  @ApiProperty({
-    description: 'URL do comprovante de pagamento atualizado',
-    required: false,
-    example: 'https://example.com/new-payment-proof.pdf',
-  })
-  fileUrl?: string;
-
-  @IsOptional()
-  @IsString()
-  @ApiProperty({
-    description: 'Método de pagamento atualizado',
-    required: false,
-    example: 'Multicaixa',
-  })
-  method?: string;
-
+  @IsNotEmpty()
+  status: PaymentUpdateStatus;
   @IsOptional()
   @IsString()
   @ApiProperty({

@@ -38,7 +38,15 @@ export class GetBookingFacede {
             category: true,
           },
         },
-        steps: true,
+        steps: {
+          include: {
+            user: {
+              omit: {
+                password: true,
+              },
+            },
+          },
+        },
         review: true,
         payment: true,
       },
@@ -49,16 +57,16 @@ export class GetBookingFacede {
     }
     throw new NotFoundException('Agendamento de serviço não encontrado');
   }
-  public async get(page: number, limit: number, userId: number) {
-    page = isNaN(page) || page == 0 ? 1 : page;
-    limit = isNaN(limit) || limit == 0 ? 10 : limit;
-    const skip = (page - 1) * limit;
+  public async get(userId: number) {
     const user = await this.database.user.findFirst({
       where: {
         id: userId,
       },
       include: {
         professional: true,
+      },
+      omit: {
+        password: true,
       },
     });
     if (!user) {
@@ -84,22 +92,27 @@ export class GetBookingFacede {
         throw new BadRequestException('Tipo de usuário não suportado');
         break;
     }
-    const res = await this.getByUser(skip, limit, page, where);
-    return res;
+    const [myBookings] = await Promise.all([this.getByUser(where)]);
+    return {
+      user,
+      myBookings,
+    };
   }
-  private async getByUser(
-    skip: number,
-    take: number,
-    page: number,
-    where: any,
-  ) {
-    const [bookings, total] = await Promise.all([
+  private async getByUser(where: any) {
+    const [bookings] = await Promise.all([
       this.database.booking.findMany({
-        take,
-        skip,
         where,
         include: {
-          client: true,
+          client: {
+            omit: {
+              password: true,
+            },
+          },
+          service: {
+            include: {
+              category: true,
+            },
+          },
           professional: {
             include: {
               user: {
@@ -109,31 +122,13 @@ export class GetBookingFacede {
               },
             },
           },
-          service: {
-            include: {
-              category: true,
-            },
-          },
           steps: true,
           review: true,
         },
       }),
-      this.database.booking.count({
-        where,
-      }),
     ]);
-    const totalPages = Math.ceil(total / take);
     return {
       data: bookings,
-      pagination: {
-        page,
-        take,
-        total,
-        totalPages,
-        hasNextPage: page < totalPages,
-        hasPrevPage: page > 1,
-        lastPage: totalPages,
-      },
     };
   }
 }

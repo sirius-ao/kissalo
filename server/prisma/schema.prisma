@@ -41,7 +41,7 @@ enum BookingStatus {
   STARTED
   COMPLETED
   CANCELED
-  ACEPTED
+  ACCEPTED
   REJECTED
 }
 
@@ -154,7 +154,6 @@ model Professional {
   user               User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   serviceRequests    ProfessionalServiceRequest[]
   bookings           Booking[]         @relation("ProfessionalBookings")
-  wallets            Wallet[]
   reviews            Review[]
   payments           Payment[]
   docs ProfessionalDocument[]
@@ -203,9 +202,7 @@ model ServiceTemplate {
   bannerUrl        String?
   isNegotiable     Boolean        @default(false)
   requiresApproval Boolean        @default(false)
-  basePrice        Int
-  minPrice         Int?
-  maxPrice         Int?
+  price        Int
   priceType        ServicePriceType
   currency         String         @default("AOA")
   duration         Int
@@ -230,7 +227,7 @@ model ServiceTemplate {
 
 model ProfessionalServiceRequest {
   id               Int             @id @default(autoincrement())
-  professionalId   Int
+  professionalId   Int 
   serviceId        Int
   status           ApprovalStatus  @default(PENDING)
   adminNotes       String?
@@ -241,6 +238,7 @@ model ProfessionalServiceRequest {
   @@unique([professionalId, serviceId])
   @@index([status])
 }
+
 
 model Booking {
   id               Int             @id @default(autoincrement())
@@ -259,6 +257,10 @@ model Booking {
   totalAmount      Int
   createdAt        DateTime        @default(now())
   updatedAt        DateTime        @updatedAt
+  canceledAt  DateTime?
+  cancelReason  String?
+  startedAt  DateTime?
+  completedAt  DateTime?
   client           User            @relation("ClientBookings", fields: [clientId], references: [id], onDelete: Cascade)
   professional     Professional?   @relation("ProfessionalBookings", fields: [professionalId], references: [id], onDelete: SetNull)
   service          ServiceTemplate @relation(fields: [serviceId], references: [id], onDelete: Cascade)
@@ -303,30 +305,15 @@ model Payment {
   conclidation ConcliationPayment?
 }
 
-model Wallet {
-  id               Int        @id @default(autoincrement())
-  professionalId   Int
-  bankName         String
-  accountNumber    String     @unique
-  accountHolder    String
-  isActive         Boolean    @default(true)
-  isVerified       Boolean    @default(false)
-  createdAt        DateTime   @default(now())
-  updatedAt        DateTime   @updatedAt
-  professional     Professional @relation(fields: [professionalId], references: [id], onDelete: Cascade)
-  conclidation ConcliationPayment[]
-}
 
 
 model ConcliationPayment {
   id             Int           @id @default(autoincrement())
   paymentId Int @unique
   userId Int
-  waaletId Int
   fileUrl String?
   payment Payment @relation( fields: [paymentId] ,references: [id], onDelete: Cascade)
   profissional         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  wallet Wallet @relation(fields: [waaletId] , references: [id] , onDelete: Cascade)
   
 }
 
