@@ -70,7 +70,6 @@ const columns: BookingStatus[] = [
   BookingStatus.ACCEPTED,
   BookingStatus.STARTED,
   BookingStatus.COMPLETED,
-  BookingStatus.CONFIRMED,
   BookingStatus.CANCELED,
 ];
 
